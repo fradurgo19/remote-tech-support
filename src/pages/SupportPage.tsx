@@ -4,13 +4,17 @@ import { ServiceCategory } from '../types';
 import { categoryService } from '../services/api';
 import { Card, CardHeader, CardTitle, CardContent } from '../atoms/Card';
 import { Spinner } from '../atoms/Spinner';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, PhoneCall } from 'lucide-react';
 import { Button } from '../atoms/Button';
+import { VideoCallPanel } from '../organisms/VideoCallPanel';
+import { useAuth } from '../context/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 
 export const SupportPage: React.FC = () => {
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -56,20 +60,54 @@ export const SupportPage: React.FC = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Servicios de Soporte</h1>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Servicios Disponibles</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ServiceCatalog 
-            categories={categories}
-            onSelectCategory={(categoryId) => {
-              // Manejar selección de categoría
-              console.log('Categoría seleccionada:', categoryId);
-            }}
-          />
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="services" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="services">
+            <PhoneCall className="w-4 h-4 mr-2" />
+            Servicios
+          </TabsTrigger>
+          <TabsTrigger value="call">
+            <PhoneCall className="w-4 h-4 mr-2" />
+            Llamada Directa
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="services">
+          <Card>
+            <CardHeader>
+              <CardTitle>Servicios Disponibles</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ServiceCatalog 
+                categories={categories}
+                onSelectCategory={(categoryId) => {
+                  // Manejar selección de categoría
+                  console.log('Categoría seleccionada:', categoryId);
+                }}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="call">
+          <Card>
+            <CardHeader>
+              <CardTitle>Llamada de Soporte Directa</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[600px]">
+                {user && (
+                  <VideoCallPanel
+                    localUser={user}
+                    recipientId="support" // ID del técnico de soporte
+                    ticketId="direct-support" // ID del ticket de soporte directo
+                  />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
