@@ -10,6 +10,7 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { TicketsListPage } from './pages/TicketsListPage';
 import { TicketDetailPage } from './pages/TicketDetailPage';
+import { CreateTicketPage } from './pages/CreateTicketPage';
 import { SupportPage } from './pages/SupportPage';
 import { UsersPage } from './pages/UsersPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -44,6 +45,7 @@ const App: React.FC = () => {
                 }>
                   <Route index element={<DashboardPage />} />
                   <Route path="tickets" element={<TicketsListPage />} />
+                  <Route path="tickets/new" element={<CreateTicketPage />} />
                   <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
                   <Route path="support" element={<SupportPage />} />
                   <Route path="users" element={<UsersPage />} />

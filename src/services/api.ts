@@ -8,15 +8,15 @@ const users: User[] = [
   {
     id: '1',
     name: 'Juan Técnico',
-    email: 'juan@soportetecnico.com',
+    email: 'auxiliar.garantiasbg@partequipos.com',
     role: 'technician',
     avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
     status: 'online',
   },
   {
     id: '2',
-    name: 'Sara Admin',
-    email: 'sara@soportetecnico.com',
+    name: 'Soporte al Producto',
+    email: 'analista.mantenimiento@partequipos.com',
     role: 'admin',
     avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
     status: 'away',
@@ -81,20 +81,69 @@ const messages: Message[] = [
 ];
 
 const serviceCategories: ServiceCategory[] = [
-  { id: '1', name: 'Problemas de Red', description: 'VPN, Wi-Fi y problemas de conectividad', icon: 'wifi' },
-  { id: '2', name: 'Solución de Problemas de Software', description: 'Errores de aplicaciones y problemas de software', icon: 'app-window' },
-  { id: '3', name: 'Soporte de Hardware', description: 'Problemas de computadoras y dispositivos periféricos', icon: 'hard-drive' },
-  { id: '4', name: 'Acceso a Cuentas', description: 'Problemas de inicio de sesión y recuperación de cuentas', icon: 'user' },
+  { 
+    id: '1', 
+    name: 'Soporte Remoto', 
+    description: 'Asistencia técnica remota para resolver problemas de software, hardware y conectividad', 
+    icon: 'headset' 
+  }
 ];
 
-// Servicios de API
+// Claves para localStorage
+const STORAGE_KEYS = {
+  USERS: 'remote_support_users',
+  TICKETS: 'remote_support_tickets',
+  MESSAGES: 'remote_support_messages',
+  CATEGORIES: 'remote_support_categories'
+};
+
+// Función para inicializar datos en localStorage si no existen
+const initializeStorage = () => {
+  if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.TICKETS)) {
+    localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(tickets));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.MESSAGES)) {
+    localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(messages));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.CATEGORIES)) {
+    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(serviceCategories));
+  }
+};
+
+// Inicializar almacenamiento
+initializeStorage();
+
+// Función helper para obtener datos del localStorage
+const getFromStorage = <T>(key: string): T[] => {
+  const data = localStorage.getItem(key);
+  return data ? JSON.parse(data) : [];
+};
+
+// Función helper para guardar datos en localStorage
+const saveToStorage = <T>(key: string, data: T[]): void => {
+  localStorage.setItem(key, JSON.stringify(data));
+};
+
+// Servicios de API actualizados
 export const authService = {
   login: async (email: string, password: string): Promise<User> => {
     await delay(800);
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
     const user = users.find(u => u.email === email);
     if (user) {
-      // En el entorno de demostración, aceptamos cualquier contraseña
-      return user;
+      // En el entorno de demostración, verificamos la contraseña
+      const passwords: Record<string, string> = {
+        'auxiliar.garantiasbg@partequipos.com': 'Garantias2024*',
+        'analista.mantenimiento@partequipos.com': 'Mantenimiento2024*',
+        'miguel@empresa.com': 'Cliente2024*'
+      };
+      
+      if (passwords[email] === password) {
+        return user;
+      }
     }
     throw new Error('Credenciales inválidas');
   },
@@ -104,87 +153,31 @@ export const authService = {
   },
   getCurrentUser: async (): Promise<User | null> => {
     await delay(300);
-    // Para propósitos de demostración, devolver el usuario almacenado en localStorage
     const storedEmail = localStorage.getItem('currentUserEmail');
     if (storedEmail) {
+      const users = getFromStorage<User>(STORAGE_KEYS.USERS);
       const user = users.find(u => u.email === storedEmail);
       if (user) return user;
     }
-    // Si no hay usuario almacenado, devolver el primer usuario por defecto
-    return users[0];
-  },
-};
-
-export const ticketService = {
-  getTickets: async (): Promise<Ticket[]> => {
-    await delay(700);
-    return tickets;
-  },
-  getTicketById: async (id: string): Promise<Ticket> => {
-    await delay(500);
-    const ticket = tickets.find(t => t.id === id);
-    if (ticket) {
-      return ticket;
-    }
-    throw new Error('Ticket no encontrado');
-  },
-  createTicket: async (ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>): Promise<Ticket> => {
-    await delay(800);
-    const newTicket: Ticket = {
-      ...ticket,
-      id: String(tickets.length + 1),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    tickets.push(newTicket);
-    return newTicket;
-  },
-  updateTicket: async (id: string, updates: Partial<Ticket>): Promise<Ticket> => {
-    await delay(600);
-    const ticketIndex = tickets.findIndex(t => t.id === id);
-    if (ticketIndex !== -1) {
-      const updatedTicket = {
-        ...tickets[ticketIndex],
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      };
-      tickets[ticketIndex] = updatedTicket;
-      return updatedTicket;
-    }
-    throw new Error('Ticket no encontrado');
-  },
-};
-
-export const messageService = {
-  getMessagesByTicket: async (ticketId: string): Promise<Message[]> => {
-    await delay(500);
-    return messages.filter(m => m.ticketId === ticketId);
-  },
-  sendMessage: async (message: Omit<Message, 'id' | 'timestamp'>): Promise<Message> => {
-    await delay(300);
-    const newMessage: Message = {
-      ...message,
-      id: String(messages.length + 1),
-      timestamp: new Date().toISOString(),
-    };
-    messages.push(newMessage);
-    return newMessage;
+    return null;
   },
 };
 
 export const userService = {
   getUsers: async (): Promise<User[]> => {
     await delay(800);
-    return users;
+    return getFromStorage<User>(STORAGE_KEYS.USERS);
   },
   getUserById: async (id: string): Promise<User> => {
     await delay(300);
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
     const user = users.find(u => u.id === id);
     if (!user) throw new Error('Usuario no encontrado');
     return user;
   },
   createUser: async (userData: Omit<User, 'id' | 'status' | 'avatar'>): Promise<User> => {
     await delay(800);
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
     const newUser: User = {
       ...userData,
       id: String(users.length + 1),
@@ -192,20 +185,85 @@ export const userService = {
       avatar: `https://randomuser.me/api/portraits/${userData.role === 'admin' ? 'women' : 'men'}/${users.length + 1}.jpg`
     };
     users.push(newUser);
+    saveToStorage(STORAGE_KEYS.USERS, users);
     return newUser;
   },
   updateUserStatus: async (id: string, status: User['status']): Promise<User> => {
     await delay(300);
-    const user = users.find(u => u.id === id);
-    if (!user) throw new Error('Usuario no encontrado');
-    user.status = status;
-    return user;
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
+    const userIndex = users.findIndex(u => u.id === id);
+    if (userIndex === -1) throw new Error('Usuario no encontrado');
+    users[userIndex].status = status;
+    saveToStorage(STORAGE_KEYS.USERS, users);
+    return users[userIndex];
+  }
+};
+
+export const ticketService = {
+  getTickets: async (): Promise<Ticket[]> => {
+    await delay(800);
+    return getFromStorage<Ticket>(STORAGE_KEYS.TICKETS);
+  },
+  getTicketById: async (id: string): Promise<Ticket> => {
+    await delay(300);
+    const tickets = getFromStorage<Ticket>(STORAGE_KEYS.TICKETS);
+    const ticket = tickets.find(t => t.id === id);
+    if (!ticket) throw new Error('Ticket no encontrado');
+    return ticket;
+  },
+  createTicket: async (ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>): Promise<Ticket> => {
+    await delay(800);
+    const tickets = getFromStorage<Ticket>(STORAGE_KEYS.TICKETS);
+    const newTicket: Ticket = {
+      ...ticketData,
+      id: String(tickets.length + 1),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    tickets.push(newTicket);
+    saveToStorage(STORAGE_KEYS.TICKETS, tickets);
+    return newTicket;
+  },
+  updateTicket: async (id: string, updates: Partial<Ticket>): Promise<Ticket> => {
+    await delay(300);
+    const tickets = getFromStorage<Ticket>(STORAGE_KEYS.TICKETS);
+    const ticketIndex = tickets.findIndex(t => t.id === id);
+    if (ticketIndex === -1) throw new Error('Ticket no encontrado');
+    
+    tickets[ticketIndex] = {
+      ...tickets[ticketIndex],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    
+    saveToStorage(STORAGE_KEYS.TICKETS, tickets);
+    return tickets[ticketIndex];
+  }
+};
+
+export const messageService = {
+  getMessagesByTicket: async (ticketId: string): Promise<Message[]> => {
+    await delay(300);
+    const messages = getFromStorage<Message>(STORAGE_KEYS.MESSAGES);
+    return messages.filter(m => m.ticketId === ticketId);
+  },
+  sendMessage: async (messageData: Omit<Message, 'id' | 'timestamp'>): Promise<Message> => {
+    await delay(300);
+    const messages = getFromStorage<Message>(STORAGE_KEYS.MESSAGES);
+    const newMessage: Message = {
+      ...messageData,
+      id: String(messages.length + 1),
+      timestamp: new Date().toISOString(),
+    };
+    messages.push(newMessage);
+    saveToStorage(STORAGE_KEYS.MESSAGES, messages);
+    return newMessage;
   }
 };
 
 export const categoryService = {
   getCategories: async (): Promise<ServiceCategory[]> => {
-    await delay(400);
-    return serviceCategories;
-  },
+    await delay(300);
+    return getFromStorage<ServiceCategory>(STORAGE_KEYS.CATEGORIES);
+  }
 };

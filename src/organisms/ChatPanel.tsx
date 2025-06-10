@@ -6,7 +6,8 @@ import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
 import { messageService } from '../services/api';
 import { socketService } from '../services/socket';
-import { Paperclip, Send } from 'lucide-react';
+import { Paperclip, Send, AlertCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface ChatPanelProps {
   ticketId: string;
@@ -21,8 +22,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ ticketId, users, ticket })
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -34,6 +37,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ ticketId, users, ticket })
       } catch (err) {
         setError('Error al cargar los mensajes');
         console.error(err);
+        toast.error('Error al cargar los mensajes');
       } finally {
         setIsLoading(false);
       }
@@ -47,20 +51,54 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ ticketId, users, ticket })
     // Suscribirse a nuevos mensajes
     const unsubscribe = socketService.onReceiveMessage((message) => {
       if (message.ticketId === ticketId) {
-        setMessages(prev => [...prev, message]);
+        setMessages(prev => {
+          // Evitar duplicados
+          if (prev.some(m => m.id === message.id)) {
+            return prev;
+          }
+          return [...prev, message];
+        });
+        
+        // Mostrar notificación si el mensaje no es propio
+        if (message.senderId !== user?.id) {
+          toast.success('Nuevo mensaje recibido', {
+            icon: '💬',
+          });
+        }
       }
     });
+    
+    // Suscribirse a cambios de estado de conexión
+    const handleConnect = () => {
+      setIsConnected(true);
+      toast.success('Conexión restablecida');
+    };
+    
+    const handleDisconnect = () => {
+      setIsConnected(false);
+      toast.error('Conexión perdida. Intentando reconectar...');
+    };
+    
+    socketService.onConnectionChange(handleConnect, handleDisconnect);
     
     return () => {
       // Salir de la sala del ticket cuando el componente se desmonte
       socketService.leaveTicketRoom(ticketId);
       unsubscribe();
     };
-  }, [ticketId]);
+  }, [ticketId, user?.id]);
 
   useEffect(() => {
     // Desplazarse hacia abajo cuando cambien los mensajes
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      const shouldAutoScroll = 
+        chatContainerRef.current && 
+        chatContainerRef.current.scrollHeight - chatContainerRef.current.scrollTop <= chatContainerRef.current.clientHeight + 100;
+      
+      if (shouldAutoScroll) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -86,14 +124,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ ticketId, users, ticket })
         type: 'text',
       };
       
-      await messageService.sendMessage(message);
-      
-      // También enviar a través del socket para actualizaciones en tiempo real
+      // Enviar mensaje a través del socket para actualización en tiempo real
       socketService.sendMessage(message);
+      
+      // También guardar en la base de datos
+      await messageService.sendMessage(message);
       
       setNewMessage('');
     } catch (err) {
       console.error('Error al enviar mensaje:', err);
+      toast.error('Error al enviar el mensaje');
     } finally {
       setIsSending(false);
     }
@@ -110,7 +150,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ ticketId, users, ticket })
   if (error) {
     return (
       <div className="flex items-center justify-center h-full p-6">
-        <p className="text-destructive">{error}</p>
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <p className="text-destructive mb-2">{error}</p>
+          <Button onClick={() => window.location.reload()}>Reintentar</Button>
+        </div>
       </div>
     );
   }
@@ -118,14 +162,23 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ ticketId, users, ticket })
   return (
     <div className="flex flex-col h-full">
       {/* Encabezado del chat */}
-      <div className="bg-card border-b border-border p-3 flex items-center">
+      <div className="bg-card border-b border-border p-3 flex items-center justify-between">
         <h3 className="text-lg font-semibold">
           {ticket?.title || 'Chat de Soporte'}
         </h3>
+        {!isConnected && (
+          <div className="flex items-center text-destructive text-sm">
+            <AlertCircle className="w-4 h-4 mr-1" />
+            Reconectando...
+          </div>
+        )}
       </div>
       
       {/* Mensajes */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+      >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-6">
             <p className="text-muted-foreground mb-2">Aún no hay mensajes</p>
@@ -150,34 +203,21 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ ticketId, users, ticket })
       </div>
       
       {/* Entrada de mensaje */}
-      <form 
-        onSubmit={handleSendMessage}
-        className="border-t border-border p-3 bg-card"
-      >
+      <form onSubmit={handleSendMessage} className="p-4 border-t border-border">
         <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Adjuntar archivo"
-          >
-            <Paperclip size={18} />
-          </Button>
-          
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Escribe tu mensaje..."
+            placeholder="Escribe un mensaje..."
+            disabled={isSending || !isConnected}
             className="flex-1"
           />
-          
           <Button
             type="submit"
-            disabled={!newMessage.trim() || isSending}
-            isLoading={isSending}
-            aria-label="Enviar mensaje"
+            disabled={!newMessage.trim() || isSending || !isConnected}
+            size="icon"
           >
-            <Send size={18} />
+            <Send className="h-4 w-4" />
           </Button>
         </div>
       </form>

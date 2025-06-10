@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ServiceCategory } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import { Input } from '../atoms/Input';
-import { Search, Monitor, Wifi, HardDrive, User, AppWindow } from 'lucide-react';
+import { Search, Monitor, Wifi, HardDrive, User, AppWindow, Headset } from 'lucide-react';
+import { Button } from '../atoms/Button';
 
 interface ServiceCatalogProps {
   categories: ServiceCategory[];
-  onSelectCategory: (categoryId: string) => void;
 }
 
 // Mapa de nombres de iconos a iconos reales de Lucide React
@@ -18,16 +19,25 @@ const iconMap: Record<string, React.ReactNode> = {
   'monitor': <Monitor size={24} />,
 };
 
-export const ServiceCatalog: React.FC<ServiceCatalogProps> = ({
-  categories,
-  onSelectCategory,
-}) => {
+export const ServiceCatalog: React.FC<ServiceCatalogProps> = ({ categories }) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCategories = categories.filter(category => 
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     category.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleServiceSelect = (category: ServiceCategory) => {
+    // Redirigir directamente a la creación de ticket
+    navigate('/tickets/new', { 
+      state: { 
+        category: category.id,
+        title: `Soporte Remoto - ${category.name}`,
+        description: 'Solicitud de asistencia técnica remota'
+      }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -48,7 +58,6 @@ export const ServiceCatalog: React.FC<ServiceCatalogProps> = ({
               key={category.id} 
               hoverEffect
               className="cursor-pointer transition-all duration-200"
-              onClick={() => onSelectCategory(category.id)}
             >
               <CardHeader className="pb-2">
                 <div className="mb-2 h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -58,6 +67,12 @@ export const ServiceCatalog: React.FC<ServiceCatalogProps> = ({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{category.description}</p>
+                <Button 
+                  onClick={() => handleServiceSelect(category)}
+                  className="w-full mt-4"
+                >
+                  Solicitar Soporte
+                </Button>
               </CardContent>
             </Card>
           ))

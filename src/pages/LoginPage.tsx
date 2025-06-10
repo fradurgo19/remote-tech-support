@@ -7,8 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import { Select } from '../atoms/Select';
 
 const DEMO_USERS = [
-  { email: 'sara@soportetecnico.com', name: 'Sara Admin (Administradora)' },
-  { email: 'juan@soportetecnico.com', name: 'Juan Técnico' },
+  { email: 'analista.mantenimiento@partequipos.com', name: 'Soporte al Producto (Administrador)' },
+  { email: 'auxiliar.garantiasbg@partequipos.com', name: 'Juan Técnico' },
   { email: 'miguel@empresa.com', name: 'Miguel Usuario (Cliente)' },
 ];
 

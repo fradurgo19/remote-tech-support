@@ -10,6 +10,8 @@ class SocketService {
   private isServerAvailable: boolean = true;
   private connectionAttempts: number = 0;
   private maxConnectionAttempts: number = 3;
+  private messageQueue: Message[] = [];
+  private isReconnecting: boolean = false;
 
   connect(user: User): void {
     this.user = user;
@@ -24,12 +26,25 @@ class SocketService {
       },
       timeout: 5000, // 5 second timeout
       forceNew: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
     this.socket.on('connect', () => {
       console.log('Socket connected:', this.socket?.id);
       this.isServerAvailable = true;
       this.connectionAttempts = 0;
+      this.isReconnecting = false;
+      
+      // Resend any queued messages
+      if (this.messageQueue.length > 0) {
+        console.log('Resending queued messages:', this.messageQueue.length);
+        this.messageQueue.forEach(message => {
+          this.sendMessage(message);
+        });
+        this.messageQueue = [];
+      }
     });
 
     this.socket.on('connect_error', (error) => {
@@ -39,8 +54,7 @@ class SocketService {
       if (this.connectionAttempts >= this.maxConnectionAttempts) {
         console.warn('Socket server appears to be unavailable. Running in offline mode.');
         this.isServerAvailable = false;
-        // Disconnect to prevent further connection attempts
-        this.socket?.disconnect();
+        this.isReconnecting = true;
       }
     });
 
@@ -49,7 +63,31 @@ class SocketService {
       if (reason === 'io server disconnect') {
         // Server initiated disconnect, don't reconnect automatically
         this.isServerAvailable = false;
+      } else {
+        // Client initiated disconnect or network issues, will try to reconnect
+        this.isReconnecting = true;
       }
+    });
+
+    this.socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('Attempting to reconnect:', attemptNumber);
+      this.isReconnecting = true;
+    });
+
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log('Reconnected after', attemptNumber, 'attempts');
+      this.isReconnecting = false;
+      this.isServerAvailable = true;
+    });
+
+    this.socket.on('reconnect_error', (error) => {
+      console.error('Reconnection error:', error);
+    });
+
+    this.socket.on('reconnect_failed', () => {
+      console.error('Failed to reconnect');
+      this.isServerAvailable = false;
+      this.isReconnecting = false;
     });
   }
 
@@ -57,25 +95,19 @@ class SocketService {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
-      this.user = null;
+      this.isServerAvailable = false;
     }
-    this.isServerAvailable = true;
-    this.connectionAttempts = 0;
   }
 
   joinTicketRoom(ticketId: string): void {
     if (this.socket && this.isServerAvailable) {
-      this.socket.emit('join-ticket', { ticketId });
-    } else {
-      console.log('Mock: Joined ticket room', ticketId);
+      this.socket.emit('join-ticket', ticketId);
     }
   }
 
   leaveTicketRoom(ticketId: string): void {
     if (this.socket && this.isServerAvailable) {
-      this.socket.emit('leave-ticket', { ticketId });
-    } else {
-      console.log('Mock: Left ticket room', ticketId);
+      this.socket.emit('leave-ticket', ticketId);
     }
   }
 
@@ -83,8 +115,9 @@ class SocketService {
     if (this.socket && this.isServerAvailable) {
       this.socket.emit('send-message', message);
     } else {
-      console.log('Mock: Message sent', message);
-      // In offline mode, you could store messages locally or show a warning
+      console.log('Message queued for later delivery:', message);
+      // Queue the message for later delivery
+      this.messageQueue.push(message as Message);
     }
   }
 
@@ -166,6 +199,19 @@ class SocketService {
 
   isServerAvailableStatus(): boolean {
     return this.isServerAvailable;
+  }
+
+  public onConnectionChange(
+    onConnect: () => void,
+    onDisconnect: () => void
+  ): () => void {
+    this.socket?.on('connect', onConnect);
+    this.socket?.on('disconnect', onDisconnect);
+
+    return () => {
+      this.socket?.off('connect', onConnect);
+      this.socket?.off('disconnect', onDisconnect);
+    };
   }
 }
 
