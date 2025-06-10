@@ -5,7 +5,7 @@ import { logger } from '../utils/logger';
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.findAll({
-      attributes: ['id', 'name', 'email', 'role', 'status', 'createdAt']
+      attributes: ['id', 'name', 'email', 'role', 'status', 'avatar', 'createdAt']
     });
     res.json(users);
   } catch (error) {
@@ -18,7 +18,7 @@ export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const user = await User.findByPk(id, {
-      attributes: ['id', 'name', 'email', 'role', 'status', 'createdAt']
+      attributes: ['id', 'name', 'email', 'role', 'status', 'avatar', 'createdAt']
     });
 
     if (!user) {
@@ -35,7 +35,7 @@ export const getUserById = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, email, role, status } = req.body;
+    const { name, email, role, status, avatar } = req.body;
 
     const user = await User.findByPk(id);
     if (!user) {
@@ -46,7 +46,8 @@ export const updateUser = async (req: Request, res: Response) => {
       name: name || user.name,
       email: email || user.email,
       role: role || user.role,
-      status: status || user.status
+      status: status || user.status,
+      avatar: avatar || user.avatar
     });
 
     res.json({
@@ -56,7 +57,8 @@ export const updateUser = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        status: user.status
+        status: user.status,
+        avatar: user.avatar
       }
     });
   } catch (error) {

@@ -10,24 +10,30 @@ const users: User[] = [
     name: 'Juan Técnico',
     email: 'auxiliar.garantiasbg@partequipos.com',
     role: 'technician',
-    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+    avatar: 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Soporte_hcfjxa.png',
     status: 'online',
+    emailVerified: true,
+    passwordResetToken: null
   },
   {
     id: '2',
     name: 'Soporte al Producto',
     email: 'analista.mantenimiento@partequipos.com',
     role: 'admin',
-    avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
+    avatar: 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Admin_sublte.png',
     status: 'away',
+    emailVerified: true,
+    passwordResetToken: null
   },
   {
     id: '3',
     name: 'Miguel Usuario',
     email: 'miguel@empresa.com',
     role: 'customer',
-    avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
+    avatar: 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590235/Cliente_kgzuwh.jpg',
     status: 'offline',
+    emailVerified: true,
+    passwordResetToken: null
   },
 ];
 
@@ -99,18 +105,11 @@ const STORAGE_KEYS = {
 
 // Función para inicializar datos en localStorage si no existen
 const initializeStorage = () => {
-  if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.TICKETS)) {
-    localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(tickets));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.MESSAGES)) {
-    localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(messages));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.CATEGORIES)) {
-    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(serviceCategories));
-  }
+  // Forzar la actualización de los datos
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(tickets));
+  localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(messages));
+  localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(serviceCategories));
 };
 
 // Inicializar almacenamiento
@@ -161,6 +160,44 @@ export const authService = {
     }
     return null;
   },
+  forgotPassword: async (email: string): Promise<{ message: string; token: string }> => {
+    await delay(500);
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
+    const user = users.find(u => u.email === email);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+    const token = Math.random().toString(36).substring(2, 15);
+    return { message: 'Se ha enviado un correo de recuperación (simulado)', token };
+  },
+  resetPassword: async (token: string, newPassword: string): Promise<{ message: string }> => {
+    await delay(500);
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
+    const user = users.find(u => u.passwordResetToken === token);
+    if (!user) {
+      throw new Error('Token inválido');
+    }
+    return { message: 'Contraseña actualizada correctamente' };
+  },
+  sendVerificationEmail: async (email: string): Promise<{ message: string; token: string }> => {
+    await delay(500);
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
+    const user = users.find(u => u.email === email);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+    const token = Math.random().toString(36).substring(2, 15);
+    return { message: 'Se ha enviado un correo de verificación (simulado)', token };
+  },
+  verifyEmail: async (token: string): Promise<{ message: string }> => {
+    await delay(500);
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
+    const user = users.find(u => u.passwordResetToken === token);
+    if (!user) {
+      throw new Error('Token inválido');
+    }
+    return { message: 'Email verificado correctamente' };
+  }
 };
 
 export const userService = {
@@ -179,10 +216,14 @@ export const userService = {
     await delay(800);
     const users = getFromStorage<User>(STORAGE_KEYS.USERS);
     const newUser: User = {
-      ...userData,
       id: String(users.length + 1),
+      ...userData,
       status: 'offline',
-      avatar: `https://randomuser.me/api/portraits/${userData.role === 'admin' ? 'women' : 'men'}/${users.length + 1}.jpg`
+      avatar: userData.role === 'admin' 
+        ? 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Admin_sublte.png'
+        : userData.role === 'technician'
+        ? 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Soporte_hcfjxa.png'
+        : 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590235/Cliente_kgzuwh.jpg'
     };
     users.push(newUser);
     saveToStorage(STORAGE_KEYS.USERS, users);
