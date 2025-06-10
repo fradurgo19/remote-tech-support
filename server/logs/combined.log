@@ -1,0 +1,114 @@
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T18:06:21.672Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T18:06:21.719Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T18:06:21.724Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T18:10:04.268Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T18:10:04.312Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T18:10:04.315Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T18:17:08.355Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T18:17:08.409Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T18:17:08.414Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T18:19:55.686Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T18:19:55.720Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T18:19:55.724Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T18:25:59.977Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T18:26:00.015Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T18:26:00.018Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T19:44:43.353Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T19:44:43.398Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T19:44:43.402Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T19:45:46.247Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T19:45:46.290Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T19:45:46.293Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T19:46:50.984Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T19:46:51.023Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T19:46:51.027Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T19:47:51.270Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T19:47:51.310Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T19:47:51.313Z"}
+{"level":"info","message":"Intento de login para email: admin@example.com","timestamp":"2025-06-10T19:49:16.231Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T19:49:16.296Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Admin","timestamp":"2025-06-10T19:49:16.297Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T19:49:16.525Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Admin","timestamp":"2025-06-10T19:49:16.526Z"}
+{"level":"info","message":"Intento de login para email: admin@example.com","timestamp":"2025-06-10T19:49:18.563Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T19:49:18.565Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Admin","timestamp":"2025-06-10T19:49:18.565Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T19:49:18.708Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Admin","timestamp":"2025-06-10T19:49:18.709Z"}
+{"level":"info","message":"Intento de login para email: admin@example.com","timestamp":"2025-06-10T19:49:20.387Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T19:49:20.389Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Admin","timestamp":"2025-06-10T19:49:20.390Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T19:49:20.537Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Admin","timestamp":"2025-06-10T19:49:20.538Z"}
+{"level":"info","message":"Intento de login para email: admin@example.com","timestamp":"2025-06-10T19:49:21.728Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T19:49:21.731Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Admin","timestamp":"2025-06-10T19:49:21.731Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T19:49:21.832Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Admin","timestamp":"2025-06-10T19:49:21.832Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T19:55:46.240Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T19:55:46.273Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T19:55:46.277Z"}
+{"level":"info","message":"Intento de login para email: admin@example.com","timestamp":"2025-06-10T19:56:10.444Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T19:56:10.506Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Admin","timestamp":"2025-06-10T19:56:10.507Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-06-10T19:56:10.741Z"}
+{"level":"info","message":"Login exitoso para usuario: Admin","timestamp":"2025-06-10T19:56:10.761Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:01:38.823Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:01:38.878Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:01:38.878Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T20:01:39.007Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Frank Duran","timestamp":"2025-06-10T20:01:39.008Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:01:47.608Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:01:47.611Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:01:47.612Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T20:01:47.809Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Frank Duran","timestamp":"2025-06-10T20:01:47.810Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T20:02:09.453Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T20:02:09.486Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T20:02:09.489Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:02:12.713Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:02:12.720Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:02:12.721Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T20:02:12.938Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Frank Duran","timestamp":"2025-06-10T20:02:12.939Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:02:14.537Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:02:14.541Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:02:14.542Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T20:02:14.776Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Frank Duran","timestamp":"2025-06-10T20:02:14.778Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:02:15.985Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:02:15.987Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:02:15.988Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T20:02:16.153Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Frank Duran","timestamp":"2025-06-10T20:02:16.154Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:02:17.411Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:02:17.415Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:02:17.416Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T20:02:17.610Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Frank Duran","timestamp":"2025-06-10T20:02:17.611Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T20:06:13.915Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T20:06:13.951Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T20:06:13.955Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:06:44.937Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:06:45.045Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:06:45.045Z"}
+{"level":"info","message":"Contraseña válida: No","timestamp":"2025-06-10T20:06:45.299Z"}
+{"level":"warn","message":"Contraseña inválida para usuario: Frank Duran","timestamp":"2025-06-10T20:06:45.301Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-06-10T20:08:31.921Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-06-10T20:08:31.955Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-06-10T20:08:31.957Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:08:36.302Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:08:36.313Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:08:36.314Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-06-10T20:08:36.540Z"}
+{"level":"info","message":"Login exitoso para usuario: Frank Duran","timestamp":"2025-06-10T20:08:36.549Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:09:29.441Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:09:29.498Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:09:29.499Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-06-10T20:09:29.631Z"}
+{"level":"info","message":"Login exitoso para usuario: Frank Duran","timestamp":"2025-06-10T20:09:29.636Z"}
+{"level":"info","message":"Intento de login para email: analista.mantenimiento@partequipos.com","timestamp":"2025-06-10T20:09:31.079Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-06-10T20:09:31.081Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Frank Duran","timestamp":"2025-06-10T20:09:31.081Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-06-10T20:09:31.177Z"}
+{"level":"info","message":"Login exitoso para usuario: Frank Duran","timestamp":"2025-06-10T20:09:31.182Z"}
