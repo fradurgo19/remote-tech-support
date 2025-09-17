@@ -1,5 +1,12 @@
 # Remote Tech Support System
 
+[![CI/CD](https://github.com/fradurgo19/remote-tech-support/actions/workflows/ci.yml/badge.svg)](https://github.com/fradurgo19/remote-tech-support/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-43853D?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+
 Sistema de soporte técnico remoto con capacidades de videollamadas, chat en tiempo real y gestión de tickets.
 
 ## 🚀 Características
