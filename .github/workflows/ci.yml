@@ -1,0 +1,99 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linter
+      run: npm run lint
+    
+    - name: Run tests
+      run: npm run test
+    
+    - name: Build
+      run: npm run build
+
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: server/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd server
+        npm ci
+    
+    - name: Run linter
+      run: |
+        cd server
+        npm run lint
+    
+    - name: Run tests
+      run: |
+        cd server
+        npm test
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_NAME: test_db
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        JWT_SECRET: test_secret
+    
+    - name: Build
+      run: |
+        cd server
+        npm run build
+
+  deploy:
+    needs: [test-frontend, test-backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production..."
+        # Add your deployment commands here

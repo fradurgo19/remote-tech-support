@@ -15,8 +15,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   sender,
   isOwn
 }) => {
-  const { content, timestamp, type, attachment } = message;
-  const formattedTime = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const { content, createdAt, type, metadata } = message;
+  const attachment = metadata?.attachment;
+  const formattedTime = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   if (type === 'system') {
     return (
@@ -61,14 +62,21 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
               <FileText size={18} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{attachment.name}</p>
-                <p className="text-xs opacity-70">{Math.round(attachment.size / 1024)} KB</p>
+                <p className="text-xs opacity-70">
+                  {attachment.size > 1024 * 1024 
+                    ? `${(attachment.size / 1024 / 1024).toFixed(2)} MB`
+                    : `${Math.round(attachment.size / 1024)} KB`
+                  }
+                </p>
               </div>
-              <button 
-                className="ml-2 p-1 rounded-full hover:bg-background/20"
+              <a
+                href={`http://localhost:3000${attachment.url}`}
+                download={attachment.name}
+                className="ml-2 p-1 rounded-full hover:bg-background/20 transition-colors"
                 aria-label="Descargar archivo"
               >
                 <Download size={16} />
-              </button>
+              </a>
             </div>
           )}
         </div>

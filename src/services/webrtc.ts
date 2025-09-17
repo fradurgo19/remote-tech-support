@@ -234,9 +234,48 @@ class WebRTCService {
   }
 
   async toggleVideo(enabled: boolean): Promise<void> {
-    if (this.localStream) {
-      this.localStream.getVideoTracks().forEach((track) => {
-        track.enabled = enabled;
+    if (!this.localStream) {
+      // Si no hay stream local, crear uno nuevo
+      if (enabled) {
+        this.localStream = await this.getLocalStream(true, true, this.currentVideoDeviceId || undefined, this.currentAudioDeviceId || undefined);
+        // Actualizar todos los peers con el nuevo stream
+        this.peers.forEach((peer) => {
+          peer.addStream(this.localStream!);
+        });
+      }
+      return;
+    }
+
+    const videoTracks = this.localStream.getVideoTracks();
+    
+    if (enabled) {
+      // Si queremos habilitar video pero no hay tracks de video o están detenidos
+      if (videoTracks.length === 0 || videoTracks.every(track => track.readyState === 'ended')) {
+        // Recrear el stream con video
+        const newStream = await this.getLocalStream(true, true, this.currentVideoDeviceId || undefined, this.currentAudioDeviceId || undefined);
+        
+        // Reemplazar el stream local
+        this.localStream.getTracks().forEach(track => track.stop());
+        this.localStream = newStream;
+        
+        // Actualizar todos los peers con el nuevo stream
+        this.peers.forEach((peer) => {
+          const videoTrack = newStream.getVideoTracks()[0];
+          const sender = peer.getSenders().find(s => s.track?.kind === 'video');
+          if (sender && videoTrack) {
+            sender.replaceTrack(videoTrack);
+          }
+        });
+      } else {
+        // Simplemente habilitar los tracks existentes
+        videoTracks.forEach((track) => {
+          track.enabled = true;
+        });
+      }
+    } else {
+      // Deshabilitar video
+      videoTracks.forEach((track) => {
+        track.enabled = false;
       });
     }
   }

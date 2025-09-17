@@ -1,0 +1,2 @@
+Este es un archivo de prueba para adjuntar a un reporte.
+Contenido de prueba para verificar la funcionalidad de adjuntos.

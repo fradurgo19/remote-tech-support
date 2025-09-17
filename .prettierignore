@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+server/dist/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+
+# Database
+*.sqlite
+*.db
+
+# Uploads
+uploads/
+server/uploads/
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Coverage
+coverage/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Generated files
+*.tsbuildinfo

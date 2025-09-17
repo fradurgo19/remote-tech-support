@@ -1,4 +1,4 @@
-import { User, Ticket, Message, CallSession, ServiceCategory } from '../types';
+import { User, Ticket, Message, CallSession, ServiceCategory, CreateUserData } from '../types';
 
 // Servicio de API simulado - En una aplicación real, esto haría llamadas API reales
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -129,36 +129,52 @@ const saveToStorage = <T>(key: string, data: T[]): void => {
 // Servicios de API actualizados
 export const authService = {
   login: async (email: string, password: string): Promise<User> => {
-    await delay(800);
-    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
-    const user = users.find(u => u.email === email);
-    if (user) {
-      // En el entorno de demostración, verificamos la contraseña
-      const passwords: Record<string, string> = {
-        'auxiliar.garantiasbg@partequipos.com': 'Garantias2024*',
-        'analista.mantenimiento@partequipos.com': 'Mantenimiento2024*',
-        'miguel@empresa.com': 'Cliente2024*'
-      };
-      
-      if (passwords[email] === password) {
-        return user;
-      }
-    }
-    throw new Error('Credenciales inválidas');
+    const data = await apiCall('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    
+    // Guardar el token en localStorage
+    localStorage.setItem('authToken', data.token);
+    localStorage.setItem('currentUserEmail', data.user.email);
+    
+    return data.user;
   },
   logout: async (): Promise<void> => {
-    await delay(500);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUserEmail');
     return;
   },
   getCurrentUser: async (): Promise<User | null> => {
-    await delay(300);
-    const storedEmail = localStorage.getItem('currentUserEmail');
-    if (storedEmail) {
-      const users = getFromStorage<User>(STORAGE_KEYS.USERS);
-      const user = users.find(u => u.email === storedEmail);
-      if (user) return user;
+    const token = getAuthToken();
+    if (!token) {
+      return null;
     }
+
+    try {
+      // Verificar si el token es válido haciendo una llamada al backend
+      const response = await fetch('http://localhost:3000/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.user;
+      } else {
+        // Token inválido, limpiar localStorage
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('currentUserEmail');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      // En caso de error, limpiar localStorage
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUserEmail');
     return null;
+    }
   },
   forgotPassword: async (email: string): Promise<{ message: string; token: string }> => {
     await delay(500);
@@ -197,114 +213,166 @@ export const authService = {
       throw new Error('Token inválido');
     }
     return { message: 'Email verificado correctamente' };
+  },
+  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+    await apiCall('/api/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
   }
 };
 
 export const userService = {
   getUsers: async (): Promise<User[]> => {
-    await delay(800);
-    return getFromStorage<User>(STORAGE_KEYS.USERS);
+    const response = await apiCall('/api/users', {
+      method: 'GET',
+    });
+    return response;
+  },
+  getUsersPublic: async (): Promise<User[]> => {
+    const response = await fetch('http://localhost:3000/api/users/public');
+    if (!response.ok) {
+      throw new Error('Error al cargar usuarios');
+    }
+    return response.json();
   },
   getUserById: async (id: string): Promise<User> => {
-    await delay(300);
-    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
-    const user = users.find(u => u.id === id);
-    if (!user) throw new Error('Usuario no encontrado');
-    return user;
+    const response = await apiCall(`/api/users/${id}`, {
+      method: 'GET',
+    });
+    return response;
   },
-  createUser: async (userData: Omit<User, 'id' | 'status' | 'avatar'>): Promise<User> => {
-    await delay(800);
-    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
-    const newUser: User = {
-      id: String(users.length + 1),
-      ...userData,
-      status: 'offline',
-      avatar: userData.role === 'admin' 
-        ? 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Admin_sublte.png'
-        : userData.role === 'technician'
-        ? 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Soporte_hcfjxa.png'
-        : 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590235/Cliente_kgzuwh.jpg'
-    };
-    users.push(newUser);
-    saveToStorage(STORAGE_KEYS.USERS, users);
-    return newUser;
+  createUser: async (userData: CreateUserData): Promise<User> => {
+    const response = await apiCall('/api/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+    return response.user;
+  },
+  updateUser: async (id: string, userData: CreateUserData): Promise<User> => {
+    const response = await apiCall(`/api/users/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+    return response.user;
   },
   updateUserStatus: async (id: string, status: User['status']): Promise<User> => {
-    await delay(300);
-    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
-    const userIndex = users.findIndex(u => u.id === id);
-    if (userIndex === -1) throw new Error('Usuario no encontrado');
-    users[userIndex].status = status;
-    saveToStorage(STORAGE_KEYS.USERS, users);
-    return users[userIndex];
+    const response = await apiCall(`/api/users/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status }),
+    });
+    return response.user;
+  },
+  deleteUser: async (id: string): Promise<void> => {
+    await apiCall(`/api/users/${id}`, {
+      method: 'DELETE',
+    });
   }
+};
+
+// Función helper para obtener el token de autenticación
+const getAuthToken = (): string | null => {
+  return localStorage.getItem('authToken');
+};
+
+// Función helper para hacer llamadas HTTP
+const apiCall = async (url: string, options: RequestInit = {}): Promise<any> => {
+  const token = getAuthToken();
+  const response = await fetch(`http://localhost:3000${url}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Error en la API');
+  }
+
+  return response.json();
 };
 
 export const ticketService = {
   getTickets: async (): Promise<Ticket[]> => {
-    await delay(800);
-    return getFromStorage<Ticket>(STORAGE_KEYS.TICKETS);
+    const data = await apiCall('/api/tickets');
+    return data;
   },
   getTicketById: async (id: string): Promise<Ticket> => {
-    await delay(300);
-    const tickets = getFromStorage<Ticket>(STORAGE_KEYS.TICKETS);
-    const ticket = tickets.find(t => t.id === id);
-    if (!ticket) throw new Error('Ticket no encontrado');
-    return ticket;
+    const data = await apiCall(`/api/tickets/${id}`);
+    return data;
   },
   createTicket: async (ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>): Promise<Ticket> => {
-    await delay(800);
-    const tickets = getFromStorage<Ticket>(STORAGE_KEYS.TICKETS);
-    const newTicket: Ticket = {
-      ...ticketData,
-      id: String(tickets.length + 1),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    tickets.push(newTicket);
-    saveToStorage(STORAGE_KEYS.TICKETS, tickets);
-    return newTicket;
+    const data = await apiCall('/api/tickets', {
+      method: 'POST',
+      body: JSON.stringify(ticketData),
+    });
+    return data.ticket;
   },
   updateTicket: async (id: string, updates: Partial<Ticket>): Promise<Ticket> => {
-    await delay(300);
-    const tickets = getFromStorage<Ticket>(STORAGE_KEYS.TICKETS);
-    const ticketIndex = tickets.findIndex(t => t.id === id);
-    if (ticketIndex === -1) throw new Error('Ticket no encontrado');
-    
-    tickets[ticketIndex] = {
-      ...tickets[ticketIndex],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    
-    saveToStorage(STORAGE_KEYS.TICKETS, tickets);
-    return tickets[ticketIndex];
+    const data = await apiCall(`/api/tickets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+    return data.ticket;
   }
 };
 
 export const messageService = {
   getMessagesByTicket: async (ticketId: string): Promise<Message[]> => {
-    await delay(300);
-    const messages = getFromStorage<Message>(STORAGE_KEYS.MESSAGES);
-    return messages.filter(m => m.ticketId === ticketId);
+    const response = await apiCall(`/api/messages/${ticketId}`, {
+      method: 'GET',
+    });
+    return response;
   },
   sendMessage: async (messageData: Omit<Message, 'id' | 'timestamp'>): Promise<Message> => {
-    await delay(300);
-    const messages = getFromStorage<Message>(STORAGE_KEYS.MESSAGES);
-    const newMessage: Message = {
-      ...messageData,
-      id: String(messages.length + 1),
-      timestamp: new Date().toISOString(),
-    };
-    messages.push(newMessage);
-    saveToStorage(STORAGE_KEYS.MESSAGES, messages);
-    return newMessage;
+    const response = await apiCall('/api/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(messageData),
+    });
+    return response.data;
+  },
+  sendFileMessage: async (ticketId: string, file: File): Promise<Message> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('ticketId', ticketId);
+    formData.append('type', 'file');
+
+    const token = getAuthToken();
+    const response = await fetch('http://localhost:3000/api/messages/file', {
+      method: 'POST',
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al enviar archivo');
+    }
+
+    const data = await response.json();
+    return data.data;
   }
 };
 
 export const categoryService = {
   getCategories: async (): Promise<ServiceCategory[]> => {
-    await delay(300);
-    return getFromStorage<ServiceCategory>(STORAGE_KEYS.CATEGORIES);
+    const data = await apiCall('/api/categories');
+    return data;
   }
 };

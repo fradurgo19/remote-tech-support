@@ -1,12 +1,40 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../config/database';
+import { User } from './User';
+import { Ticket } from './Ticket';
 
-class Report extends Model {
+export interface ReportAttributes {
+  id?: string;
+  title: string;
+  description: string;
+  type: 'technical' | 'incident' | 'maintenance' | 'performance' | 'security';
+  status: 'draft' | 'pending' | 'approved' | 'rejected';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  ticketId?: string;
+  authorId: string;
+  reviewedById?: string;
+  reviewedAt?: Date;
+  tags?: string[];
+  attachments?: string[];
+  metadata?: any;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class Report extends Model<ReportAttributes> implements ReportAttributes {
   public id!: string;
   public title!: string;
   public description!: string;
+  public type!: 'technical' | 'incident' | 'maintenance' | 'performance' | 'security';
+  public status!: 'draft' | 'pending' | 'approved' | 'rejected';
+  public priority!: 'low' | 'medium' | 'high' | 'urgent';
+  public ticketId!: string;
+  public authorId!: string;
+  public reviewedById!: string;
+  public reviewedAt!: Date;
+  public tags!: string[];
   public attachments!: string[];
-  public userId!: string;
+  public metadata!: any;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -26,20 +54,70 @@ Report.init(
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    attachments: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
+    type: {
+      type: DataTypes.ENUM('technical', 'incident', 'maintenance', 'performance', 'security'),
+      allowNull: false,
+      defaultValue: 'technical',
     },
-    userId: {
+    status: {
+      type: DataTypes.ENUM('draft', 'pending', 'approved', 'rejected'),
+      allowNull: false,
+      defaultValue: 'draft',
+    },
+    priority: {
+      type: DataTypes.ENUM('low', 'medium', 'high', 'urgent'),
+      allowNull: false,
+      defaultValue: 'medium',
+    },
+    ticketId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: Ticket,
+        key: 'id',
+      },
+    },
+    authorId: {
       type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: User,
+        key: 'id',
+      },
+    },
+    reviewedById: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: User,
+        key: 'id',
+      },
+    },
+    reviewedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: [],
+    },
+    attachments: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: [],
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      allowNull: true,
     },
   },
   {
     sequelize,
     modelName: 'Report',
-    tableName: 'reports',
   }
 );
+
+// Associations are defined in models/index.ts
 
 export default Report; 

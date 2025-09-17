@@ -1,25 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Headset, Mail, Lock, AlertCircle, ChevronDown } from 'lucide-react';
+import { Headset, Mail, Lock, AlertCircle, User } from 'lucide-react';
 import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
 import { useAuth } from '../context/AuthContext';
 import { Select } from '../atoms/Select';
+import { userService } from '../services/api';
+import { useQuery } from '@tanstack/react-query';
 
-const DEMO_USERS = [
-  { email: 'analista.mantenimiento@partequipos.com', name: 'Soporte al Producto (Administrador)' },
-  { email: 'auxiliar.garantiasbg@partequipos.com', name: 'Juan Técnico' },
-  { email: 'miguel@empresa.com', name: 'Miguel Usuario (Cliente)' },
-];
 
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState(DEMO_USERS[0].email);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loginMode, setLoginMode] = useState<'select' | 'manual'>('select');
   
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Cargar usuarios desde la API (ruta pública)
+  const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
+    queryKey: ['users-public'],
+    queryFn: userService.getUsersPublic,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    retry: false, // No reintentar si falla
+  });
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +44,18 @@ export const LoginPage: React.FC = () => {
   };
 
   const handleUserChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setEmail(e.target.value);
-    setPassword(''); // Limpiar la contraseña al cambiar de usuario
+    const selectedUser = users.find(user => user.email === e.target.value);
+    if (selectedUser) {
+      setEmail(selectedUser.email);
+      setPassword(''); // Limpiar contraseña para que el usuario la ingrese
+    }
+  };
+
+  const handleModeChange = (mode: 'select' | 'manual') => {
+    setLoginMode(mode);
+    setEmail('');
+    setPassword('');
+    setError(null);
   };
   
   return (
@@ -61,25 +77,84 @@ export const LoginPage: React.FC = () => {
             <span>{error}</span>
           </div>
         )}
+
+        {usersError && (
+          <div className="p-3 rounded-md bg-yellow-500/10 text-yellow-600 flex items-center gap-2 text-sm">
+            <AlertCircle size={16} />
+            <span>No se pudieron cargar los usuarios. Usa el modo "Ingresar Email" para continuar.</span>
+          </div>
+        )}
         
         <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Botones de modo de login */}
+          <div className="flex rounded-lg bg-muted p-1">
+            <button
+              type="button"
+              onClick={() => handleModeChange('select')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                loginMode === 'select'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <User size={16} className="inline mr-2" />
+              Seleccionar Usuario
+            </button>
+            <button
+              type="button"
+              onClick={() => handleModeChange('manual')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                loginMode === 'manual'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Mail size={16} className="inline mr-2" />
+              Ingresar Email
+            </button>
+          </div>
+
           <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-foreground">
-                Seleccionar Usuario
-              </label>
-              <Select
-                value={email}
-                onChange={handleUserChange}
-                leftIcon={<Mail size={18} />}
-              >
-                {DEMO_USERS.map(user => (
-                  <option key={user.email} value={user.email}>
-                    {user.name}
+            {loginMode === 'select' ? (
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-foreground">
+                  Seleccionar Usuario
+                </label>
+                <Select
+                  value={email}
+                  onChange={handleUserChange}
+                  leftIcon={<User size={18} />}
+                  disabled={usersLoading || !!usersError}
+                >
+                  <option value="">
+                    {usersLoading 
+                      ? "Cargando usuarios..." 
+                      : usersError 
+                        ? "Error al cargar usuarios" 
+                        : users.length === 0
+                          ? "No hay usuarios disponibles"
+                          : "Selecciona un usuario..."
+                    }
                   </option>
-                ))}
-              </Select>
-            </div>
+                  {users.map(user => (
+                    <option key={user.id} value={user.email}>
+                      {user.name} ({user.role})
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            ) : (
+              <Input
+                id="email"
+                type="email"
+                label="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                leftIcon={<Mail size={18} />}
+                required
+              />
+            )}
             
             <Input
               id="password"
@@ -105,10 +180,20 @@ export const LoginPage: React.FC = () => {
         </form>
         
         <div className="text-center text-xs text-muted-foreground">
-          <p>Para propósitos de demostración, usa:</p>
-          <p className="mt-1">Email: john@techsupport.com</p>
-          <p>Contraseña: password</p>
+          <p>
+            {loginMode === 'select' 
+              ? 'Selecciona un usuario de la lista o cambia a modo manual'
+              : 'Ingresa tu email y contraseña para iniciar sesión'
+            }
+          </p>
         </div>
+        
+        <button
+          onClick={() => navigate('/forgot-password')}
+          className="w-full mt-4 text-blue-500 hover:underline"
+        >
+          ¿Olvidaste tu contraseña?
+        </button>
       </div>
     </div>
   );

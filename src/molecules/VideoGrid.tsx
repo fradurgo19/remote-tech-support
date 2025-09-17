@@ -37,8 +37,30 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
     };
   }, [stream, isLocal]);
 
+  // Force video element update when stream tracks change
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      const videoTracks = stream.getVideoTracks();
+      if (videoTracks.length > 0) {
+        // Force a small delay to ensure track is ready
+        const timer = setTimeout(() => {
+          if (videoRef.current && videoRef.current.srcObject !== stream) {
+            videoRef.current.srcObject = stream;
+            if (isLocal) {
+              videoRef.current.play().catch(console.error);
+            }
+          }
+        }, 100);
+        
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [stream?.getVideoTracks(), isLocal]);
+
   // Check if video track is active
-  const hasActiveVideo = stream?.getVideoTracks().some(track => track.enabled && track.readyState === 'live');
+  const hasActiveVideo = stream?.getVideoTracks().some(track => 
+    track.enabled && (track.readyState === 'live' || track.readyState === 'starting')
+  );
   
   return (
     <div className="relative overflow-hidden rounded-lg bg-gray-900 w-full h-full">

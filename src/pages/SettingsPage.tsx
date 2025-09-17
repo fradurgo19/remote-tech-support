@@ -4,6 +4,7 @@ import { Input } from '../atoms/Input';
 import { Button } from '../atoms/Button';
 import { Badge } from '../atoms/Badge';
 import { useAuth } from '../context/AuthContext';
+import { authService } from '../services/api';
 import { Switch } from '../atoms/Switch';
 import { 
   Bell, 
@@ -32,6 +33,7 @@ export const SettingsPage: React.FC = () => {
     new: '',
     confirm: ''
   });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -60,16 +62,38 @@ export const SettingsPage: React.FC = () => {
   // Manejar cambio de contraseña
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!password.current || !password.new || !password.confirm) {
+      toast.error('Todos los campos son requeridos');
+      return;
+    }
+    
     if (password.new !== password.confirm) {
       toast.error('Las contraseñas no coinciden');
       return;
     }
+    
+    if (password.new.length < 6) {
+      toast.error('La nueva contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+    
+    if (password.current === password.new) {
+      toast.error('La nueva contraseña debe ser diferente a la actual');
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    
     try {
-      // Aquí iría la llamada a la API para cambiar la contraseña
+      await authService.changePassword(password.current, password.new);
       toast.success('Contraseña actualizada correctamente');
       setPassword({ current: '', new: '', confirm: '' });
-    } catch (error) {
-      toast.error('Error al cambiar la contraseña');
+    } catch (error: any) {
+      console.error('Error al cambiar contraseña:', error);
+      toast.error(error.message || 'Error al cambiar la contraseña');
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -295,8 +319,8 @@ export const SettingsPage: React.FC = () => {
                 required
               />
               
-              <Button type="submit">
-                Cambiar Contraseña
+              <Button type="submit" isLoading={isChangingPassword}>
+                {isChangingPassword ? 'Cambiando...' : 'Cambiar Contraseña'}
               </Button>
             </form>
           </CardContent>

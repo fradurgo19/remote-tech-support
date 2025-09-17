@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FileText, Mail, Download, Plus } from 'lucide-react';
+import { FileText, Mail, Download, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { reportService } from '../services/reportService';
 
@@ -14,6 +14,7 @@ interface Report {
 
 const ReportsPage: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ reportId: string; reportTitle: string } | null>(null);
   const [newReport, setNewReport] = useState({
     title: '',
     description: '',
@@ -28,16 +29,10 @@ const ReportsPage: React.FC = () => {
 
   const createReportMutation = useMutation({
     mutationFn: async () => {
-      const formData = new FormData();
-      formData.append('title', newReport.title);
-      formData.append('description', newReport.description);
-      newReport.attachments.forEach((file) => {
-        formData.append('attachments', file);
-      });
       return reportService.createReport({
         title: newReport.title,
         description: newReport.description,
-        attachments: newReport.attachments.map(file => file.name),
+        attachments: newReport.attachments,
       });
     },
     onSuccess: () => {
@@ -50,8 +45,24 @@ const ReportsPage: React.FC = () => {
         attachments: [],
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error al crear el informe:', error);
       toast.error('Error al crear el informe');
+    },
+  });
+
+  const deleteReportMutation = useMutation({
+    mutationFn: async (reportId: string) => {
+      return reportService.deleteReport(reportId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+      toast.success('Informe eliminado exitosamente');
+      setDeleteConfirm(null);
+    },
+    onError: (error) => {
+      console.error('Error al eliminar el informe:', error);
+      toast.error('Error al eliminar el informe');
     },
   });
 
@@ -107,6 +118,37 @@ const ReportsPage: React.FC = () => {
     } catch (error) {
       toast.error('Error al enviar el informe');
     }
+  };
+
+  const handleDownloadAttachment = async (report: Report, fileName: string) => {
+    try {
+      const blob = await reportService.downloadAttachment(report, fileName);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error al descargar el archivo:', error);
+      toast.error('Error al descargar el archivo adjunto');
+    }
+  };
+
+  const handleDeleteClick = (reportId: string, reportTitle: string) => {
+    setDeleteConfirm({ reportId, reportTitle });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirm) {
+      deleteReportMutation.mutate(deleteConfirm.reportId);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirm(null);
   };
 
   return (
@@ -186,10 +228,10 @@ const ReportsPage: React.FC = () => {
       <div className="grid gap-4">
         {isLoading ? (
           <p>Cargando informes...</p>
-        ) : reports?.length === 0 ? (
+        ) : !reports || reports.length === 0 ? (
           <p className="text-gray-500">No hay informes creados</p>
         ) : (
-          reports?.map((report) => (
+          reports.map((report) => (
             <div key={report.id} className="border rounded-lg p-4">
               <div className="flex justify-between items-start">
                 <div>
@@ -214,12 +256,66 @@ const ReportsPage: React.FC = () => {
                   >
                     <Mail size={20} />
                   </button>
+                  <button
+                    onClick={() => handleDeleteClick(report.id, report.title)}
+                    className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                    title="Eliminar informe"
+                  >
+                    <Trash2 size={20} />
+                  </button>
                 </div>
               </div>
+              {report.attachments && report.attachments.length > 0 && (
+                <div className="mt-2">
+                  <h4 className="font-semibold mb-2">Archivos adjuntos:</h4>
+                  <ul className="list-disc list-inside">
+                    {report.attachments?.map((attachment) => (
+                      <li key={attachment} className="flex items-center gap-2">
+                        <span>{attachment}</span>
+                        <button
+                          onClick={() => handleDownloadAttachment(report, attachment)}
+                          className="text-blue-500 hover:text-blue-600"
+                        >
+                          Descargar
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           ))
         )}
       </div>
+
+      {/* Modal de confirmación para eliminar */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Confirmar eliminación</h3>
+            <p className="text-gray-600 mb-6">
+              ¿Estás seguro de que quieres eliminar el informe "{deleteConfirm.reportTitle}"? 
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleDeleteCancel}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                disabled={deleteReportMutation.isPending}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                disabled={deleteReportMutation.isPending}
+              >
+                {deleteReportMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

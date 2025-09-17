@@ -21,7 +21,13 @@ router.post('/', upload.array('attachments'), reportController.create);
 // Generar PDF del informe
 router.get('/:reportId/pdf', reportController.generatePDF);
 
+// Descargar archivo adjunto
+router.get('/:reportId/attachments/:fileName', reportController.downloadAttachment);
+
 // Enviar informe por correo
 router.post('/:reportId/send-email', reportController.sendEmail);
+
+// Eliminar informe
+router.delete('/:reportId', reportController.delete);
 
 export default router; 

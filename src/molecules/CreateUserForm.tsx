@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
-import { User } from '../types';
+import { User, CreateUserData } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../atoms/Input';
 import { Button } from '../atoms/Button';
 import { Select } from '../atoms/Select';
-import { Mail, User as UserIcon, Shield } from 'lucide-react';
+import { Mail, User as UserIcon, Shield, Lock } from 'lucide-react';
 
 interface CreateUserFormProps {
-  onSubmit: (userData: Omit<User, 'id' | 'status' | 'avatar'>) => Promise<void>;
+  onSubmit: (userData: CreateUserData) => Promise<void>;
   onCancel: () => void;
+  initialData?: Partial<CreateUserData>;
+  isEditing?: boolean;
 }
 
-export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSubmit, onCancel }) => {
+export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSubmit, onCancel, initialData, isEditing = false }) => {
   const { user: currentUser } = useAuth();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    role: 'customer' as User['role']
+  const [formData, setFormData] = useState<CreateUserData>({
+    name: initialData?.name || '',
+    email: initialData?.email || '',
+    password: initialData?.password || '',
+    role: initialData?.role || 'customer'
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,13 +72,25 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSubmit, onCanc
         required
       />
 
+      <Input
+        id="password"
+        type="password"
+        label={isEditing ? "Nueva Contraseña (dejar vacío para mantener la actual)" : "Contraseña"}
+        value={formData.password}
+        onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+        leftIcon={<Lock size={18} />}
+        required={!isEditing}
+        minLength={isEditing ? 0 : 6}
+        placeholder={isEditing ? "Dejar vacío para mantener la contraseña actual" : ""}
+      />
+
       <div className="space-y-1">
         <label className="block text-sm font-medium text-foreground">
           Rol
         </label>
         <Select
           value={formData.role}
-          onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as User['role'] }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as CreateUserData['role'] }))}
           leftIcon={<Shield size={18} />}
           required
         >
@@ -100,7 +115,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSubmit, onCanc
           type="submit"
           isLoading={isLoading}
         >
-          Crear Usuario
+          {isEditing ? 'Actualizar Usuario' : 'Crear Usuario'}
         </Button>
       </div>
     </form>

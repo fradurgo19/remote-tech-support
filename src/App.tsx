@@ -17,6 +17,10 @@ import { SettingsPage } from './pages/SettingsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ErrorFallback } from './components/ErrorFallback';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
+import ReportsPage from './pages/ReportsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +41,9 @@ const App: React.FC = () => {
               <Toaster position="top-right" />
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
                 
                 <Route path="/" element={
                   <ProtectedRoute>
@@ -50,6 +57,7 @@ const App: React.FC = () => {
                   <Route path="support" element={<SupportPage />} />
                   <Route path="users" element={<UsersPage />} />
                   <Route path="settings" element={<SettingsPage />} />
+                  <Route path="reports" element={<ReportsPage />} />
                 </Route>
                 
                 <Route path="*" element={<NotFoundPage />} />

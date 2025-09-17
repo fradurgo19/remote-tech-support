@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Ticket } from '../types';
-import { ticketService } from '../services/api';
+import { ticketService, categoryService } from '../services/api';
 import { Card, CardHeader, CardTitle, CardContent } from '../atoms/Card';
 import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
@@ -27,14 +27,36 @@ export const CreateTicketPage: React.FC = () => {
     title: state?.title || '',
     description: state?.description || '',
     priority: 'medium' as Ticket['priority'],
-    category: state?.category || '1',
+    category: state?.category || '',
     status: 'open' as Ticket['status'],
     customerId: user?.id || '',
     tags: [] as string[]
   });
   
+  const [categories, setCategories] = useState<Array<{id: string, name: string, description: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Cargar categorías del backend
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categoriesData = await categoryService.getCategories();
+        setCategories(categoriesData);
+        if (categoriesData.length > 0 && !state?.category) {
+          setFormData(prev => ({ ...prev, category: categoriesData[0].name }));
+        }
+      } catch (err) {
+        console.error('Error al cargar categorías:', err);
+        toast.error('Error al cargar las categorías');
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    loadCategories();
+  }, [state?.category]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,6 +130,29 @@ export const CreateTicketPage: React.FC = () => {
                 required
                 rows={4}
               />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="category" className="text-sm font-medium">
+                Categoría
+              </label>
+              <Select
+                id="category"
+                value={formData.category}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
+                  setFormData(prev => ({ ...prev, category: e.target.value }))}
+                disabled={isLoadingCategories}
+              >
+                {isLoadingCategories ? (
+                  <option value="">Cargando categorías...</option>
+                ) : (
+                  categories.map(category => (
+                    <option key={category.id} value={category.name}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </Select>
             </div>
 
             <div className="space-y-2">

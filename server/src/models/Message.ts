@@ -6,10 +6,13 @@ import { Ticket } from './Ticket';
 export interface MessageAttributes {
   id?: string;
   content: string;
+  type: 'text' | 'image' | 'file' | 'system' | 'call_start' | 'call_end';
   ticketId: string;
   senderId: string;
-  type: 'text' | 'image' | 'file';
-  fileUrl?: string;
+  replyToId?: string;
+  isRead?: boolean;
+  readAt?: Date;
+  metadata?: any;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -17,10 +20,13 @@ export interface MessageAttributes {
 export class Message extends Model<MessageAttributes> implements MessageAttributes {
   public id!: string;
   public content!: string;
+  public type!: 'text' | 'image' | 'file' | 'system' | 'call_start' | 'call_end';
   public ticketId!: string;
   public senderId!: string;
-  public type!: 'text' | 'image' | 'file';
-  public fileUrl!: string;
+  public replyToId!: string;
+  public isRead!: boolean;
+  public readAt!: Date;
+  public metadata!: any;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -53,11 +59,28 @@ Message.init(
       },
     },
     type: {
-      type: DataTypes.ENUM('text', 'image', 'file'),
+      type: DataTypes.ENUM('text', 'image', 'file', 'system', 'call_start', 'call_end'),
       defaultValue: 'text',
     },
-    fileUrl: {
-      type: DataTypes.STRING,
+    replyToId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Messages',
+        key: 'id',
+      },
+    },
+    isRead: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    readAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    metadata: {
+      type: DataTypes.JSONB,
       allowNull: true,
     },
   },
@@ -67,6 +90,4 @@ Message.init(
   }
 );
 
-// Define associations
-Message.belongsTo(Ticket, { foreignKey: 'ticketId' });
-Message.belongsTo(User, { as: 'sender', foreignKey: 'senderId' }); 
+// Associations are defined in models/index.ts 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Ticket, User, Message } from '../models';
+import { Ticket, User, Message, Category } from '../models';
 import { logger } from '../utils/logger';
 
 export const getTickets = async (req: Request, res: Response) => {
@@ -24,7 +24,7 @@ export const getTicketById = async (req: Request, res: Response) => {
       include: [
         { model: User, as: 'customer', attributes: ['id', 'name', 'email'] },
         { model: User, as: 'technician', attributes: ['id', 'name', 'email'] },
-        { model: Message, include: [{ model: User, attributes: ['id', 'name', 'email'] }] }
+        { model: Message, include: [{ model: User, as: 'sender', attributes: ['id', 'name', 'email'] }] }
       ]
     });
 
@@ -44,10 +44,16 @@ export const createTicket = async (req: Request, res: Response) => {
     const { title, description, category, priority } = req.body;
     const customerId = (req.user as any).id;
 
+    // Buscar la categoría por nombre para obtener su ID
+    const categoryRecord = await Category.findOne({ where: { name: category } });
+    if (!categoryRecord) {
+      return res.status(400).json({ message: 'Categoría no encontrada' });
+    }
+
     const ticket = await Ticket.create({
       title,
       description,
-      category,
+      categoryId: categoryRecord.id,
       priority,
       customerId,
       status: 'open'

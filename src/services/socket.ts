@@ -2,7 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import { Message, User } from '../types';
 
 // This would connect to your actual Socket.IO server in production
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
 class SocketService {
   private socket: Socket | null = null;

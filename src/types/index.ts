@@ -5,6 +5,15 @@ export interface User {
   role: 'admin' | 'technician' | 'customer';
   avatar?: string;
   status: 'online' | 'away' | 'busy' | 'offline';
+  emailVerified: boolean;
+  passwordResetToken: string | null;
+}
+
+export interface CreateUserData {
+  name: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'technician' | 'customer';
 }
 
 export interface Ticket {
@@ -25,16 +34,21 @@ export interface Message {
   id: string;
   content: string;
   senderId: string;
-  receiverId: string;
-  timestamp: string;
+  receiverId?: string;
+  createdAt: string;
+  updatedAt: string;
   ticketId: string;
-  type: 'text' | 'file' | 'system';
-  attachment?: {
-    name: string;
-    url: string;
-    type: string;
-    size: number;
+  type: 'text' | 'file' | 'system' | 'image' | 'call_start' | 'call_end';
+  metadata?: {
+    fileUrl?: string;
+    attachment?: {
+      name: string;
+      url: string;
+      type: string;
+      size: number;
+    };
   };
+  sender?: User;
 }
 
 export interface CallSession {

@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, MessageSquare, Headphones, 
-  Settings, LogOut, Moon, Sun, Menu, X, Headset
+  Settings, LogOut, Moon, Sun, Menu, X, Headset, FileText
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Avatar } from '../atoms/Avatar';
@@ -32,6 +32,7 @@ export const MainLayout: React.FC = () => {
     { path: '/', icon: <LayoutDashboard size={20} />, label: 'Panel Principal' },
     { path: '/tickets', icon: <MessageSquare size={20} />, label: 'Tickets' },
     { path: '/support', icon: <Headphones size={20} />, label: 'Soporte' },
+    { path: '/reports', icon: <FileText size={20} />, label: 'Informes' },
     { path: '/users', icon: <Users size={20} />, label: 'Usuarios' },
     { path: '/settings', icon: <Settings size={20} />, label: 'Configuración' },
   ];
