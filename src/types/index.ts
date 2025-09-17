@@ -61,6 +61,29 @@ export interface CallSession {
   status: 'scheduled' | 'active' | 'ended';
 }
 
+export interface Report {
+  id: string;
+  title: string;
+  description: string;
+  type: 'technical' | 'incident' | 'maintenance' | 'performance' | 'security';
+  status: 'draft' | 'pending' | 'approved' | 'rejected';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  authorId: string;
+  customerId: string;
+  reviewedById?: string;
+  ticketId?: string;
+  reviewedAt?: string;
+  tags?: string[];
+  attachments?: string[];
+  metadata?: any;
+  createdAt: string;
+  updatedAt: string;
+  author?: User;
+  customer?: User;
+  reviewedBy?: User;
+  ticket?: Ticket;
+}
+
 export interface ServiceCategory {
   id: string;
   name: string;

@@ -1,7 +1,6 @@
-import { Model, DataTypes } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 import { sequelize } from '../config/database';
 import { User } from './User';
-import { Ticket } from './Ticket';
 
 export interface ReportAttributes {
   id?: string;
@@ -10,9 +9,10 @@ export interface ReportAttributes {
   type: 'technical' | 'incident' | 'maintenance' | 'performance' | 'security';
   status: 'draft' | 'pending' | 'approved' | 'rejected';
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  ticketId?: string;
   authorId: string;
+  customerId: string;
   reviewedById?: string;
+  ticketId?: string;
   reviewedAt?: Date;
   tags?: string[];
   attachments?: string[];
@@ -21,16 +21,25 @@ export interface ReportAttributes {
   updatedAt?: Date;
 }
 
-export class Report extends Model<ReportAttributes> implements ReportAttributes {
+export class Report
+  extends Model<ReportAttributes>
+  implements ReportAttributes
+{
   public id!: string;
   public title!: string;
   public description!: string;
-  public type!: 'technical' | 'incident' | 'maintenance' | 'performance' | 'security';
+  public type!:
+    | 'technical'
+    | 'incident'
+    | 'maintenance'
+    | 'performance'
+    | 'security';
   public status!: 'draft' | 'pending' | 'approved' | 'rejected';
   public priority!: 'low' | 'medium' | 'high' | 'urgent';
-  public ticketId!: string;
   public authorId!: string;
+  public customerId!: string;
   public reviewedById!: string;
+  public ticketId!: string;
   public reviewedAt!: Date;
   public tags!: string[];
   public attachments!: string[];
@@ -55,29 +64,33 @@ Report.init(
       allowNull: false,
     },
     type: {
-      type: DataTypes.ENUM('technical', 'incident', 'maintenance', 'performance', 'security'),
+      type: DataTypes.ENUM(
+        'technical',
+        'incident',
+        'maintenance',
+        'performance',
+        'security'
+      ),
       allowNull: false,
       defaultValue: 'technical',
     },
     status: {
       type: DataTypes.ENUM('draft', 'pending', 'approved', 'rejected'),
-      allowNull: false,
       defaultValue: 'draft',
     },
     priority: {
       type: DataTypes.ENUM('low', 'medium', 'high', 'urgent'),
-      allowNull: false,
       defaultValue: 'medium',
     },
-    ticketId: {
+    authorId: {
       type: DataTypes.UUID,
-      allowNull: true,
+      allowNull: false,
       references: {
-        model: Ticket,
+        model: User,
         key: 'id',
       },
     },
-    authorId: {
+    customerId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -90,6 +103,14 @@ Report.init(
       allowNull: true,
       references: {
         model: User,
+        key: 'id',
+      },
+    },
+    ticketId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Tickets',
         key: 'id',
       },
     },
@@ -117,7 +138,3 @@ Report.init(
     modelName: 'Report',
   }
 );
-
-// Associations are defined in models/index.ts
-
-export default Report; 

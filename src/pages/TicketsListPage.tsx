@@ -41,7 +41,8 @@ export const TicketsListPage: React.FC = () => {
         }, {});
         setUsers(usersMap);
       } catch (err) {
-        setError('Error al cargar los tickets');
+        const errorMessage = err instanceof Error ? err.message : 'Error al cargar los tickets';
+        setError(errorMessage);
         console.error(err);
       } finally {
         setIsLoading(false);

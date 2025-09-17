@@ -59,4 +59,40 @@ export const authorize = (...roles: string[]) => {
 
     next();
   };
+};
+
+// Middleware específico para autorización de tickets
+export const authorizeTicketAccess = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'No autenticado' });
+    }
+
+    const { id } = req.params;
+    const user = req.user;
+
+    // Los administradores y técnicos pueden acceder a todos los tickets
+    if (user.role === 'admin' || user.role === 'technician') {
+      return next();
+    }
+
+    // Para clientes, verificar que el ticket les pertenece
+    if (user.role === 'customer') {
+      const { Ticket } = await import('../models');
+      const ticket = await Ticket.findByPk(id);
+      
+      if (!ticket) {
+        return res.status(404).json({ message: 'Ticket no encontrado' });
+      }
+
+      if (ticket.customerId !== user.id) {
+        return res.status(403).json({ message: 'No tienes permisos para acceder a este ticket' });
+      }
+    }
+
+    next();
+  } catch (error) {
+    logger.error('Error en autorización de ticket:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
 }; 

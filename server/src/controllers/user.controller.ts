@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { User } from '../models';
 import { logger } from '../utils/logger';
-import bcrypt from 'bcryptjs';
 
 export const createUser = async (req: Request, res: Response) => {
   try {
@@ -9,7 +8,9 @@ export const createUser = async (req: Request, res: Response) => {
 
     // Validar que todos los campos requeridos estén presentes
     if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Nombre, email y contraseña son requeridos' });
+      return res
+        .status(400)
+        .json({ message: 'Nombre, email y contraseña son requeridos' });
     }
 
     // Verificar si el usuario ya existe
@@ -32,7 +33,7 @@ export const createUser = async (req: Request, res: Response) => {
     const { password: _, ...userWithoutPassword } = user.toJSON();
     res.status(201).json({
       message: 'Usuario creado exitosamente',
-      user: userWithoutPassword
+      user: userWithoutPassword,
     });
   } catch (error) {
     logger.error('Error al crear usuario:', error);
@@ -42,8 +43,30 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
+    const user = req.user as any;
+    let whereClause: any = {};
+
+    // Filtrar usuarios según el rol del usuario que hace la petición
+    if (user.role === 'customer') {
+      // Los clientes solo pueden ver administradores y técnicos (no otros clientes)
+      whereClause.role = {
+        [require('sequelize').Op.in]: ['admin', 'technician'],
+      };
+    }
+    // Los administradores y técnicos pueden ver todos los usuarios (no se aplica filtro)
+
     const users = await User.findAll({
-      attributes: ['id', 'name', 'email', 'role', 'status', 'avatar', 'createdAt']
+      where: whereClause,
+      attributes: [
+        'id',
+        'name',
+        'email',
+        'role',
+        'status',
+        'avatar',
+        'createdAt',
+      ],
+      order: [['name', 'ASC']],
     });
     res.json(users);
   } catch (error) {
@@ -52,11 +75,41 @@ export const getUsers = async (req: Request, res: Response) => {
   }
 };
 
+export const getUsersPublic = async (req: Request, res: Response) => {
+  try {
+    // Ruta pública que devuelve todos los usuarios (para login)
+    const users = await User.findAll({
+      attributes: [
+        'id',
+        'name',
+        'email',
+        'role',
+        'status',
+        'avatar',
+        'createdAt',
+      ],
+      order: [['name', 'ASC']],
+    });
+    res.json(users);
+  } catch (error) {
+    logger.error('Error al obtener usuarios públicos:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const user = await User.findByPk(id, {
-      attributes: ['id', 'name', 'email', 'role', 'status', 'avatar', 'createdAt']
+      attributes: [
+        'id',
+        'name',
+        'email',
+        'role',
+        'status',
+        'avatar',
+        'createdAt',
+      ],
     });
 
     if (!user) {
@@ -86,7 +139,7 @@ export const updateUser = async (req: Request, res: Response) => {
       email: email || user.email,
       role: role || user.role,
       status: status || user.status,
-      avatar: avatar || user.avatar
+      avatar: avatar || user.avatar,
     };
 
     // Si se proporciona una nueva contraseña, guardarla (temporalmente en texto plano)
@@ -106,7 +159,7 @@ export const updateUser = async (req: Request, res: Response) => {
     const { password: _, ...userWithoutPassword } = user.toJSON();
     res.json({
       message: 'Usuario actualizado exitosamente',
-      user: userWithoutPassword
+      user: userWithoutPassword,
     });
   } catch (error) {
     logger.error('Error al actualizar usuario:', error);
@@ -129,4 +182,37 @@ export const deleteUser = async (req: Request, res: Response) => {
     logger.error('Error al eliminar usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
-}; 
+};
+
+export const searchCustomers = async (req: Request, res: Response) => {
+  try {
+    const { email, name } = req.query;
+
+    if (!email && !name) {
+      return res
+        .status(400)
+        .json({ message: 'Email o nombre es requerido para buscar clientes' });
+    }
+
+    const whereClause: any = { role: 'customer' };
+
+    if (email) {
+      whereClause.email = { [require('sequelize').Op.iLike]: `%${email}%` };
+    }
+
+    if (name) {
+      whereClause.name = { [require('sequelize').Op.iLike]: `%${name}%` };
+    }
+
+    const customers = await User.findAll({
+      where: whereClause,
+      attributes: ['id', 'name', 'email', 'status', 'createdAt'],
+      limit: 10,
+    });
+
+    res.json(customers);
+  } catch (error) {
+    logger.error('Error al buscar clientes:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};

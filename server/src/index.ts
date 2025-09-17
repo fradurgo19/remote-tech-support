@@ -1,20 +1,20 @@
-import express from 'express';
 import cors from 'cors';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
 import dotenv from 'dotenv';
+import express from 'express';
+import { createServer } from 'http';
 import path from 'path';
+import { Server } from 'socket.io';
 import { sequelize } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
-import { logger } from './utils/logger';
 import authRoutes from './routes/auth.routes';
-import userRoutes from './routes/user.routes';
-import ticketRoutes from './routes/ticket.routes';
-import messageRoutes from './routes/message.routes';
-import reportRoutes from './routes/reportRoutes';
 import categoryRoutes from './routes/category.routes';
-import { setupSocketHandlers } from './socket';
+import messageRoutes from './routes/message.routes';
+import reportRoutes from './routes/report.routes';
+import ticketRoutes from './routes/ticket.routes';
+import userRoutes from './routes/user.routes';
 import { resetAllPasswords } from './scripts/resetPasswords';
+import { setupSocketHandlers } from './socket';
+import { logger } from './utils/logger';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -23,16 +23,24 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://localhost:5174'],
-    methods: ['GET', 'POST']
-  }
+    origin: process.env.CORS_ORIGIN || [
+      'http://localhost:5173',
+      'http://localhost:5174',
+    ],
+    methods: ['GET', 'POST'],
+  },
 });
 
 // Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://localhost:5174'],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || [
+      'http://localhost:5173',
+      'http://localhost:5174',
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Servir archivos estáticos
@@ -78,4 +86,4 @@ const startServer = async () => {
   }
 };
 
-startServer(); 
+startServer();

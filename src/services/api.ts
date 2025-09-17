@@ -1,7 +1,13 @@
-import { User, Ticket, Message, CallSession, ServiceCategory, CreateUserData } from '../types';
+import {
+  CreateUserData,
+  Message,
+  ServiceCategory,
+  Ticket,
+  User,
+} from '../types';
 
 // Servicio de API simulado - En una aplicación real, esto haría llamadas API reales
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Datos de ejemplo
 const users: User[] = [
@@ -10,30 +16,33 @@ const users: User[] = [
     name: 'Juan Técnico',
     email: 'auxiliar.garantiasbg@partequipos.com',
     role: 'technician',
-    avatar: 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Soporte_hcfjxa.png',
+    avatar:
+      'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Soporte_hcfjxa.png',
     status: 'online',
     emailVerified: true,
-    passwordResetToken: null
+    passwordResetToken: null,
   },
   {
     id: '2',
     name: 'Soporte al Producto',
     email: 'analista.mantenimiento@partequipos.com',
     role: 'admin',
-    avatar: 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Admin_sublte.png',
+    avatar:
+      'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590236/Admin_sublte.png',
     status: 'away',
     emailVerified: true,
-    passwordResetToken: null
+    passwordResetToken: null,
   },
   {
     id: '3',
     name: 'Miguel Usuario',
     email: 'miguel@empresa.com',
     role: 'customer',
-    avatar: 'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590235/Cliente_kgzuwh.jpg',
+    avatar:
+      'https://res.cloudinary.com/dbufrzoda/image/upload/v1749590235/Cliente_kgzuwh.jpg',
     status: 'offline',
     emailVerified: true,
-    passwordResetToken: null
+    passwordResetToken: null,
   },
 ];
 
@@ -41,7 +50,8 @@ const tickets: Ticket[] = [
   {
     id: '1',
     title: 'No puedo conectarme a la VPN',
-    description: 'No puedo conectarme a la VPN de la empresa desde mi oficina en casa.',
+    description:
+      'No puedo conectarme a la VPN de la empresa desde mi oficina en casa.',
     status: 'open',
     priority: 'high',
     createdAt: '2025-03-15T09:30:00Z',
@@ -53,7 +63,8 @@ const tickets: Ticket[] = [
   {
     id: '2',
     title: 'Outlook se cierra al iniciar',
-    description: 'Mi aplicación de Outlook se cierra inmediatamente después de abrirse.',
+    description:
+      'Mi aplicación de Outlook se cierra inmediatamente después de abrirse.',
     status: 'in-progress',
     priority: 'medium',
     createdAt: '2025-03-14T15:20:00Z',
@@ -77,7 +88,8 @@ const messages: Message[] = [
   },
   {
     id: '2',
-    content: 'Hola Miguel, te ayudaré a solucionar tu problema de VPN. ¿Puedes decirme qué mensaje de error estás viendo?',
+    content:
+      'Hola Miguel, te ayudaré a solucionar tu problema de VPN. ¿Puedes decirme qué mensaje de error estás viendo?',
     senderId: '1',
     receiverId: '3',
     timestamp: '2025-03-15T09:37:00Z',
@@ -87,12 +99,13 @@ const messages: Message[] = [
 ];
 
 const serviceCategories: ServiceCategory[] = [
-  { 
-    id: '1', 
-    name: 'Soporte Remoto', 
-    description: 'Asistencia técnica remota para resolver problemas de software, hardware y conectividad', 
-    icon: 'headset' 
-  }
+  {
+    id: '1',
+    name: 'Soporte Remoto',
+    description:
+      'Asistencia técnica remota para resolver problemas de software, hardware y conectividad',
+    icon: 'headset',
+  },
 ];
 
 // Claves para localStorage
@@ -100,7 +113,7 @@ const STORAGE_KEYS = {
   USERS: 'remote_support_users',
   TICKETS: 'remote_support_tickets',
   MESSAGES: 'remote_support_messages',
-  CATEGORIES: 'remote_support_categories'
+  CATEGORIES: 'remote_support_categories',
 };
 
 // Función para inicializar datos en localStorage si no existen
@@ -109,7 +122,10 @@ const initializeStorage = () => {
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
   localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(tickets));
   localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(messages));
-  localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(serviceCategories));
+  localStorage.setItem(
+    STORAGE_KEYS.CATEGORIES,
+    JSON.stringify(serviceCategories)
+  );
 };
 
 // Inicializar almacenamiento
@@ -133,11 +149,11 @@ export const authService = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    
+
     // Guardar el token en localStorage
     localStorage.setItem('authToken', data.token);
     localStorage.setItem('currentUserEmail', data.user.email);
-    
+
     return data.user;
   },
   logout: async (): Promise<void> => {
@@ -155,7 +171,7 @@ export const authService = {
       // Verificar si el token es válido haciendo una llamada al backend
       const response = await fetch('http://localhost:3000/api/auth/me', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -173,10 +189,12 @@ export const authService = {
       // En caso de error, limpiar localStorage
       localStorage.removeItem('authToken');
       localStorage.removeItem('currentUserEmail');
-    return null;
+      return null;
     }
   },
-  forgotPassword: async (email: string): Promise<{ message: string; token: string }> => {
+  forgotPassword: async (
+    email: string
+  ): Promise<{ message: string; token: string }> => {
     await delay(500);
     const users = getFromStorage<User>(STORAGE_KEYS.USERS);
     const user = users.find(u => u.email === email);
@@ -184,9 +202,15 @@ export const authService = {
       throw new Error('Usuario no encontrado');
     }
     const token = Math.random().toString(36).substring(2, 15);
-    return { message: 'Se ha enviado un correo de recuperación (simulado)', token };
+    return {
+      message: 'Se ha enviado un correo de recuperación (simulado)',
+      token,
+    };
   },
-  resetPassword: async (token: string, newPassword: string): Promise<{ message: string }> => {
+  resetPassword: async (
+    token: string,
+    newPassword: string
+  ): Promise<{ message: string }> => {
     await delay(500);
     const users = getFromStorage<User>(STORAGE_KEYS.USERS);
     const user = users.find(u => u.passwordResetToken === token);
@@ -195,7 +219,9 @@ export const authService = {
     }
     return { message: 'Contraseña actualizada correctamente' };
   },
-  sendVerificationEmail: async (email: string): Promise<{ message: string; token: string }> => {
+  sendVerificationEmail: async (
+    email: string
+  ): Promise<{ message: string; token: string }> => {
     await delay(500);
     const users = getFromStorage<User>(STORAGE_KEYS.USERS);
     const user = users.find(u => u.email === email);
@@ -203,7 +229,10 @@ export const authService = {
       throw new Error('Usuario no encontrado');
     }
     const token = Math.random().toString(36).substring(2, 15);
-    return { message: 'Se ha enviado un correo de verificación (simulado)', token };
+    return {
+      message: 'Se ha enviado un correo de verificación (simulado)',
+      token,
+    };
   },
   verifyEmail: async (token: string): Promise<{ message: string }> => {
     await delay(500);
@@ -214,12 +243,15 @@ export const authService = {
     }
     return { message: 'Email verificado correctamente' };
   },
-  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> => {
     await apiCall('/api/auth/change-password', {
       method: 'POST',
       body: JSON.stringify({ currentPassword, newPassword }),
     });
-  }
+  },
 };
 
 export const userService = {
@@ -262,7 +294,10 @@ export const userService = {
     });
     return response.user;
   },
-  updateUserStatus: async (id: string, status: User['status']): Promise<User> => {
+  updateUserStatus: async (
+    id: string,
+    status: User['status']
+  ): Promise<User> => {
     const response = await apiCall(`/api/users/${id}`, {
       method: 'PUT',
       headers: {
@@ -276,7 +311,17 @@ export const userService = {
     await apiCall(`/api/users/${id}`, {
       method: 'DELETE',
     });
-  }
+  },
+  searchCustomers: async (email?: string, name?: string): Promise<User[]> => {
+    const params = new URLSearchParams();
+    if (email) params.append('email', email);
+    if (name) params.append('name', name);
+
+    const response = await apiCall(
+      `/api/users/search/customers?${params.toString()}`
+    );
+    return response;
+  },
 };
 
 // Función helper para obtener el token de autenticación
@@ -285,19 +330,34 @@ const getAuthToken = (): string | null => {
 };
 
 // Función helper para hacer llamadas HTTP
-const apiCall = async (url: string, options: RequestInit = {}): Promise<any> => {
+const apiCall = async (
+  url: string,
+  options: RequestInit = {}
+): Promise<any> => {
   const token = getAuthToken();
   const response = await fetch(`http://localhost:3000${url}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
   });
 
   if (!response.ok) {
     const errorData = await response.json();
+
+    // Manejar errores específicos de permisos
+    if (response.status === 403) {
+      throw new Error(
+        errorData.message || 'No tienes permisos para realizar esta acción'
+      );
+    } else if (response.status === 404) {
+      throw new Error(errorData.message || 'Recurso no encontrado');
+    } else if (response.status === 401) {
+      throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente');
+    }
+
     throw new Error(errorData.message || 'Error en la API');
   }
 
@@ -313,20 +373,28 @@ export const ticketService = {
     const data = await apiCall(`/api/tickets/${id}`);
     return data;
   },
-  createTicket: async (ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>): Promise<Ticket> => {
+  createTicket: async (
+    ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'> & {
+      customerEmail?: string;
+      customerName?: string;
+    }
+  ): Promise<Ticket> => {
     const data = await apiCall('/api/tickets', {
       method: 'POST',
       body: JSON.stringify(ticketData),
     });
     return data.ticket;
   },
-  updateTicket: async (id: string, updates: Partial<Ticket>): Promise<Ticket> => {
+  updateTicket: async (
+    id: string,
+    updates: Partial<Ticket>
+  ): Promise<Ticket> => {
     const data = await apiCall(`/api/tickets/${id}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
     return data.ticket;
-  }
+  },
 };
 
 export const messageService = {
@@ -336,7 +404,9 @@ export const messageService = {
     });
     return response;
   },
-  sendMessage: async (messageData: Omit<Message, 'id' | 'timestamp'>): Promise<Message> => {
+  sendMessage: async (
+    messageData: Omit<Message, 'id' | 'timestamp'>
+  ): Promise<Message> => {
     const response = await apiCall('/api/messages', {
       method: 'POST',
       headers: {
@@ -356,7 +426,7 @@ export const messageService = {
     const response = await fetch('http://localhost:3000/api/messages/file', {
       method: 'POST',
       headers: {
-        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
       body: formData,
     });
@@ -367,12 +437,47 @@ export const messageService = {
 
     const data = await response.json();
     return data.data;
-  }
+  },
 };
 
 export const categoryService = {
   getCategories: async (): Promise<ServiceCategory[]> => {
     const data = await apiCall('/api/categories');
     return data;
-  }
+  },
+};
+
+export const reportService = {
+  getReports: async (): Promise<Report[]> => {
+    const data = await apiCall('/api/reports');
+    return data;
+  },
+  getReportById: async (id: string): Promise<Report> => {
+    const data = await apiCall(`/api/reports/${id}`);
+    return data;
+  },
+  createReport: async (
+    reportData: Omit<Report, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<Report> => {
+    const data = await apiCall('/api/reports', {
+      method: 'POST',
+      body: JSON.stringify(reportData),
+    });
+    return data.report;
+  },
+  updateReport: async (
+    id: string,
+    updates: Partial<Report>
+  ): Promise<Report> => {
+    const data = await apiCall(`/api/reports/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+    return data.report;
+  },
+  deleteReport: async (id: string): Promise<void> => {
+    await apiCall(`/api/reports/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };

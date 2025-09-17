@@ -8,6 +8,7 @@ import { TicketDetails } from '../organisms/TicketDetails';
 import { VideoCallPanel } from '../organisms/VideoCallPanel';
 import { ChatPanel } from '../organisms/ChatPanel';
 import { AlertCircle, ChevronLeft } from 'lucide-react';
+import { PermissionDenied } from '../components/PermissionDenied';
 
 export const TicketDetailPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
@@ -40,7 +41,8 @@ export const TicketDetailPage: React.FC = () => {
         }, {});
         setUsers(usersMap);
       } catch (err) {
-        setError('Error al cargar los detalles del ticket');
+        const errorMessage = err instanceof Error ? err.message : 'Error al cargar los detalles del ticket';
+        setError(errorMessage);
         console.error(err);
       } finally {
         setLoading(false);
@@ -70,6 +72,18 @@ export const TicketDetailPage: React.FC = () => {
   }
 
   if (error || !ticket) {
+    // Verificar si es un error de permisos
+    const isPermissionError = error && (error.includes('permisos') || error.includes('No tienes'));
+    
+    if (isPermissionError) {
+      return (
+        <PermissionDenied 
+          message={error}
+          onGoBack={() => navigate('/tickets')}
+        />
+      );
+    }
+    
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">

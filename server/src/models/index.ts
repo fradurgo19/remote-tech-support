@@ -1,12 +1,12 @@
-import { User } from './User';
-import { Ticket } from './Ticket';
-import { Message } from './Message';
-import { Category } from './Category';
 import { Attachment } from './Attachment';
 import { CallSession } from './CallSession';
+import { Category } from './Category';
+import { Message } from './Message';
 import { Notification } from './Notification';
-import { TicketHistory } from './TicketHistory';
 import { Report } from './Report';
+import { Ticket } from './Ticket';
+import { TicketHistory } from './TicketHistory';
+import { User } from './User';
 
 // Define all associations
 import { sequelize } from '../config/database';
@@ -15,11 +15,15 @@ import { sequelize } from '../config/database';
 User.hasMany(Ticket, { as: 'customerTickets', foreignKey: 'customerId' });
 User.hasMany(Ticket, { as: 'technicianTickets', foreignKey: 'technicianId' });
 User.hasMany(Message, { as: 'sentMessages', foreignKey: 'senderId' });
-User.hasMany(Attachment, { as: 'uploadedAttachments', foreignKey: 'uploadedById' });
+User.hasMany(Attachment, {
+  as: 'uploadedAttachments',
+  foreignKey: 'uploadedById',
+});
 User.hasMany(CallSession, { as: 'initiatedCalls', foreignKey: 'initiatorId' });
 User.hasMany(Notification, { foreignKey: 'userId' });
 User.hasMany(TicketHistory, { as: 'ticketChanges', foreignKey: 'changedById' });
 User.hasMany(Report, { as: 'authoredReports', foreignKey: 'authorId' });
+User.hasMany(Report, { as: 'customerReports', foreignKey: 'customerId' });
 User.hasMany(Report, { as: 'reviewedReports', foreignKey: 'reviewedById' });
 
 // Ticket associations
@@ -57,6 +61,7 @@ TicketHistory.belongsTo(User, { as: 'changedBy', foreignKey: 'changedById' });
 
 // Report associations
 Report.belongsTo(User, { as: 'author', foreignKey: 'authorId' });
+Report.belongsTo(User, { as: 'customer', foreignKey: 'customerId' });
 Report.belongsTo(User, { as: 'reviewedBy', foreignKey: 'reviewedById' });
 Report.belongsTo(Ticket, { foreignKey: 'ticketId' });
 
@@ -66,14 +71,14 @@ Attachment.belongsTo(Message, { foreignKey: 'messageId' });
 Attachment.belongsTo(Ticket, { foreignKey: 'ticketId' });
 
 export {
-  User,
-  Ticket,
-  Message,
-  Category,
   Attachment,
   CallSession,
+  Category,
+  Message,
   Notification,
-  TicketHistory,
   Report,
   sequelize,
-}; 
+  Ticket,
+  TicketHistory,
+  User,
+};
