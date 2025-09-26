@@ -50,8 +50,8 @@ export const ServiceCatalog: React.FC<ServiceCatalogProps> = ({
         </div>
         <h3 className='text-lg font-semibold mb-2'>Soporte Remoto</h3>
         <p className='text-sm text-muted-foreground mb-4'>
-          Asistencia técnica remota para resolver problemas de software,
-          hardware y conectividad de forma eficiente.
+          Asistencia técnica remota para resolver problemas de Maquinaria Pesada
+          de forma eficiente.
         </p>
       </div>
       <Button onClick={handleServiceSelect} className='w-full max-w-xs'>

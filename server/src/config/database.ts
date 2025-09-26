@@ -12,7 +12,7 @@ export const sequelize = new Sequelize({
   database: process.env.DB_NAME || 'remote_support',
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'password',
-  logging: process.env.NODE_ENV === 'development' ? console.log : false,
+  logging: false, // Deshabilitar logging de SQL
   pool: {
     max: 5,
     min: 0,

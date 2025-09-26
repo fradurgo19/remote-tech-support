@@ -90,8 +90,8 @@ export const SupportPage: React.FC = () => {
                     Asistencia Técnica Remota
                   </h3>
                   <p className='text-muted-foreground max-w-md mx-auto'>
-                    Resolvemos problemas de software, hardware y conectividad de
-                    forma remota y eficiente.
+                    Resolvemos problemas de Maquinaria Pesada de forma remota y
+                    eficiente.
                   </p>
                 </div>
 

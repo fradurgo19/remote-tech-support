@@ -104,7 +104,7 @@ const serviceCategories: ServiceCategory[] = [
     id: '1',
     name: 'Soporte Remoto',
     description:
-      'Asistencia técnica remota para resolver problemas de software, hardware y conectividad',
+      'Asistencia técnica remota para resolver problemas de Maquinaria Pesada',
     icon: 'headset',
   },
 ];

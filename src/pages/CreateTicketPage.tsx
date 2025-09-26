@@ -263,8 +263,8 @@ export const CreateTicketPage: React.FC = () => {
                 </div>
               </div>
               <p className='text-xs text-muted-foreground'>
-                Asistencia técnica remota para resolver problemas de software,
-                hardware y conectividad
+                Asistencia técnica remota para resolver problemas de Maquinaria
+                Pesada
               </p>
             </div>
 
