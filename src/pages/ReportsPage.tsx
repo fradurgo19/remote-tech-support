@@ -126,6 +126,19 @@ const ReportsPage: React.FC = () => {
     setShowCustomerSearch(false);
   };
 
+  // Función para convertir archivo a base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result);
+      };
+      reader.onerror = () => reject(new Error('Error al leer el archivo'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Función para crear informe
   const handleCreateReport = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,8 +148,18 @@ const ReportsPage: React.FC = () => {
     }
 
     try {
-      // Convertir archivos a nombres de archivo para enviar al backend
-      const attachmentNames = formData.attachments.map(file => file.name);
+      // Convertir archivos a base64 para enviar al backend
+      const attachmentPromises = formData.attachments.map(async file => {
+        const base64 = await fileToBase64(file);
+        return {
+          name: file.name,
+          content: base64,
+          type: file.type,
+          size: file.size,
+        };
+      });
+
+      const attachments = await Promise.all(attachmentPromises);
 
       const reportData = {
         title: formData.title,
@@ -145,7 +168,7 @@ const ReportsPage: React.FC = () => {
         priority: formData.priority,
         customerId: formData.customerId,
         tags: formData.tags,
-        attachments: attachmentNames,
+        attachments: attachments,
       };
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

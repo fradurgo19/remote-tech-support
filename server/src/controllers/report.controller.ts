@@ -94,11 +94,22 @@ export const createReport = async (req: Request, res: Response) => {
 
     // Verificar que se proporcione un cliente
     if (!customerId) {
-      return res
-        .status(400)
-        .json({
-          message: 'Debe seleccionar un cliente para asignar el informe',
-        });
+      return res.status(400).json({
+        message: 'Debe seleccionar un cliente para asignar el informe',
+      });
+    }
+
+    // Procesar archivos adjuntos si existen
+    let processedAttachments: string[] = [];
+    if (attachments && Array.isArray(attachments)) {
+      processedAttachments = attachments.map((attachment: any) => {
+        // Si es un objeto con contenido base64, usar el contenido
+        if (typeof attachment === 'object' && attachment.content) {
+          return attachment.content;
+        }
+        // Si es un string, usarlo directamente
+        return attachment;
+      });
     }
 
     const report = await Report.create({
@@ -109,7 +120,7 @@ export const createReport = async (req: Request, res: Response) => {
       authorId: user.id,
       customerId: customerId,
       tags: tags || [],
-      attachments: attachments || [],
+      attachments: processedAttachments,
       status: 'draft',
     });
 

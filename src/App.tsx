@@ -21,6 +21,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import ReportsPage from './pages/ReportsPage';
+import ReportDetailPage from './pages/ReportDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,6 +59,7 @@ const App: React.FC = () => {
                   <Route path="users" element={<UsersPage />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="reports" element={<ReportsPage />} />
+                  <Route path="reports/:id" element={<ReportDetailPage />} />
                 </Route>
                 
                 <Route path="*" element={<NotFoundPage />} />
