@@ -7,6 +7,7 @@ export interface User {
   status: 'online' | 'away' | 'busy' | 'offline';
   emailVerified: boolean;
   passwordResetToken: string | null;
+  phone?: string;
 }
 
 export interface CreateUserData {
@@ -14,6 +15,7 @@ export interface CreateUserData {
   email: string;
   password: string;
   role: 'admin' | 'technician' | 'customer';
+  phone?: string;
 }
 
 export interface UpdateUserData {
@@ -22,6 +24,7 @@ export interface UpdateUserData {
   password: string;
   role: 'admin' | 'technician' | 'customer';
   avatar?: string;
+  phone?: string;
 }
 
 export interface Ticket {

@@ -4,7 +4,7 @@ import { logger } from '../utils/logger';
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
 
     // Validar que todos los campos requeridos estén presentes
     if (!name || !email || !password) {
@@ -25,6 +25,7 @@ export const createUser = async (req: Request, res: Response) => {
       email,
       password: password, // Temporalmente en texto plano
       role: role || 'customer',
+      phone: phone || null,
       status: 'offline',
       emailVerified: false,
     });
@@ -64,6 +65,7 @@ export const getUsers = async (req: Request, res: Response) => {
         'role',
         'status',
         'avatar',
+        'phone',
         'createdAt',
       ],
       order: [['name', 'ASC']],
@@ -86,6 +88,7 @@ export const getUsersPublic = async (req: Request, res: Response) => {
         'role',
         'status',
         'avatar',
+        'phone',
         'createdAt',
       ],
       order: [['name', 'ASC']],
@@ -108,6 +111,7 @@ export const getUserById = async (req: Request, res: Response) => {
         'role',
         'status',
         'avatar',
+        'phone',
         'createdAt',
       ],
     });
@@ -126,7 +130,7 @@ export const getUserById = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, email, password, role, status, avatar } = req.body;
+    const { name, email, password, role, status, avatar, phone } = req.body;
 
     const user = await User.findByPk(id);
     if (!user) {
@@ -140,6 +144,7 @@ export const updateUser = async (req: Request, res: Response) => {
       role: role || user.role,
       status: status || user.status,
       avatar: avatar || user.avatar,
+      phone: phone !== undefined ? phone : user.phone,
     };
 
     // Si se proporciona una nueva contraseña, guardarla (temporalmente en texto plano)
@@ -215,7 +220,7 @@ export const searchCustomers = async (req: Request, res: Response) => {
 
     const customers = await User.findAll({
       where: whereClause,
-      attributes: ['id', 'name', 'email', 'status', 'createdAt'],
+      attributes: ['id', 'name', 'email', 'phone', 'status', 'createdAt'],
       limit: 10,
     });
 

@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../atoms/Card';
 import { Avatar } from '../atoms/Avatar';
 import { Badge } from '../atoms/Badge';
 import { Spinner } from '../atoms/Spinner';
-import { AlertCircle, Mail, UserCog, X, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { AlertCircle, Mail, UserCog, X, Edit, Trash2, MoreVertical, Phone } from 'lucide-react';
 import { Button } from '../atoms/Button';
 import { CreateUserForm } from '../molecules/CreateUserForm';
 import { useAuth } from '../context/AuthContext';
@@ -188,7 +188,8 @@ export const UsersPage: React.FC = () => {
                 name: editingUser.name,
                 email: editingUser.email,
                 password: '', // No mostrar contraseña actual
-                role: editingUser.role
+                role: editingUser.role,
+                phone: editingUser.phone
               }}
             />
           </CardContent>
@@ -213,6 +214,12 @@ export const UsersPage: React.FC = () => {
                         <Mail size={14} />
                         <span className="truncate">{user.email}</span>
                       </div>
+                      {user.phone && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          <Phone size={14} />
+                          <span className="truncate">{user.phone}</span>
+                        </div>
+                      )}
                       <Badge 
                         variant={user.role === 'admin' ? 'primary' : 
                                 user.role === 'technician' ? 'secondary' : 

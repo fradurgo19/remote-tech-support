@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Input } from '../atoms/Input';
 import { Button } from '../atoms/Button';
 import { Select } from '../atoms/Select';
-import { Mail, User as UserIcon, Shield, Lock } from 'lucide-react';
+import { Mail, User as UserIcon, Shield, Lock, Phone } from 'lucide-react';
 
 interface CreateUserFormProps {
   onSubmit: (userData: CreateUserData) => Promise<void>;
@@ -19,7 +19,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSubmit, onCanc
     name: initialData?.name || '',
     email: initialData?.email || '',
     password: initialData?.password || '',
-    role: initialData?.role || 'customer'
+    role: initialData?.role || 'customer',
+    phone: initialData?.phone || ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +71,16 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSubmit, onCanc
         onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
         leftIcon={<Mail size={18} />}
         required
+      />
+
+      <Input
+        id="phone"
+        type="tel"
+        label="Teléfono"
+        value={formData.phone}
+        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+        leftIcon={<Phone size={18} />}
+        placeholder="+57 300 123 4567"
       />
 
       <Input
