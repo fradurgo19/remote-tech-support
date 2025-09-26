@@ -97,12 +97,6 @@ export const CreateTicketPage: React.FC = () => {
   // Función para seleccionar un cliente
   const selectCustomer = (customer: UserType) => {
     setSelectedCustomer(customer);
-    setFormData(prev => ({
-      ...prev,
-      customerId: customer.id,
-      customerEmail: customer.email,
-      customerName: customer.name,
-    }));
     setCustomerSearch(`${customer.name} (${customer.email})`);
     setShowCustomerSearch(false);
   };
@@ -126,6 +120,15 @@ export const CreateTicketPage: React.FC = () => {
     };
 
     selectCustomer(newCustomer);
+
+    // Limpiar los campos después de crear el cliente
+    setFormData(prev => ({
+      ...prev,
+      customerName: '',
+      customerEmail: '',
+    }));
+
+    toast.success('Cliente creado localmente. Puedes crear el ticket ahora.');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -159,7 +162,14 @@ export const CreateTicketPage: React.FC = () => {
       } else if (user.role === 'admin' || user.role === 'technician') {
         // El personal de soporte puede asignar tickets a clientes
         if (selectedCustomer) {
-          ticketData.customerId = selectedCustomer.id;
+          // Si el cliente fue creado localmente (tiene ID temporal), enviar email y nombre
+          if (selectedCustomer.id.startsWith('temp-')) {
+            ticketData.customerEmail = selectedCustomer.email;
+            ticketData.customerName = selectedCustomer.name;
+          } else {
+            // Si es un cliente existente, usar su ID
+            ticketData.customerId = selectedCustomer.id;
+          }
         } else if (formData.customerEmail) {
           ticketData.customerEmail = formData.customerEmail;
           ticketData.customerName = formData.customerName;

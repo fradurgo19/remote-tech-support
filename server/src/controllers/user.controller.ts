@@ -194,14 +194,23 @@ export const searchCustomers = async (req: Request, res: Response) => {
         .json({ message: 'Email o nombre es requerido para buscar clientes' });
     }
 
-    const whereClause: any = { role: 'customer' };
+    // Usar OR en lugar de AND para buscar en cualquiera de los campos
+    const { Op } = require('sequelize');
+    const whereClause: any = {
+      role: 'customer',
+      [Op.or]: [],
+    };
 
     if (email) {
-      whereClause.email = { [require('sequelize').Op.iLike]: `%${email}%` };
+      whereClause[Op.or].push({
+        email: { [Op.iLike]: `%${email}%` },
+      });
     }
 
     if (name) {
-      whereClause.name = { [require('sequelize').Op.iLike]: `%${name}%` };
+      whereClause[Op.or].push({
+        name: { [Op.iLike]: `%${name}%` },
+      });
     }
 
     const customers = await User.findAll({
@@ -213,6 +222,35 @@ export const searchCustomers = async (req: Request, res: Response) => {
     res.json(customers);
   } catch (error) {
     logger.error('Error al buscar clientes:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+export const uploadAvatar = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as any;
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ message: 'No se proporcionó archivo de avatar' });
+    }
+
+    // Generar URL del avatar (en este caso, usando Cloudinary o similar)
+    // Por ahora, vamos a simular una URL
+    const avatarUrl = `https://res.cloudinary.com/example/image/upload/v${Date.now()}/${
+      req.file.filename
+    }`;
+
+    // Actualizar el usuario con la nueva URL del avatar
+    await User.update({ avatar: avatarUrl }, { where: { id: user.id } });
+
+    res.json({
+      message: 'Avatar actualizado correctamente',
+      avatarUrl: avatarUrl,
+    });
+  } catch (error) {
+    logger.error('Error al subir avatar:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };

@@ -3,6 +3,7 @@ import {
   Message,
   ServiceCategory,
   Ticket,
+  UpdateUserData,
   User,
 } from '../types';
 
@@ -65,7 +66,7 @@ const tickets: Ticket[] = [
     title: 'Outlook se cierra al iniciar',
     description:
       'Mi aplicación de Outlook se cierra inmediatamente después de abrirse.',
-    status: 'in-progress',
+    status: 'in_progress',
     priority: 'medium',
     createdAt: '2025-03-14T15:20:00Z',
     updatedAt: '2025-03-15T10:45:00Z',
@@ -284,7 +285,7 @@ export const userService = {
     });
     return response.user;
   },
-  updateUser: async (id: string, userData: CreateUserData): Promise<User> => {
+  updateUser: async (id: string, userData: UpdateUserData): Promise<User> => {
     const response = await apiCall(`/api/users/${id}`, {
       method: 'PUT',
       headers: {

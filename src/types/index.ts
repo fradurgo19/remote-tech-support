@@ -16,18 +16,27 @@ export interface CreateUserData {
   role: 'admin' | 'technician' | 'customer';
 }
 
+export interface UpdateUserData {
+  name: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'technician' | 'customer';
+  avatar?: string;
+}
+
 export interface Ticket {
   id: string;
   title: string;
   description: string;
-  status: 'open' | 'in-progress' | 'resolved' | 'closed';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   createdAt: string;
   updatedAt: string;
   customerId: string;
   technicianId?: string;
   category: string;
   tags: string[];
+  messageCount?: number;
 }
 
 export interface Message {

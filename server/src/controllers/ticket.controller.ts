@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import { sequelize } from '../config/database';
 import { Category, Message, Ticket, User } from '../models';
+import { emailService } from '../services/email.service';
 import { logger } from '../utils/logger';
 
 export const getTickets = async (req: Request, res: Response) => {
@@ -20,6 +22,18 @@ export const getTickets = async (req: Request, res: Response) => {
         { model: User, as: 'customer', attributes: ['id', 'name', 'email'] },
         { model: User, as: 'technician', attributes: ['id', 'name', 'email'] },
       ],
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM "Messages" 
+              WHERE "Messages"."ticketId" = "Ticket"."id"
+            )`),
+            'messageCount',
+          ],
+        ],
+      },
     });
     res.json(tickets);
   } catch (error) {
@@ -112,11 +126,9 @@ export const createTicket = async (req: Request, res: Response) => {
         }
         customerId = customer.id;
       } else {
-        return res
-          .status(400)
-          .json({
-            message: 'Email del cliente es requerido para asignar el ticket',
-          });
+        return res.status(400).json({
+          message: 'Email del cliente es requerido para asignar el ticket',
+        });
       }
     } else {
       return res
@@ -141,6 +153,26 @@ export const createTicket = async (req: Request, res: Response) => {
       ],
     });
 
+    // Enviar notificación por correo electrónico
+    try {
+      const emailSent = await emailService.sendTicketCreatedNotification({
+        ticket: ticketWithCustomer as any,
+        customer: ticketWithCustomer?.customer as any,
+        technician: ticketWithCustomer?.technician as any,
+      });
+
+      if (emailSent) {
+        logger.info(`Email notification sent for ticket ${ticket.id}`);
+      } else {
+        logger.warn(
+          `Failed to send email notification for ticket ${ticket.id}`
+        );
+      }
+    } catch (emailError) {
+      logger.error('Error sending email notification:', emailError);
+      // No fallar la creación del ticket si el email falla
+    }
+
     res.status(201).json({
       message: 'Ticket creado exitosamente',
       ticket: ticketWithCustomer,
@@ -148,6 +180,38 @@ export const createTicket = async (req: Request, res: Response) => {
   } catch (error) {
     logger.error('Error al crear ticket:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+export const testEmailConfiguration = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: 'Email es requerido para la prueba' });
+    }
+
+    const emailSent = await emailService.sendTestEmail(email);
+
+    if (emailSent) {
+      res.json({
+        message: 'Email de prueba enviado exitosamente',
+        success: true,
+      });
+    } else {
+      res.status(500).json({
+        message: 'Error al enviar email de prueba',
+        success: false,
+      });
+    }
+  } catch (error) {
+    logger.error('Error testing email configuration:', error);
+    res.status(500).json({
+      message: 'Error interno del servidor',
+      success: false,
+    });
   }
 };
 
@@ -185,7 +249,57 @@ export const updateTicket = async (req: Request, res: Response) => {
       updateData.technicianId = technicianId || ticket.technicianId;
     }
 
+    // Guardar el estado anterior para detectar cambios
+    const oldStatus = ticket.status;
+
     await ticket.update(updateData);
+
+    // Verificar si el estado cambió y enviar correo de notificación
+    if (
+      status &&
+      status !== oldStatus &&
+      (status === 'in_progress' || status === 'resolved')
+    ) {
+      try {
+        // Obtener el ticket actualizado con información del cliente y técnico
+        const updatedTicket = await Ticket.findByPk(id, {
+          include: [
+            {
+              model: User,
+              as: 'customer',
+              attributes: ['id', 'name', 'email'],
+            },
+            {
+              model: User,
+              as: 'technician',
+              attributes: ['id', 'name', 'email'],
+            },
+          ],
+        });
+
+        if (updatedTicket) {
+          const emailSent =
+            await emailService.sendTicketStatusChangeNotification({
+              ticket: updatedTicket as any,
+              customer: updatedTicket.customer as any,
+              technician: updatedTicket.technician as any,
+              oldStatus,
+              newStatus: status,
+            });
+
+          if (emailSent) {
+            logger.info(
+              `Status change email sent for ticket ${id}: ${oldStatus} → ${status}`
+            );
+          } else {
+            logger.warn(`Failed to send status change email for ticket ${id}`);
+          }
+        }
+      } catch (emailError) {
+        logger.error('Error sending status change email:', emailError);
+        // No fallar la actualización del ticket si el email falla
+      }
+    }
 
     res.json({
       message: 'Ticket actualizado exitosamente',
