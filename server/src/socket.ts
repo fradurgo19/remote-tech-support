@@ -1,7 +1,6 @@
-import { Server as SocketIOServer } from 'socket.io';
-import { Server as HTTPServer } from 'http';
 import jwt from 'jsonwebtoken';
-import { User, Message } from './models';
+import { Server as SocketIOServer } from 'socket.io';
+import { CallSession, Message, User } from './models';
 import { logger } from './utils/logger';
 
 interface SocketUser {
@@ -39,14 +38,14 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
   });
 
   // Conexión de socket
-  io.on('connection', (socket) => {
+  io.on('connection', socket => {
     const user = socket.data.user;
     logger.info(`Usuario conectado: ${user.name} (${user.id})`);
 
     // Agregar usuario a la lista de conectados
     connectedUsers.push({
       userId: user.id,
-      socketId: socket.id
+      socketId: socket.id,
     });
 
     // Actualizar estado del usuario a online
@@ -59,26 +58,37 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     });
 
     // Manejar nuevos mensajes
-    socket.on('new_message', async (data: { ticketId: string; content: string; type?: string; fileUrl?: string }) => {
-      try {
-        const message = await Message.create({
-          content: data.content,
-          ticketId: data.ticketId,
-          senderId: user.id,
-          type: data.type || 'text',
-          fileUrl: data.fileUrl
-        });
+    socket.on(
+      'new_message',
+      async (data: {
+        ticketId: string;
+        content: string;
+        type?: string;
+        fileUrl?: string;
+      }) => {
+        try {
+          const message = await Message.create({
+            content: data.content,
+            ticketId: data.ticketId,
+            senderId: user.id,
+            type: data.type || 'text',
+            fileUrl: data.fileUrl,
+          });
 
-        const messageWithUser = await Message.findByPk(message.id, {
-          include: [{ model: User, attributes: ['id', 'name', 'email'] }]
-        });
+          const messageWithUser = await Message.findByPk(message.id, {
+            include: [{ model: User, attributes: ['id', 'name', 'email'] }],
+          });
 
-        io.to(`ticket_${data.ticketId}`).emit('message_received', messageWithUser);
-      } catch (error) {
-        logger.error('Error al crear mensaje:', error);
-        socket.emit('error', { message: 'Error al enviar mensaje' });
+          io.to(`ticket_${data.ticketId}`).emit(
+            'message_received',
+            messageWithUser
+          );
+        } catch (error) {
+          logger.error('Error al crear mensaje:', error);
+          socket.emit('error', { message: 'Error al enviar mensaje' });
+        }
       }
-    });
+    );
 
     // Manejar cambios de estado
     socket.on('status_change', async (status: string) => {
@@ -87,6 +97,237 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
         io.emit('user_status_changed', { userId: user.id, status });
       } catch (error) {
         logger.error('Error al cambiar estado:', error);
+      }
+    });
+
+    // Manejar iniciación de videollamada
+    socket.on(
+      'call-initiate',
+      async (data: { to: string; ticketId: string }) => {
+        try {
+          const { to: recipientId, ticketId } = data;
+
+          logger.info(`=== INICIANDO LLAMADA ===`);
+          logger.info(`De: ${user.name} (${user.id})`);
+          logger.info(`Para: ${recipientId}`);
+          logger.info(`Ticket: ${ticketId}`);
+          logger.info(`Usuarios conectados: ${connectedUsers.length}`);
+          logger.info(
+            `Conectados: ${connectedUsers
+              .map(u => `${u.userId}(${u.socketId})`)
+              .join(', ')}`
+          );
+
+          // Crear sesión de llamada
+          const callSession = await CallSession.create({
+            ticketId,
+            initiatorId: user.id,
+            participantIds: [user.id, recipientId],
+            status: 'initiated',
+          });
+
+          logger.info(`Sesión de llamada creada: ${callSession.id}`);
+
+          // Encontrar el socket del destinatario
+          const recipientSocket = connectedUsers.find(
+            u => u.userId === recipientId
+          );
+
+          logger.info(
+            `Socket del destinatario encontrado: ${
+              recipientSocket ? 'SÍ' : 'NO'
+            }`
+          );
+          if (recipientSocket) {
+            logger.info(
+              `Socket ID del destinatario: ${recipientSocket.socketId}`
+            );
+          }
+
+          if (recipientSocket) {
+            // Enviar solicitud de llamada al destinatario
+            const callRequestData = {
+              from: user.id,
+              ticketId,
+              callSessionId: callSession.id,
+            };
+
+            logger.info(
+              `Enviando call-request a ${recipientSocket.socketId}:`,
+              callRequestData
+            );
+            io.to(recipientSocket.socketId).emit(
+              'call-request',
+              callRequestData
+            );
+
+            logger.info(
+              `Llamada iniciada de ${user.name} a ${recipientId} en ticket ${ticketId}`
+            );
+          } else {
+            // Destinatario no está conectado
+            logger.warn(`Destinatario ${recipientId} no está conectado`);
+            await callSession.update({ status: 'missed' });
+            socket.emit('call-error', {
+              message: 'El destinatario no está disponible',
+            });
+          }
+        } catch (error) {
+          logger.error('Error al iniciar llamada:', error);
+          socket.emit('call-error', { message: 'Error al iniciar la llamada' });
+        }
+      }
+    );
+
+    // Manejar aceptación de videollamada
+    socket.on('call-accept', async (data: { callSessionId: string }) => {
+      try {
+        const { callSessionId } = data;
+
+        const callSession = await CallSession.findByPk(callSessionId);
+        if (!callSession) {
+          socket.emit('call-error', {
+            message: 'Sesión de llamada no encontrada',
+          });
+          return;
+        }
+
+        // Actualizar estado de la llamada
+        await callSession.update({
+          status: 'active',
+          startedAt: new Date(),
+        });
+
+        // Notificar al iniciador que la llamada fue aceptada
+        const initiatorSocket = connectedUsers.find(
+          u => u.userId === callSession.initiatorId
+        );
+        if (initiatorSocket) {
+          io.to(initiatorSocket.socketId).emit('call-accepted', {
+            callSessionId,
+            participantId: user.id,
+          });
+        }
+
+        logger.info(`Llamada ${callSessionId} aceptada por ${user.name}`);
+      } catch (error) {
+        logger.error('Error al aceptar llamada:', error);
+        socket.emit('call-error', { message: 'Error al aceptar la llamada' });
+      }
+    });
+
+    // Manejar rechazo de videollamada
+    socket.on('call-decline', async (data: { callSessionId: string }) => {
+      try {
+        const { callSessionId } = data;
+
+        const callSession = await CallSession.findByPk(callSessionId);
+        if (!callSession) {
+          socket.emit('call-error', {
+            message: 'Sesión de llamada no encontrada',
+          });
+          return;
+        }
+
+        // Actualizar estado de la llamada
+        await callSession.update({
+          status: 'declined',
+          endedAt: new Date(),
+        });
+
+        // Notificar al iniciador que la llamada fue rechazada
+        const initiatorSocket = connectedUsers.find(
+          u => u.userId === callSession.initiatorId
+        );
+        if (initiatorSocket) {
+          io.to(initiatorSocket.socketId).emit('call-declined', {
+            callSessionId,
+            participantId: user.id,
+          });
+        }
+
+        logger.info(`Llamada ${callSessionId} rechazada por ${user.name}`);
+      } catch (error) {
+        logger.error('Error al rechazar llamada:', error);
+        socket.emit('call-error', { message: 'Error al rechazar la llamada' });
+      }
+    });
+
+    // Manejar finalización de videollamada
+    socket.on('call-end', async (data: { callSessionId: string }) => {
+      try {
+        const { callSessionId } = data;
+
+        const callSession = await CallSession.findByPk(callSessionId);
+        if (!callSession) {
+          socket.emit('call-error', {
+            message: 'Sesión de llamada no encontrada',
+          });
+          return;
+        }
+
+        // Calcular duración si la llamada estaba activa
+        let duration = 0;
+        if (callSession.status === 'active' && callSession.startedAt) {
+          duration = Math.floor(
+            (new Date().getTime() - callSession.startedAt.getTime()) / 1000
+          );
+        }
+
+        // Actualizar estado de la llamada
+        await callSession.update({
+          status: 'ended',
+          endedAt: new Date(),
+          duration,
+        });
+
+        // Notificar a todos los participantes
+        callSession.participantIds.forEach(participantId => {
+          const participantSocket = connectedUsers.find(
+            u => u.userId === participantId
+          );
+          if (participantSocket) {
+            io.to(participantSocket.socketId).emit('call-ended', {
+              callSessionId,
+              duration,
+            });
+          }
+        });
+
+        logger.info(
+          `Llamada ${callSessionId} finalizada por ${user.name}, duración: ${duration}s`
+        );
+      } catch (error) {
+        logger.error('Error al finalizar llamada:', error);
+        socket.emit('call-error', { message: 'Error al finalizar la llamada' });
+      }
+    });
+
+    // Manejar señalización WebRTC
+    socket.on('signal', (data: { to: string; signal: any }) => {
+      try {
+        const { to: recipientId, signal } = data;
+
+        // Encontrar el socket del destinatario
+        const recipientSocket = connectedUsers.find(
+          u => u.userId === recipientId
+        );
+
+        if (recipientSocket) {
+          // Reenviar la señal al destinatario
+          io.to(recipientSocket.socketId).emit('signal', {
+            from: user.id,
+            signal,
+          });
+
+          logger.debug(`Señal WebRTC enviada de ${user.name} a ${recipientId}`);
+        } else {
+          logger.warn(
+            `Destinatario ${recipientId} no encontrado para señal WebRTC`
+          );
+        }
+      } catch (error) {
+        logger.error('Error al manejar señal WebRTC:', error);
       }
     });
 
@@ -105,4 +346,4 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       io.emit('user_status_changed', { userId: user.id, status: 'offline' });
     });
   });
-}; 
+};

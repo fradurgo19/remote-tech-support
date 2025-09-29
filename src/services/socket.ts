@@ -20,15 +20,17 @@ class SocketService {
     this.connectionAttempts = 0;
 
     try {
+      // Get token from localStorage
+      const token = localStorage.getItem('authToken');
+
       this.socket = io(SOCKET_URL, {
         auth: {
-          userId: user.id,
-          userRole: user.role,
+          token: token, // Send JWT token for authentication
         },
         timeout: 5000, // 5 second timeout
         forceNew: true,
-        reconnection: false, // Disable auto-reconnection to avoid spam
-        reconnectionAttempts: 0,
+        reconnection: true, // Enable reconnection
+        reconnectionAttempts: 5,
         reconnectionDelay: 1000,
       });
     } catch (error) {
@@ -161,22 +163,46 @@ class SocketService {
 
   // Handle call signaling
   initiateCall(recipientId: string, ticketId: string): void {
+    console.log('SocketService: initiateCall called with:', {
+      recipientId,
+      ticketId,
+    });
+    console.log('SocketService: Socket exists?', !!this.socket);
+    console.log('SocketService: User exists?', !!this.user);
+    console.log('SocketService: Server available?', this.isServerAvailable);
+    console.log('SocketService: Socket connected?', this.socket?.connected);
+
     if (this.socket && this.user && this.isServerAvailable) {
+      console.log('SocketService: Emitting call-initiate event');
       this.socket.emit('call-initiate', {
         from: this.user.id,
         to: recipientId,
         ticketId,
       });
+      console.log('SocketService: call-initiate event emitted');
     } else {
-      console.log('Mock: Call initiated', { recipientId, ticketId });
+      console.log('SocketService: Mock: Call initiated', {
+        recipientId,
+        ticketId,
+      });
     }
   }
 
   onCallRequest(
-    callback: (data: { from: string; ticketId: string }) => void
+    callback: (data: {
+      from: string;
+      ticketId: string;
+      callSessionId: string;
+    }) => void
   ): () => void {
     if (this.socket && this.isServerAvailable) {
-      this.socket.on('call-request', callback);
+      this.socket.on('call-request', data => {
+        console.log('=== CALL REQUEST RECEIVED ===');
+        console.log('Data:', data);
+        console.log('Socket ID:', this.socket?.id);
+        console.log('User:', this.user?.name);
+        callback(data);
+      });
       return () => {
         this.socket?.off('call-request', callback);
       };
@@ -211,6 +237,18 @@ class SocketService {
 
   isServerAvailableStatus(): boolean {
     return this.isServerAvailable;
+  }
+
+  getSocket(): Socket | null {
+    return this.socket;
+  }
+
+  reconnect(): void {
+    if (this.user) {
+      console.log('SocketService: Reconnecting...');
+      this.disconnect();
+      this.connect(this.user);
+    }
   }
 
   public onConnectionChange(
