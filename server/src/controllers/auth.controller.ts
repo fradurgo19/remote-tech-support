@@ -194,7 +194,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
 export const me = async (req: Request, res: Response) => {
   try {
     // El middleware de autenticación ya verificó el token y puso el usuario en req.user
-    const user = req.user as any;
+    const user = req.user as { id: string };
     
     if (!user) {
       return res.status(401).json({ message: 'Token inválido' });
@@ -219,7 +219,7 @@ export const me = async (req: Request, res: Response) => {
 export const changePassword = async (req: Request, res: Response) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const userId = (req.user as any).id;
+    const userId = (req.user as { id: string }).id;
 
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ message: 'Contraseña actual y nueva contraseña son requeridas' });

@@ -29,7 +29,7 @@ export const getMessages = async (req: Request, res: Response) => {
       const userMap = users.reduce((acc, user) => {
         acc[user.id] = user;
         return acc;
-      }, {} as any);
+      }, {} as Record<string, { id: string; name: string; email: string; avatar: string }>);
       
       const messagesWithUsers = messages.map(message => ({
         ...message.toJSON(),
@@ -49,7 +49,7 @@ export const getMessages = async (req: Request, res: Response) => {
 export const createMessage = async (req: Request, res: Response) => {
   try {
     const { content, ticketId, type = 'text' } = req.body;
-    const senderId = (req.user as any).id;
+    const senderId = (req.user as { id: string }).id;
 
     logger.info(`Creando mensaje para ticket ${ticketId} por usuario ${senderId}`);
 
@@ -130,7 +130,7 @@ export const uploadFile = upload.single('file');
 export const sendFileMessage = async (req: Request, res: Response) => {
   try {
     const { ticketId, type = 'file' } = req.body;
-    const senderId = (req.user as any).id;
+    const senderId = (req.user as { id: string }).id;
     const file = req.file;
 
     if (!file) {

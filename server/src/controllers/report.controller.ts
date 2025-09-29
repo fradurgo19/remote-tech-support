@@ -4,8 +4,8 @@ import { logger } from '../utils/logger';
 
 export const getReports = async (req: Request, res: Response) => {
   try {
-    const user = req.user as any;
-    let whereClause: any = {};
+    const user = req.user as { id: string; role: string };
+    const whereClause: { customerId?: string } = {};
 
     // Filtrar informes según el rol del usuario
     if (user.role === 'customer') {
@@ -38,7 +38,7 @@ export const getReports = async (req: Request, res: Response) => {
 export const getReportById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const report = await Report.findByPk(id, {
       include: [
@@ -83,7 +83,7 @@ export const createReport = async (req: Request, res: Response) => {
       tags,
       attachments,
     } = req.body;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     // Verificar permisos de creación
     if (user.role === 'customer') {
