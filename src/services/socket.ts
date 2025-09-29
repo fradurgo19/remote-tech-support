@@ -45,6 +45,10 @@ class SocketService {
       this.connectionAttempts = 0;
       this.isReconnecting = false;
 
+      // Expose socket to global context for debugging
+      (window as any).socketService = this;
+      (window as any).socket = this.socket;
+
       // Resend any queued messages
       if (this.messageQueue.length > 0) {
         console.log('Resending queued messages:', this.messageQueue.length);

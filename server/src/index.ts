@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.routes';
 import categoryRoutes from './routes/category.routes';
 import messageRoutes from './routes/message.routes';
 import reportRoutes from './routes/report.routes';
+import testRoutes from './routes/test';
 import ticketRoutes from './routes/ticket.routes';
 import userRoutes from './routes/user.routes';
 import { resetAllPasswords } from './scripts/resetPasswords';
@@ -54,6 +55,7 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/test', testRoutes);
 
 // Manejador de errores
 app.use(errorHandler);

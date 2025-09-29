@@ -190,10 +190,17 @@ export const TicketDetailPage: React.FC = () => {
 
         {activeTab === 'call' && (
           <VideoCallPanel
-            recipientId={ticket.customerId}
+            recipientId={
+              currentUser?.id === ticket.customerId
+                ? ticket.technicianId || ''
+                : ticket.customerId
+            }
             ticketId={ticket.id}
-            localUser={users[ticket.technicianId || '']}
-            remoteUsers={{ [ticket.customerId]: customer }}
+            localUser={currentUser}
+            remoteUsers={{
+              [ticket.customerId]: customer,
+              ...(technician && { [ticket.technicianId]: technician }),
+            }}
           />
         )}
       </div>

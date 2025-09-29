@@ -128,38 +128,40 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
 
           logger.info(`Sesión de llamada creada: ${callSession.id}`);
 
-          // Encontrar el socket del destinatario
-          const recipientSocket = connectedUsers.find(
+          // Encontrar TODOS los sockets del destinatario
+          const recipientSockets = connectedUsers.filter(
             u => u.userId === recipientId
           );
 
           logger.info(
-            `Socket del destinatario encontrado: ${
-              recipientSocket ? 'SÍ' : 'NO'
-            }`
+            `Sockets del destinatario encontrados: ${recipientSockets.length}`
           );
-          if (recipientSocket) {
+          if (recipientSockets.length > 0) {
             logger.info(
-              `Socket ID del destinatario: ${recipientSocket.socketId}`
+              `Socket IDs del destinatario: ${recipientSockets
+                .map(s => s.socketId)
+                .join(', ')}`
             );
           }
 
-          if (recipientSocket) {
-            // Enviar solicitud de llamada al destinatario
+          if (recipientSockets.length > 0) {
+            // Enviar solicitud de llamada a TODOS los sockets del destinatario
             const callRequestData = {
               from: user.id,
               ticketId,
               callSessionId: callSession.id,
             };
 
-            logger.info(
-              `Enviando call-request a ${recipientSocket.socketId}:`,
-              callRequestData
-            );
-            io.to(recipientSocket.socketId).emit(
-              'call-request',
-              callRequestData
-            );
+            recipientSockets.forEach(recipientSocket => {
+              logger.info(
+                `Enviando call-request a ${recipientSocket.socketId}:`,
+                callRequestData
+              );
+              io.to(recipientSocket.socketId).emit(
+                'call-request',
+                callRequestData
+              );
+            });
 
             logger.info(
               `Llamada iniciada de ${user.name} a ${recipientId} en ticket ${ticketId}`
@@ -308,22 +310,37 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       try {
         const { to: recipientId, signal } = data;
 
-        // Encontrar el socket del destinatario
-        const recipientSocket = connectedUsers.find(
+        logger.info(`=== SEÑAL WEBRTC RECIBIDA ===`);
+        logger.info(`De: ${user.name} (${user.id})`);
+        logger.info(`Para: ${recipientId}`);
+        logger.info(`Tipo: ${signal.type || 'unknown'}`);
+        logger.info(`Usuarios conectados: ${connectedUsers.length}`);
+        logger.info(
+          `Conectados: ${connectedUsers
+            .map(u => `${u.userId}(${u.socketId})`)
+            .join(', ')}`
+        );
+
+        // Encontrar TODOS los sockets del destinatario
+        const recipientSockets = connectedUsers.filter(
           u => u.userId === recipientId
         );
 
-        if (recipientSocket) {
-          // Reenviar la señal al destinatario
-          io.to(recipientSocket.socketId).emit('signal', {
-            from: user.id,
-            signal,
-          });
+        if (recipientSockets.length > 0) {
+          // Reenviar la señal a TODOS los sockets del destinatario
+          recipientSockets.forEach(recipientSocket => {
+            io.to(recipientSocket.socketId).emit('signal', {
+              from: user.id,
+              signal,
+            });
 
-          logger.debug(`Señal WebRTC enviada de ${user.name} a ${recipientId}`);
+            logger.info(
+              `✅ Señal WebRTC enviada de ${user.name} a ${recipientId} (${recipientSocket.socketId})`
+            );
+          });
         } else {
           logger.warn(
-            `Destinatario ${recipientId} no encontrado para señal WebRTC`
+            `❌ Destinatario ${recipientId} no encontrado para señal WebRTC`
           );
         }
       } catch (error) {

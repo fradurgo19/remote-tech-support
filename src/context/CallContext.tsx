@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import { socketService } from '../services/socket';
-import { PeerStreamData, webRTCService } from '../services/webrtc';
+import { PeerStreamData, webRTCNativeService } from '../services/webrtc-native';
 import { useAuth } from './AuthContext';
 
 interface CallContextType {
@@ -75,7 +75,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     if (user) {
       console.log('CallContext: Initializing with user:', user.id, user.name);
-      webRTCService.initialize(user);
+      webRTCNativeService.initialize(user);
 
       const onStreamHandler = (data: PeerStreamData) => {
         console.log('Received remote stream from peer:', data.peerId);
@@ -93,20 +93,14 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       };
 
-      const onStreamRemoveHandler = (peerId: string) => {
-        console.log('Remote stream removed from peer:', peerId);
-        setRemoteStreams(prev => prev.filter(p => p.peerId !== peerId));
-      };
+      // Stream removal is handled automatically by WebRTC native
 
       const onDevicesChangeHandler = (devices: any[]) => {
         setAvailableDevices(devices);
       };
 
-      const unsubscribeStream = webRTCService.onStream(onStreamHandler);
-      const unsubscribeRemove = webRTCService.onStreamRemove(
-        onStreamRemoveHandler
-      );
-      const unsubscribeDevices = webRTCService.onDevicesChange(
+      const unsubscribeStream = webRTCNativeService.onStream(onStreamHandler);
+      const unsubscribeDevices = webRTCNativeService.onDevices(
         onDevicesChangeHandler
       );
 
@@ -154,7 +148,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         unsubscribeStream();
         unsubscribeRemove();
         unsubscribeDevices();
-        webRTCService.cleanup();
+        webRTCNativeService.cleanup();
       };
     }
   }, [user]);
@@ -176,7 +170,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       );
 
       // Get local stream first
-      const stream = await webRTCService.getLocalStream(true, true);
+      const stream = await webRTCNativeService.getLocalStream(true, true);
       console.log('CallContext: Local stream obtained:', {
         id: stream.id,
         videoTracks: stream.getVideoTracks().length,
@@ -188,7 +182,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       setAudioEnabled(true);
 
       // Then initiate the call
-      await webRTCService.initiateCall(recipientId, ticketId);
+      await webRTCNativeService.initiateCall(recipientId, ticketId);
       setIsInCall(true);
 
       console.log('CallContext: Call initiated successfully');
@@ -205,13 +199,58 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(true);
 
     try {
-      const stream = await webRTCService.getLocalStream(true, true);
-      setLocalStream(stream);
-      setVideoEnabled(true);
-      setAudioEnabled(true);
+      // Intentar obtener stream con cámara y audio
+      let stream: MediaStream | null = null;
+      let videoEnabled = true;
+      let audioEnabled = true;
 
-      await webRTCService.acceptCall(callerId);
-      setIsInCall(true);
+      try {
+        stream = await webRTCNativeService.getLocalStream(true, true);
+        console.log('CallContext: Stream obtenido con cámara y audio');
+      } catch (cameraError) {
+        console.warn(
+          'CallContext: Cámara no disponible, intentando solo audio:',
+          cameraError
+        );
+
+        try {
+          // Intentar solo audio
+          stream = await webRTCNativeService.getLocalStream(false, true);
+          videoEnabled = false;
+          audioEnabled = true;
+          console.log('CallContext: Stream obtenido solo con audio');
+        } catch (audioError) {
+          console.warn(
+            'CallContext: Audio no disponible, creando stream vacío:',
+            audioError
+          );
+
+          // Crear stream vacío (solo para la conexión WebRTC)
+          stream = new MediaStream();
+          videoEnabled = false;
+          audioEnabled = false;
+          console.log('CallContext: Stream vacío creado');
+        }
+      }
+
+      if (stream) {
+        setLocalStream(stream);
+        setVideoEnabled(videoEnabled);
+        setAudioEnabled(audioEnabled);
+
+        await webRTCNativeService.acceptCall(callerId);
+        setIsInCall(true);
+
+        console.log('CallContext: Llamada aceptada exitosamente');
+        console.log(
+          'CallContext: Video:',
+          videoEnabled,
+          'Audio:',
+          audioEnabled
+        );
+      } else {
+        throw new Error('No se pudo crear ningún stream de media');
+      }
     } catch (err) {
       console.error('Error accepting call:', err);
       setError((err as Error).message);
@@ -264,7 +303,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
   const toggleVideo = async () => {
     try {
       const newVideoState = !videoEnabled;
-      await webRTCService.toggleVideo(newVideoState);
+      await webRTCNativeService.toggleVideo(newVideoState);
       setVideoEnabled(newVideoState);
       console.log('Video toggled to:', newVideoState);
     } catch (err) {
@@ -276,7 +315,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
   const toggleAudio = async () => {
     try {
       const newAudioState = !audioEnabled;
-      await webRTCService.toggleAudio(newAudioState);
+      await webRTCNativeService.toggleAudio(newAudioState);
       setAudioEnabled(newAudioState);
       console.log('Audio toggled to:', newAudioState);
     } catch (err) {
@@ -288,9 +327,9 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
   const toggleScreenShare = async () => {
     try {
       if (isScreenSharing) {
-        await webRTCService.stopScreenSharing();
+        await webRTCNativeService.stopScreenSharing();
       } else {
-        const screenStream = await webRTCService.startScreenSharing();
+        const screenStream = await webRTCNativeService.startScreenSharing();
         if (!screenStream) {
           throw new Error(
             'No se pudo obtener el stream de pantalla compartida'
@@ -307,7 +346,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
   const toggleRecording = async () => {
     try {
       if (isRecording) {
-        const recordingBlob = await webRTCService.stopRecording();
+        const recordingBlob = await webRTCNativeService.stopRecording();
         if (recordingBlob) {
           console.log(
             'Grabación detenida, tamaño del blob:',
@@ -315,7 +354,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
           );
         }
       } else {
-        webRTCService.startRecording();
+        webRTCNativeService.startRecording();
       }
       setIsRecording(!isRecording);
     } catch (err) {
@@ -326,7 +365,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const switchCamera = async (deviceId: string) => {
     try {
-      await webRTCService.switchCamera(deviceId);
+      await webRTCNativeService.switchCamera(deviceId);
     } catch (err) {
       console.error('Error switching camera:', err);
       setError((err as Error).message);
@@ -335,7 +374,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const switchMicrophone = async (deviceId: string) => {
     try {
-      await webRTCService.switchMicrophone(deviceId);
+      await webRTCNativeService.switchMicrophone(deviceId);
     } catch (err) {
       console.error('Error switching microphone:', err);
       setError((err as Error).message);
@@ -344,10 +383,10 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const addCamera = async (deviceId: string): Promise<MediaStream | null> => {
     try {
-      const stream = await webRTCService.addCamera(deviceId);
+      const stream = await webRTCNativeService.addCamera(deviceId);
       if (stream) {
-        setActiveCameraStreams(webRTCService.getActiveCameraStreams());
-        setActiveCameraIds(webRTCService.getActiveCameraIds());
+        setActiveCameraStreams(webRTCNativeService.getActiveCameraStreams());
+        setActiveCameraIds(webRTCNativeService.getActiveCameraIds());
       }
       return stream;
     } catch (err) {
@@ -359,9 +398,9 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const removeCamera = async (deviceId: string): Promise<void> => {
     try {
-      await webRTCService.removeCamera(deviceId);
-      setActiveCameraStreams(webRTCService.getActiveCameraStreams());
-      setActiveCameraIds(webRTCService.getActiveCameraIds());
+      await webRTCNativeService.removeCamera(deviceId);
+      setActiveCameraStreams(webRTCNativeService.getActiveCameraStreams());
+      setActiveCameraIds(webRTCNativeService.getActiveCameraIds());
     } catch (err) {
       console.error('Error removing camera:', err);
       setError((err as Error).message);
@@ -372,9 +411,9 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     deviceId: string
   ): Promise<MediaStream | null> => {
     try {
-      const stream = await webRTCService.toggleCamera(deviceId);
-      setActiveCameraStreams(webRTCService.getActiveCameraStreams());
-      setActiveCameraIds(webRTCService.getActiveCameraIds());
+      const stream = await webRTCNativeService.toggleCamera(deviceId);
+      setActiveCameraStreams(webRTCNativeService.getActiveCameraStreams());
+      setActiveCameraIds(webRTCNativeService.getActiveCameraIds());
       return stream;
     } catch (err) {
       console.error('Error toggling camera:', err);
@@ -385,7 +424,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const endCall = useCallback(() => {
     console.log('Ending call');
-    webRTCService.endCall();
+    webRTCNativeService.endCall();
     setIsInCall(false);
     setLocalStream(null);
     setRemoteStreams([]);
@@ -397,7 +436,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     setIncomingCall(null);
 
     if (isRecording) {
-      webRTCService.stopRecording();
+      webRTCNativeService.stopRecording();
       setIsRecording(false);
     }
   }, [isRecording]);
