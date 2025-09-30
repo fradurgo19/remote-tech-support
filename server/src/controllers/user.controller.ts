@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Op } from 'sequelize';
 import { User } from '../models';
 import { logger } from '../utils/logger';
 
@@ -52,7 +53,7 @@ export const getUsers = async (req: Request, res: Response) => {
     if (user.role === 'customer') {
       // Los clientes solo pueden ver administradores y técnicos (no otros clientes)
       whereClause.role = {
-        [require('sequelize').Op.in]: ['admin', 'technician'],
+        [Op.in]: ['admin', 'technician'],
       };
     }
     // Los administradores y técnicos pueden ver todos los usuarios (no se aplica filtro)
@@ -139,7 +140,14 @@ export const updateUser = async (req: Request, res: Response) => {
     }
 
     // Preparar datos de actualización
-    const updateData: any = {
+    const updateData: {
+      name: string;
+      email: string;
+      role: string;
+      status: string;
+      avatar: string | null;
+      phone: string | null;
+    } = {
       name: name || user.name,
       email: email || user.email,
       role: role || user.role,
@@ -202,8 +210,10 @@ export const searchCustomers = async (req: Request, res: Response) => {
     }
 
     // Usar OR en lugar de AND para buscar en cualquiera de los campos
-    const { Op } = require('sequelize');
-    const whereClause: any = {
+    const whereClause: {
+      role: string;
+      [key: symbol]: Array<{ email?: { [key: symbol]: string } } | { name?: { [key: symbol]: string } }>;
+    } = {
       role: 'customer',
       [Op.or]: [],
     };
