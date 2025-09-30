@@ -23,15 +23,16 @@ const CameraStream: React.FC<CameraStreamProps> = ({
   const [isPlaying, setIsPlaying] = React.useState(false);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(console.error);
+    const video = videoRef.current;
+    if (video && stream) {
+      video.srcObject = stream;
+      video.play().catch(console.error);
       setIsPlaying(true);
     }
 
     return () => {
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
+      if (video) {
+        video.srcObject = null;
       }
     };
   }, [stream]);

@@ -31,13 +31,7 @@ const ReportDetailPage: React.FC<ReportDetailPageProps> = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (id) {
-      fetchReport();
-    }
-  }, [id]);
-
-  const fetchReport = async () => {
+  const fetchReport = React.useCallback(async () => {
     if (!id) return;
 
     try {
@@ -52,7 +46,13 @@ const ReportDetailPage: React.FC<ReportDetailPageProps> = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchReport();
+    }
+  }, [id, fetchReport]);
 
   const getStatusIcon = (status: Report['status']) => {
     switch (status) {

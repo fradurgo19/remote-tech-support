@@ -6,8 +6,8 @@ import { logger } from '../utils/logger';
 
 export const getTickets = async (req: Request, res: Response) => {
   try {
-    const user = req.user as any;
-    let whereClause: any = {};
+    const user = req.user as { id: string; role: string };
+    const whereClause: { customerId?: string } = {};
 
     // Filtrar tickets según el rol del usuario
     if (user.role === 'customer') {
@@ -45,7 +45,7 @@ export const getTickets = async (req: Request, res: Response) => {
 export const getTicketById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const ticket = await Ticket.findByPk(id, {
       include: [
@@ -89,7 +89,7 @@ export const createTicket = async (req: Request, res: Response) => {
       customerEmail,
       customerName,
     } = req.body;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string; email: string };
     let customerId: string;
 
     // Buscar la categoría por nombre para obtener su ID
@@ -156,9 +156,9 @@ export const createTicket = async (req: Request, res: Response) => {
     // Enviar notificación por correo electrónico
     try {
       const emailSent = await emailService.sendTicketCreatedNotification({
-        ticket: ticketWithCustomer as any,
-        customer: ticketWithCustomer?.customer as any,
-        technician: ticketWithCustomer?.technician as any,
+        ticket: ticketWithCustomer as { id: string; title: string; description: string; priority: string; status: string },
+        customer: ticketWithCustomer?.customer as { id: string; name: string; email: string } | undefined,
+        technician: ticketWithCustomer?.technician as { id: string; name: string; email: string } | undefined,
       });
 
       if (emailSent) {

@@ -102,13 +102,13 @@ export const createReport = async (req: Request, res: Response) => {
     // Procesar archivos adjuntos si existen
     let processedAttachments: string[] = [];
     if (attachments && Array.isArray(attachments)) {
-      processedAttachments = attachments.map((attachment: any) => {
+      processedAttachments = attachments.map((attachment: string | { content: string }) => {
         // Si es un objeto con contenido base64, usar el contenido
         if (typeof attachment === 'object' && attachment.content) {
           return attachment.content;
         }
         // Si es un string, usarlo directamente
-        return attachment;
+        return attachment as string;
       });
     }
 
@@ -152,7 +152,7 @@ export const updateReport = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { title, description, type, priority, status, tags, attachments } =
       req.body;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const report = await Report.findByPk(id);
     if (!report) {
@@ -173,7 +173,16 @@ export const updateReport = async (req: Request, res: Response) => {
         .json({ message: 'No tienes permisos para actualizar este informe' });
     }
 
-    const updateData: any = {
+    const updateData: {
+      title: string;
+      description: string;
+      type: string;
+      priority: string;
+      tags?: string[];
+      attachments?: string[];
+      status?: string;
+      reviewedBy?: string;
+    } = {
       title: title || report.title,
       description: description || report.description,
       type: type || report.type,
@@ -206,7 +215,7 @@ export const updateReport = async (req: Request, res: Response) => {
 export const deleteReport = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const report = await Report.findByPk(id);
     if (!report) {

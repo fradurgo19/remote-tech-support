@@ -28,18 +28,19 @@ export const PictureInPictureVideo: React.FC<PictureInPictureVideoProps> = ({
   const { isPictureInPicture } = usePictureInPicture(videoRef);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
+    const video = videoRef.current;
+    if (video && stream) {
+      video.srcObject = stream;
 
       // Force play for local streams
       if (isLocal) {
-        videoRef.current.play().catch(console.error);
+        video.play().catch(console.error);
       }
     }
 
     return () => {
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
+      if (video) {
+        video.srcObject = null;
       }
     };
   }, [stream, isLocal]);
@@ -53,23 +54,25 @@ export const PictureInPictureVideo: React.FC<PictureInPictureVideoProps> = ({
 
   // Force video element update when stream tracks change
   useEffect(() => {
-    if (videoRef.current && stream) {
-      const videoTracks = stream.getVideoTracks();
-      if (videoTracks.length > 0) {
-        // Force a small delay to ensure track is ready
-        const timer = setTimeout(() => {
-          if (videoRef.current && videoRef.current.srcObject !== stream) {
-            videoRef.current.srcObject = stream;
-            if (isLocal) {
-              videoRef.current.play().catch(console.error);
-            }
+    if (!stream) return;
+    
+    const videoTracks = stream.getVideoTracks();
+    const video = videoRef.current;
+    
+    if (video && videoTracks.length > 0) {
+      // Force a small delay to ensure track is ready
+      const timer = setTimeout(() => {
+        if (video && video.srcObject !== stream) {
+          video.srcObject = stream;
+          if (isLocal) {
+            video.play().catch(console.error);
           }
-        }, 100);
+        }
+      }, 100);
 
-        return () => clearTimeout(timer);
-      }
+      return () => clearTimeout(timer);
     }
-  }, [stream?.getVideoTracks(), isLocal]);
+  }, [stream, isLocal]);
 
   // Check if video track is active
   const hasActiveVideo = stream
