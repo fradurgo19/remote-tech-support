@@ -19,12 +19,12 @@ interface CallContextType {
   audioEnabled: boolean;
   isScreenSharing: boolean;
   isRecording: boolean;
-  availableDevices: any[];
+  availableDevices: MediaDeviceInfo[];
   activeCameraStreams: Map<string, MediaStream>;
   activeCameraIds: string[];
   incomingCall: {
     isIncoming: boolean;
-    caller: any;
+    caller: { id: string; name: string; email: string; avatar?: string };
     ticketId: string;
     callSessionId: string;
   } | null;
@@ -64,14 +64,14 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [availableDevices, setAvailableDevices] = useState<any[]>([]);
+  const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
   const [activeCameraStreams, setActiveCameraStreams] = useState<
     Map<string, MediaStream>
   >(new Map());
   const [activeCameraIds, setActiveCameraIds] = useState<string[]>([]);
   const [incomingCall, setIncomingCall] = useState<{
     isIncoming: boolean;
-    caller: any;
+    caller: { id: string; name: string; email: string; avatar?: string };
     ticketId: string;
     callSessionId: string;
   } | null>(null);

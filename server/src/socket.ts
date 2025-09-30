@@ -309,7 +309,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     });
 
     // Manejar señalización WebRTC
-    socket.on('signal', (data: { to: string; signal: any }) => {
+    socket.on('signal', (data: { to: string; signal: RTCSessionDescriptionInit | RTCIceCandidateInit }) => {
       try {
         const { to: recipientId, signal } = data;
 
