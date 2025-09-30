@@ -113,19 +113,7 @@ User.init(
   {
     sequelize,
     modelName: 'User',
-    hooks: {
-      beforeCreate: async (user: User) => {
-        if (user.password) {
-          const salt = await bcrypt.genSalt(10);
-          user.password = await bcrypt.hash(user.password, salt);
-        }
-      },
-      beforeUpdate: async (user: User) => {
-        if (user.changed('password')) {
-          const salt = await bcrypt.genSalt(10);
-          user.password = await bcrypt.hash(user.password, salt);
-        }
-      },
-    },
+    // Hooks removidos: el hash se maneja en los controladores
+    // para tener mejor control y evitar doble hashing
   }
 ); 
