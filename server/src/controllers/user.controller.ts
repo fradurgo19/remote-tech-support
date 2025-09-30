@@ -32,7 +32,7 @@ export const createUser = async (req: Request, res: Response) => {
 
     // Retornar el usuario sin la contraseña
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user.toJSON();
+    const { password: _password, ...userWithoutPassword } = user.toJSON();
     res.status(201).json({
       message: 'Usuario creado exitosamente',
       user: userWithoutPassword,
@@ -162,7 +162,8 @@ export const updateUser = async (req: Request, res: Response) => {
     await user.save();
 
     // Retornar el usuario sin la contraseña
-    const { password: _, ...userWithoutPassword } = user.toJSON();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _password, ...userWithoutPassword } = user.toJSON();
     res.json({
       message: 'Usuario actualizado exitosamente',
       user: userWithoutPassword,
