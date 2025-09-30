@@ -30,6 +30,8 @@ interface CallContextType {
   } | null;
   peerConnection: RTCPeerConnection | null;
   callStartTime: number | null;
+  isPictureInPicture: boolean;
+  setIsPictureInPicture: (value: boolean) => void;
   initiateCall: (recipientId: string, ticketId: string) => Promise<void>;
   acceptCall: (callerId: string) => Promise<void>;
   acceptIncomingCall: () => Promise<void>;
@@ -75,6 +77,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
   } | null>(null);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const [callStartTime, setCallStartTime] = useState<number | null>(null);
+  const [isPictureInPicture, setIsPictureInPicture] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -443,6 +446,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     setIncomingCall(null);
     setPeerConnection(null);
     setCallStartTime(null);
+    setIsPictureInPicture(false);
 
     if (isRecording) {
       webRTCNativeService.stopRecording();
@@ -468,6 +472,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         incomingCall,
         peerConnection,
         callStartTime,
+        isPictureInPicture,
+        setIsPictureInPicture,
         initiateCall,
         acceptCall,
         acceptIncomingCall,
