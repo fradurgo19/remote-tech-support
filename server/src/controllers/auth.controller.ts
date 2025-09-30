@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models';
 import { logger } from '../utils/logger';
-import crypto from 'crypto';
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -19,13 +19,13 @@ export const login = async (req: Request, res: Response) => {
     }
 
     logger.info(`Comparando contraseñas para usuario: ${user.name}`);
-    
+
     // Solución alternativa: verificar contraseñas en texto plano y comunes
     let isValidPassword = false;
-    
+
     // Lista de contraseñas comunes para verificar
     const commonPasswords = ['admin123', 'password', '123456', 'admin', 'user'];
-    
+
     // Verificar contraseñas comunes
     if (commonPasswords.includes(password)) {
       isValidPassword = true;
@@ -45,7 +45,7 @@ export const login = async (req: Request, res: Response) => {
         logger.error('Error verificando contraseña con bcrypt:', error);
       }
     }
-    
+
     logger.info(`Contraseña válida: ${isValidPassword ? 'Sí' : 'No'}`);
 
     if (!isValidPassword) {
@@ -67,8 +67,8 @@ export const login = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        status: user.status
-      }
+        status: user.status,
+      },
     });
   } catch (error) {
     logger.error('Error en login:', error);
@@ -91,7 +91,7 @@ export const register = async (req: Request, res: Response) => {
       email,
       password: hashedPassword,
       role: role || 'customer',
-      status: 'offline'
+      status: 'offline',
     });
 
     res.status(201).json({
@@ -100,8 +100,8 @@ export const register = async (req: Request, res: Response) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error) {
     logger.error('Error en registro:', error);
@@ -131,7 +131,10 @@ export const forgotPassword = async (req: Request, res: Response) => {
     await user.save();
     // Simular envío de email
     logger.info(`Token de recuperación para ${email}: ${token}`);
-    res.json({ message: 'Se ha enviado un correo de recuperación (simulado)', token });
+    res.json({
+      message: 'Se ha enviado un correo de recuperación (simulado)',
+      token,
+    });
   } catch (error) {
     logger.error('Error en forgotPassword:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -167,7 +170,10 @@ export const sendVerificationEmail = async (req: Request, res: Response) => {
     user.passwordResetToken = token;
     await user.save();
     logger.info(`Token de verificación para ${email}: ${token}`);
-    res.json({ message: 'Se ha enviado un correo de verificación (simulado)', token });
+    res.json({
+      message: 'Se ha enviado un correo de verificación (simulado)',
+      token,
+    });
   } catch (error) {
     logger.error('Error en sendVerificationEmail:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -195,14 +201,14 @@ export const me = async (req: Request, res: Response) => {
   try {
     // El middleware de autenticación ya verificó el token y puso el usuario en req.user
     const user = req.user as { id: string };
-    
+
     if (!user) {
       return res.status(401).json({ message: 'Token inválido' });
     }
 
     // Obtener el usuario completo de la base de datos
     const fullUser = await User.findByPk(user.id, {
-      attributes: { exclude: ['password', 'passwordResetToken'] }
+      attributes: { exclude: ['password', 'passwordResetToken'] },
     });
 
     if (!fullUser) {
@@ -222,11 +228,19 @@ export const changePassword = async (req: Request, res: Response) => {
     const userId = (req.user as { id: string }).id;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: 'Contraseña actual y nueva contraseña son requeridas' });
+      return res
+        .status(400)
+        .json({
+          message: 'Contraseña actual y nueva contraseña son requeridas',
+        });
     }
 
     if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'La nueva contraseña debe tener al menos 6 caracteres' });
+      return res
+        .status(400)
+        .json({
+          message: 'La nueva contraseña debe tener al menos 6 caracteres',
+        });
     }
 
     // Obtener el usuario actual
@@ -239,10 +253,10 @@ export const changePassword = async (req: Request, res: Response) => {
 
     // Verificar la contraseña actual
     let isCurrentPasswordValid = false;
-    
+
     // Lista de contraseñas comunes para verificar
     const commonPasswords = ['admin123', 'password', '123456', 'admin', 'user'];
-    
+
     // Verificar contraseñas comunes
     if (commonPasswords.includes(currentPassword)) {
       isCurrentPasswordValid = true;
@@ -254,7 +268,10 @@ export const changePassword = async (req: Request, res: Response) => {
     } else {
       // Intentar verificar con bcrypt
       try {
-        isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        isCurrentPasswordValid = await bcrypt.compare(
+          currentPassword,
+          user.password
+        );
         if (isCurrentPasswordValid) {
           logger.info('Contraseña actual válida (bcrypt)');
         }
@@ -265,18 +282,22 @@ export const changePassword = async (req: Request, res: Response) => {
 
     if (!isCurrentPasswordValid) {
       logger.warn(`Contraseña actual inválida para usuario: ${user.name}`);
-      return res.status(401).json({ message: 'La contraseña actual es incorrecta' });
+      return res
+        .status(401)
+        .json({ message: 'La contraseña actual es incorrecta' });
     }
 
     // Actualizar la contraseña (temporalmente en texto plano)
     user.password = newPassword;
     await user.save();
 
-    logger.info(`Contraseña actualizada exitosamente para usuario: ${user.name}`);
+    logger.info(
+      `Contraseña actualizada exitosamente para usuario: ${user.name}`
+    );
 
     res.json({ message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     logger.error('Error al cambiar contraseña:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
-}; 
+};
