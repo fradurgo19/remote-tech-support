@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
+import bcrypt from 'bcryptjs';
 import { User } from '../models';
 import { logger } from '../utils/logger';
 
@@ -20,11 +21,12 @@ export const createUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'El email ya está registrado' });
     }
 
-    // Temporalmente guardar contraseña en texto plano
+    // Hashear contraseña antes de guardar
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       name,
       email,
-      password: password, // Temporalmente en texto plano
+      password: hashedPassword,
       role: role || 'customer',
       phone: phone || null,
       status: 'offline',
@@ -156,11 +158,11 @@ export const updateUser = async (req: Request, res: Response) => {
       phone: phone !== undefined ? phone : user.phone,
     };
 
-    // Si se proporciona una nueva contraseña, guardarla (temporalmente en texto plano)
+    // Si se proporciona una nueva contraseña, hashearla antes de guardar
     if (password && password.trim() !== '') {
       logger.info(`Actualizando contraseña para usuario: ${user.name}`);
-      // Temporalmente guardar en texto plano hasta arreglar el hashing
-      user.password = password;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
     } else {
       logger.info(`Manteniendo contraseña actual para usuario: ${user.name}`);
     }

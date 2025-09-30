@@ -18,34 +18,11 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    logger.info(`Comparando contraseñas para usuario: ${user.name}`);
+    logger.info(`Verificando contraseña para usuario: ${user.name}`);
 
-    // Solución alternativa: verificar contraseñas en texto plano y comunes
-    let isValidPassword = false;
-
-    // Lista de contraseñas comunes para verificar
-    const commonPasswords = ['admin123', 'password', '123456', 'admin', 'user'];
-
-    // Verificar contraseñas comunes
-    if (commonPasswords.includes(password)) {
-      isValidPassword = true;
-      logger.info(`Contraseña común válida: ${password}`);
-    } else if (password === user.password) {
-      // Verificar contraseña en texto plano
-      isValidPassword = true;
-      logger.info('Contraseña válida (texto plano)');
-    } else {
-      // Intentar verificar con bcrypt
-      try {
-        isValidPassword = await bcrypt.compare(password, user.password);
-        if (isValidPassword) {
-          logger.info('Contraseña válida con bcrypt');
-        }
-      } catch (error) {
-        logger.error('Error verificando contraseña con bcrypt:', error);
-      }
-    }
-
+    // Verificar contraseña con bcrypt
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    
     logger.info(`Contraseña válida: ${isValidPassword ? 'Sí' : 'No'}`);
 
     if (!isValidPassword) {
@@ -251,34 +228,11 @@ export const changePassword = async (req: Request, res: Response) => {
 
     logger.info(`Cambio de contraseña solicitado para usuario: ${user.name}`);
 
-    // Verificar la contraseña actual
-    let isCurrentPasswordValid = false;
-
-    // Lista de contraseñas comunes para verificar
-    const commonPasswords = ['admin123', 'password', '123456', 'admin', 'user'];
-
-    // Verificar contraseñas comunes
-    if (commonPasswords.includes(currentPassword)) {
-      isCurrentPasswordValid = true;
-      logger.info('Contraseña actual válida (común)');
-    } else if (currentPassword === user.password) {
-      // Verificar contraseña en texto plano
-      isCurrentPasswordValid = true;
-      logger.info('Contraseña actual válida (texto plano)');
-    } else {
-      // Intentar verificar con bcrypt
-      try {
-        isCurrentPasswordValid = await bcrypt.compare(
-          currentPassword,
-          user.password
-        );
-        if (isCurrentPasswordValid) {
-          logger.info('Contraseña actual válida (bcrypt)');
-        }
-      } catch (error) {
-        logger.error('Error verificando contraseña actual con bcrypt:', error);
-      }
-    }
+    // Verificar la contraseña actual con bcrypt
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
 
     if (!isCurrentPasswordValid) {
       logger.warn(`Contraseña actual inválida para usuario: ${user.name}`);
@@ -287,8 +241,9 @@ export const changePassword = async (req: Request, res: Response) => {
         .json({ message: 'La contraseña actual es incorrecta' });
     }
 
-    // Actualizar la contraseña (temporalmente en texto plano)
-    user.password = newPassword;
+    // Hashear la nueva contraseña
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
     await user.save();
 
     logger.info(
