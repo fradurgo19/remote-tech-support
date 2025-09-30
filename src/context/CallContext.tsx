@@ -28,6 +28,8 @@ interface CallContextType {
     ticketId: string;
     callSessionId: string;
   } | null;
+  peerConnection: RTCPeerConnection | null;
+  callStartTime: number | null;
   initiateCall: (recipientId: string, ticketId: string) => Promise<void>;
   acceptCall: (callerId: string) => Promise<void>;
   acceptIncomingCall: () => Promise<void>;
@@ -71,6 +73,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     ticketId: string;
     callSessionId: string;
   } | null>(null);
+  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
+  const [callStartTime, setCallStartTime] = useState<number | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -177,6 +181,11 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       // Then initiate the call
       await webRTCNativeService.initiateCall(recipientId, ticketId);
       setIsInCall(true);
+      setCallStartTime(Date.now());
+      
+      // Get peer connection for stats
+      const pc = webRTCNativeService.getPeerConnection(recipientId);
+      setPeerConnection(pc);
 
       console.log('CallContext: Call initiated successfully');
     } catch (err) {
@@ -233,6 +242,11 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
         await webRTCNativeService.acceptCall(callerId);
         setIsInCall(true);
+        setCallStartTime(Date.now());
+        
+        // Get peer connection for stats
+        const pc = webRTCNativeService.getPeerConnection(callerId);
+        setPeerConnection(pc);
 
         console.log('CallContext: Llamada aceptada exitosamente');
         console.log(
@@ -427,6 +441,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     setActiveCameraStreams(new Map());
     setActiveCameraIds([]);
     setIncomingCall(null);
+    setPeerConnection(null);
+    setCallStartTime(null);
 
     if (isRecording) {
       webRTCNativeService.stopRecording();
@@ -450,6 +466,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         activeCameraStreams,
         activeCameraIds,
         incomingCall,
+        peerConnection,
+        callStartTime,
         initiateCall,
         acceptCall,
         acceptIncomingCall,

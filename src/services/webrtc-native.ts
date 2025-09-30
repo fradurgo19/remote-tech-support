@@ -537,6 +537,21 @@ class WebRTCNativeService {
 
     console.log('WebRTC Native: Cleanup completed');
   }
+
+  // Get peer connection for stats
+  getPeerConnection(peerId?: string): RTCPeerConnection | null {
+    if (peerId) {
+      return this.peerConnections.get(peerId) || null;
+    }
+    // If no peerId specified, return the first peer connection
+    const firstConnection = Array.from(this.peerConnections.values())[0];
+    return firstConnection || null;
+  }
+
+  // Get all peer connections
+  getAllPeerConnections(): RTCPeerConnection[] {
+    return Array.from(this.peerConnections.values());
+  }
 }
 
 export const webRTCNativeService = new WebRTCNativeService();
