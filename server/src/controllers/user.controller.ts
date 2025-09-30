@@ -1,6 +1,6 @@
+import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
-import bcrypt from 'bcryptjs';
 import { User } from '../models';
 import { logger } from '../utils/logger';
 
@@ -214,7 +214,10 @@ export const searchCustomers = async (req: Request, res: Response) => {
     // Usar OR en lugar de AND para buscar en cualquiera de los campos
     const whereClause: {
       role: string;
-      [key: symbol]: Array<{ email?: { [key: symbol]: string } } | { name?: { [key: symbol]: string } }>;
+      [key: symbol]: Array<
+        | { email?: { [key: symbol]: string } }
+        | { name?: { [key: symbol]: string } }
+      >;
     } = {
       role: 'customer',
       [Op.or]: [],

@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { User, CreateUserData } from '../types';
-import { userService } from '../services/api';
-import { Card, CardHeader, CardTitle, CardContent } from '../atoms/Card';
+import {
+  AlertCircle,
+  Edit,
+  Mail,
+  Phone,
+  Trash2,
+  UserCog,
+  X,
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Avatar } from '../atoms/Avatar';
 import { Badge } from '../atoms/Badge';
-import { Spinner } from '../atoms/Spinner';
-import { AlertCircle, Mail, UserCog, X, Edit, Trash2, Phone } from 'lucide-react';
 import { Button } from '../atoms/Button';
-import { CreateUserForm } from '../molecules/CreateUserForm';
+import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
+import { Spinner } from '../atoms/Spinner';
 import { useAuth } from '../context/AuthContext';
-import { toast } from 'react-hot-toast';
+import { CreateUserForm } from '../molecules/CreateUserForm';
+import { userService } from '../services/api';
+import { CreateUserData, User } from '../types';
 
 export const UsersPage: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -18,13 +26,16 @@ export const UsersPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ userId: string; userName: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    userId: string;
+    userName: string;
+  } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchUsers = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const data = await userService.getUsers();
       setUsers(data);
@@ -55,7 +66,7 @@ export const UsersPage: React.FC = () => {
 
   const handleEditUser = async (userData: CreateUserData) => {
     if (!editingUser) return;
-    
+
     try {
       await userService.updateUser(editingUser.id, userData);
       await fetchUsers();
@@ -104,20 +115,24 @@ export const UsersPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Spinner size="lg" />
+      <div className='flex items-center justify-center h-full'>
+        <Spinner size='lg' />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <AlertCircle size={48} className="text-destructive mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Error al Cargar los Usuarios</h2>
-          <p className="text-muted-foreground mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()}>Intentar de Nuevo</Button>
+      <div className='flex items-center justify-center h-full'>
+        <div className='text-center'>
+          <AlertCircle size={48} className='text-destructive mx-auto mb-4' />
+          <h2 className='text-xl font-semibold mb-2'>
+            Error al Cargar los Usuarios
+          </h2>
+          <p className='text-muted-foreground mb-4'>{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Intentar de Nuevo
+          </Button>
         </div>
       </div>
     );
@@ -125,19 +140,19 @@ export const UsersPage: React.FC = () => {
 
   const getRoleTranslation = (role: User['role']) => {
     const translations = {
-      'admin': 'Administrador',
-      'technician': 'Técnico',
-      'customer': 'Cliente'
+      admin: 'Administrador',
+      technician: 'Técnico',
+      customer: 'Cliente',
     };
     return translations[role];
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Usuarios</h1>
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between'>
+        <h1 className='text-2xl font-bold'>Usuarios</h1>
         {isAdmin && (
-          <Button 
+          <Button
             leftIcon={<UserCog size={18} />}
             onClick={() => setIsCreatingUser(true)}
           >
@@ -145,14 +160,14 @@ export const UsersPage: React.FC = () => {
           </Button>
         )}
       </div>
-      
+
       {isCreatingUser && (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle>Crear Nuevo Usuario</CardTitle>
             <Button
-              variant="ghost"
-              size="icon"
+              variant='ghost'
+              size='icon'
               onClick={() => setIsCreatingUser(false)}
             >
               <X size={18} />
@@ -169,13 +184,9 @@ export const UsersPage: React.FC = () => {
 
       {editingUser && (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle>Editar Usuario: {editingUser.name}</CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleEditCancel}
-            >
+            <Button variant='ghost' size='icon' onClick={handleEditCancel}>
               <X size={18} />
             </Button>
           </CardHeader>
@@ -189,63 +200,65 @@ export const UsersPage: React.FC = () => {
                 email: editingUser.email,
                 password: '', // No mostrar contraseña actual
                 role: editingUser.role,
-                phone: editingUser.phone
+                phone: editingUser.phone,
               }}
             />
           </CardContent>
         </Card>
       )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {users.map((user) => (
+
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+        {users.map(user => (
           <Card key={user.id}>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <Avatar 
-                  src={user.avatar} 
-                  size="lg"
-                  status={user.status}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold truncate">{user.name}</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+            <CardContent className='p-6'>
+              <div className='flex items-start gap-4'>
+                <Avatar src={user.avatar} size='lg' status={user.status} />
+                <div className='flex-1 min-w-0'>
+                  <div className='flex items-start justify-between'>
+                    <div className='flex-1 min-w-0'>
+                      <h3 className='text-lg font-semibold truncate'>
+                        {user.name}
+                      </h3>
+                      <div className='flex items-center gap-2 text-sm text-muted-foreground mb-2'>
                         <Mail size={14} />
-                        <span className="truncate">{user.email}</span>
+                        <span className='truncate'>{user.email}</span>
                       </div>
                       {user.phone && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                        <div className='flex items-center gap-2 text-sm text-muted-foreground mb-2'>
                           <Phone size={14} />
-                          <span className="truncate">{user.phone}</span>
+                          <span className='truncate'>{user.phone}</span>
                         </div>
                       )}
-                      <Badge 
-                        variant={user.role === 'admin' ? 'primary' : 
-                                user.role === 'technician' ? 'secondary' : 
-                                'default'}
-                        className="capitalize"
+                      <Badge
+                        variant={
+                          user.role === 'admin'
+                            ? 'primary'
+                            : user.role === 'technician'
+                            ? 'secondary'
+                            : 'default'
+                        }
+                        className='capitalize'
                       >
                         {getRoleTranslation(user.role)}
                       </Badge>
                     </div>
                     {isAdmin && (
-                      <div className="flex gap-1 ml-2">
+                      <div className='flex gap-1 ml-2'>
                         <Button
-                          variant="ghost"
-                          size="icon"
+                          variant='ghost'
+                          size='icon'
                           onClick={() => handleEditClick(user)}
-                          className="h-8 w-8"
-                          title="Editar usuario"
+                          className='h-8 w-8'
+                          title='Editar usuario'
                         >
                           <Edit size={16} />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="icon"
+                          variant='ghost'
+                          size='icon'
                           onClick={() => handleDeleteClick(user.id, user.name)}
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          title="Eliminar usuario"
+                          className='h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10'
+                          title='Eliminar usuario'
                         >
                           <Trash2 size={16} />
                         </Button>
@@ -261,23 +274,25 @@ export const UsersPage: React.FC = () => {
 
       {/* Modal de confirmación para eliminar */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Confirmar eliminación</h3>
-            <p className="text-gray-600 mb-6">
-              ¿Estás seguro de que quieres eliminar al usuario "{deleteConfirm.userName}"? 
-              Esta acción no se puede deshacer.
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-white rounded-lg p-6 w-full max-w-md'>
+            <h3 className='text-lg font-semibold mb-4'>
+              Confirmar eliminación
+            </h3>
+            <p className='text-gray-600 mb-6'>
+              ¿Estás seguro de que quieres eliminar al usuario "
+              {deleteConfirm.userName}"? Esta acción no se puede deshacer.
             </p>
-            <div className="flex justify-end gap-3">
+            <div className='flex justify-end gap-3'>
               <Button
-                variant="outline"
+                variant='outline'
                 onClick={handleDeleteCancel}
                 disabled={isDeleting}
               >
                 Cancelar
               </Button>
               <Button
-                variant="destructive"
+                variant='destructive'
                 onClick={() => handleDeleteUser(deleteConfirm.userId)}
                 disabled={isDeleting}
                 isLoading={isDeleting}

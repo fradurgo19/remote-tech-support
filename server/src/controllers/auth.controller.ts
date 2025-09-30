@@ -22,7 +22,7 @@ export const login = async (req: Request, res: Response) => {
 
     // Verificar contraseña con bcrypt
     const isValidPassword = await bcrypt.compare(password, user.password);
-    
+
     logger.info(`Contraseña válida: ${isValidPassword ? 'Sí' : 'No'}`);
 
     if (!isValidPassword) {
@@ -205,19 +205,15 @@ export const changePassword = async (req: Request, res: Response) => {
     const userId = (req.user as { id: string }).id;
 
     if (!currentPassword || !newPassword) {
-      return res
-        .status(400)
-        .json({
-          message: 'Contraseña actual y nueva contraseña son requeridas',
-        });
+      return res.status(400).json({
+        message: 'Contraseña actual y nueva contraseña son requeridas',
+      });
     }
 
     if (newPassword.length < 6) {
-      return res
-        .status(400)
-        .json({
-          message: 'La nueva contraseña debe tener al menos 6 caracteres',
-        });
+      return res.status(400).json({
+        message: 'La nueva contraseña debe tener al menos 6 caracteres',
+      });
     }
 
     // Obtener el usuario actual

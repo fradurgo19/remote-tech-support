@@ -22,45 +22,56 @@ const ResetPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="p-8 bg-white rounded shadow-md w-96">
-        <h1 className="mb-6 text-2xl font-bold text-center">Restablecer Contraseña</h1>
+    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
+      <div className='p-8 bg-white rounded shadow-md w-96'>
+        <h1 className='mb-6 text-2xl font-bold text-center'>
+          Restablecer Contraseña
+        </h1>
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="token">
+          <div className='mb-4'>
+            <label
+              className='block mb-2 text-sm font-bold text-gray-700'
+              htmlFor='token'
+            >
               Token
             </label>
             <input
-              id="token"
-              type="text"
+              id='token'
+              type='text'
               value={token}
-              onChange={(e) => setToken(e.target.value)}
-              className="w-full px-3 py-2 border rounded"
+              onChange={e => setToken(e.target.value)}
+              className='w-full px-3 py-2 border rounded'
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="newPassword">
+          <div className='mb-4'>
+            <label
+              className='block mb-2 text-sm font-bold text-gray-700'
+              htmlFor='newPassword'
+            >
               Nueva Contraseña
             </label>
             <input
-              id="newPassword"
-              type="password"
+              id='newPassword'
+              type='password'
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded"
+              onChange={e => setNewPassword(e.target.value)}
+              className='w-full px-3 py-2 border rounded'
               required
             />
           </div>
-          <button type="submit" className="w-full px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600">
+          <button
+            type='submit'
+            className='w-full px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600'
+          >
             Restablecer
           </button>
         </form>
-        {message && <p className="mt-4 text-green-600">{message}</p>}
-        {error && <p className="mt-4 text-red-600">{error}</p>}
+        {message && <p className='mt-4 text-green-600'>{message}</p>}
+        {error && <p className='mt-4 text-red-600'>{error}</p>}
         <button
           onClick={() => navigate('/login')}
-          className="w-full mt-4 text-blue-500 hover:underline"
+          className='w-full mt-4 text-blue-500 hover:underline'
         >
           Volver al login
         </button>
@@ -69,4 +80,4 @@ const ResetPasswordPage: React.FC = () => {
   );
 };
 
-export default ResetPasswordPage; 
+export default ResetPasswordPage;

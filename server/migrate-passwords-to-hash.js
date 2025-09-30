@@ -1,11 +1,11 @@
 /**
  * Script para migrar contraseñas de texto plano a hash bcrypt
- * 
- * IMPORTANTE: 
+ *
+ * IMPORTANTE:
  * - Ejecutar SOLO UNA VEZ antes de ir a producción
  * - Hacer backup de la base de datos antes de ejecutar
  * - Todos los usuarios tendrán la contraseña "admin123" hasheada
- * 
+ *
  * Uso:
  * cd server
  * node migrate-passwords-to-hash.js
@@ -39,7 +39,9 @@ async function migratePasswords() {
     console.log('');
 
     // Obtener todos los usuarios
-    const [users] = await sequelize.query('SELECT id, name, email, password FROM users');
+    const [users] = await sequelize.query(
+      'SELECT id, name, email, password FROM users'
+    );
     console.log(`📋 Encontrados ${users.length} usuarios`);
     console.log('');
 
@@ -65,14 +67,11 @@ async function migratePasswords() {
         alreadyHashed++;
       } else {
         console.log(`🔄 Actualizando: ${user.name} (${user.email})`);
-        
-        await sequelize.query(
-          'UPDATE users SET password = $1 WHERE id = $2',
-          {
-            bind: [hashedPassword, user.id],
-          }
-        );
-        
+
+        await sequelize.query('UPDATE users SET password = $1 WHERE id = $2', {
+          bind: [hashedPassword, user.id],
+        });
+
         console.log(`   ✅ Contraseña actualizada`);
         updated++;
       }
@@ -90,7 +89,8 @@ async function migratePasswords() {
     console.log('Probando que las contraseñas hasheadas funcionen...');
     console.log('');
 
-    for (const user of users.slice(0, 3)) { // Probar solo los primeros 3
+    for (const user of users.slice(0, 3)) {
+      // Probar solo los primeros 3
       const [updatedUser] = await sequelize.query(
         'SELECT password FROM users WHERE id = $1',
         {
@@ -99,7 +99,10 @@ async function migratePasswords() {
       );
 
       if (updatedUser && updatedUser[0]) {
-        const isValid = await bcrypt.compare(defaultPassword, updatedUser[0].password);
+        const isValid = await bcrypt.compare(
+          defaultPassword,
+          updatedUser[0].password
+        );
         console.log(`   ${user.name}: ${isValid ? '✅ Válida' : '❌ Error'}`);
       }
     }
@@ -108,7 +111,9 @@ async function migratePasswords() {
     console.log('✅ ===== MIGRACIÓN COMPLETADA =====');
     console.log('');
     console.log('📝 IMPORTANTE:');
-    console.log('   - Todos los usuarios ahora tienen la contraseña: "admin123"');
+    console.log(
+      '   - Todos los usuarios ahora tienen la contraseña: "admin123"'
+    );
     console.log('   - Las contraseñas están hasheadas con bcrypt');
     console.log('   - Los usuarios pueden cambiar su contraseña desde la app');
     console.log('   - Ya NO puedes hacer login con contraseñas en texto plano');

@@ -9,6 +9,7 @@ Fecha de implementación: **30 de Septiembre, 2025**
 ## 🎯 **¿Qué se Implementó?**
 
 ### **Hash de Contraseñas con Bcrypt:**
+
 - ✅ Todas las contraseñas se hashean antes de guardarse en la base de datos
 - ✅ Se usa bcrypt con factor de costo 10 (seguro y eficiente)
 - ✅ Las contraseñas NUNCA se guardan en texto plano
@@ -19,19 +20,25 @@ Fecha de implementación: **30 de Septiembre, 2025**
 ## 📋 **Archivos Modificados**
 
 ### **1. auth.controller.ts**
+
 **Cambios:**
+
 - ✅ `login()`: Verificación con `bcrypt.compare()`
 - ✅ `register()`: Hash con `bcrypt.hash()` (ya estaba)
 - ✅ `changePassword()`: Hash de nueva contraseña
 - ❌ Eliminada lógica de contraseñas en texto plano
 
 ### **2. user.controller.ts**
+
 **Cambios:**
+
 - ✅ `createUser()`: Hash con `bcrypt.hash(password, 10)`
 - ✅ `updateUser()`: Hash cuando se actualiza contraseña
 
 ### **3. resetPasswords.ts**
+
 **Estado:**
+
 - ✅ Ya estaba usando bcrypt correctamente
 - ✅ Se ejecuta automáticamente al iniciar el servidor
 - ✅ Resetea todas las contraseñas a "admin123" hasheada
@@ -41,9 +48,10 @@ Fecha de implementación: **30 de Septiembre, 2025**
 ## 🔒 **Cómo Funciona el Hash**
 
 ### **Al Crear Usuario:**
+
 ```typescript
 // Contraseña original
-const password = "miPassword123";
+const password = 'miPassword123';
 
 // Hash (lo que se guarda en DB)
 const hashedPassword = await bcrypt.hash(password, 10);
@@ -51,12 +59,13 @@ const hashedPassword = await bcrypt.hash(password, 10);
 ```
 
 ### **Al Verificar Login:**
+
 ```typescript
 // Contraseña ingresada
-const inputPassword = "miPassword123";
+const inputPassword = 'miPassword123';
 
 // Hash guardado en DB
-const storedHash = "$2a$10$E7LlXBX4...";
+const storedHash = '$2a$10$E7LlXBX4...';
 
 // Verificación
 const isValid = await bcrypt.compare(inputPassword, storedHash);
@@ -70,17 +79,20 @@ const isValid = await bcrypt.compare(inputPassword, storedHash);
 Si tienes usuarios con contraseñas en texto plano, ejecuta el script de migración:
 
 ### **Opción 1: Script Automático en Inicio**
+
 El servidor ya ejecuta `resetAllPasswords()` automáticamente al iniciar.
 
 **Todas las contraseñas se resetean a "admin123" hasheada.**
 
 ### **Opción 2: Script Manual (Una sola vez)**
+
 ```bash
 cd server
 node migrate-passwords-to-hash.js
 ```
 
 Este script:
+
 1. Conecta a la base de datos
 2. Obtiene todos los usuarios
 3. Verifica si las contraseñas ya están hasheadas
@@ -94,12 +106,14 @@ Este script:
 ### **Probar Login con Contraseñas Hasheadas:**
 
 1. **Iniciar el servidor:**
+
    ```bash
    cd server
    npm run dev
    ```
 
 2. **El servidor automáticamente:**
+
    - Hashea todas las contraseñas a "admin123"
    - Verifica que funcionan
 
@@ -124,18 +138,21 @@ Este script:
 ## 🔐 **Seguridad**
 
 ### **Nivel de Seguridad:**
+
 - **Factor de costo: 10**
   - Balance entre seguridad y performance
   - ~100ms para hashear/verificar
   - Resistente a ataques de fuerza bruta
 
 ### **Características de Bcrypt:**
+
 - ✅ **Salt aleatorio** incluido automáticamente
 - ✅ **Resistente a rainbow tables**
 - ✅ **Computacionalmente costoso** (dificulta ataques)
 - ✅ **Estándar de la industria**
 
 ### **Formato del Hash:**
+
 ```
 $2a$10$N9qo8uLOickgx2ZMRZoMye/IjXCVQEu9F.X8jQJr8IQvXFxXZd8E2
 │ │  │  │                                                        │
@@ -154,15 +171,17 @@ $2a$10$N9qo8uLOickgx2ZMRZoMye/IjXCVQEu9F.X8jQJr8IQvXFxXZd8E2
 ### **Antes de Deploy:**
 
 1. **Cambiar JWT_SECRET:**
+
    ```env
    # .env.production
    JWT_SECRET=tu-secreto-super-seguro-minimo-32-caracteres-aleatorios
    ```
 
 2. **NO ejecutar resetPasswords en producción:**
+
    - Comentar la línea en `server/src/index.ts`
    - Solo usar en desarrollo
-   
+
    ```typescript
    // Desarrollo
    if (process.env.NODE_ENV !== 'production') {
@@ -180,6 +199,7 @@ $2a$10$N9qo8uLOickgx2ZMRZoMye/IjXCVQEu9F.X8jQJr8IQvXFxXZd8E2
 ## 📝 **Passwords por Defecto (Solo Desarrollo)**
 
 **Todos los usuarios (desarrollo):**
+
 - Password: `admin123`
 - Hasheada automáticamente al iniciar servidor
 
@@ -197,10 +217,12 @@ $2a$10$N9qo8uLOickgx2ZMRZoMye/IjXCVQEu9F.X8jQJr8IQvXFxXZd8E2
 ### **Proceso:**
 
 1. **Detección automática:**
+
    - El script verifica si la contraseña ya está hasheada
    - Formato de hash bcrypt: `$2a$10$...` o `$2b$10$...`
 
 2. **Solo hashea las que no lo están:**
+
    - Si ya está hasheada: Skip
    - Si está en texto plano: Hashea
 
@@ -224,13 +246,14 @@ $2a$10$N9qo8uLOickgx2ZMRZoMye/IjXCVQEu9F.X8jQJr8IQvXFxXZd8E2
 ## 🧪 **Scripts de Prueba**
 
 ### **Verificar que las contraseñas están hasheadas:**
+
 ```sql
 -- En psql o cualquier cliente de PostgreSQL
-SELECT 
-  name, 
-  email, 
+SELECT
+  name,
+  email,
   LEFT(password, 20) as password_hash,
-  CASE 
+  CASE
     WHEN password LIKE '$2%' THEN '✅ Hasheada'
     ELSE '❌ Texto plano'
   END as status
@@ -238,6 +261,7 @@ FROM users;
 ```
 
 ### **Probar hash manualmente:**
+
 ```javascript
 const bcrypt = require('bcryptjs');
 
@@ -255,24 +279,26 @@ console.log('Válida:', isValid); // true
 ## 🎓 **Para el Equipo de Desarrollo**
 
 ### **Crear nuevo usuario:**
+
 ```typescript
 // El hash es automático, solo envía la contraseña en texto plano
 const userData = {
-  name: "Juan Pérez",
-  email: "juan@example.com",
-  password: "miPassword123", // Se hasheará automáticamente
-  role: "customer"
+  name: 'Juan Pérez',
+  email: 'juan@example.com',
+  password: 'miPassword123', // Se hasheará automáticamente
+  role: 'customer',
 };
 
 await userService.createUser(userData);
 ```
 
 ### **Cambiar contraseña:**
+
 ```typescript
 // También automático
 await authService.changePassword({
-  currentPassword: "admin123",
-  newPassword: "nuevaPassword456"
+  currentPassword: 'admin123',
+  newPassword: 'nuevaPassword456',
 });
 ```
 
@@ -281,6 +307,7 @@ await authService.changePassword({
 ## 🚀 **¡Seguridad Implementada!**
 
 **Tu aplicación ahora tiene:**
+
 - ✅ Contraseñas hasheadas con bcrypt
 - ✅ Verificación segura
 - ✅ Migración automática
@@ -293,6 +320,7 @@ await authService.changePassword({
 ## 📞 **Soporte**
 
 Si hay problemas con contraseñas:
+
 1. Verificar que bcryptjs esté instalado
 2. Verificar logs del servidor
 3. Ejecutar script de migración manualmente
