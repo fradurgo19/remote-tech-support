@@ -309,47 +309,53 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     });
 
     // Manejar señalización WebRTC
-    socket.on('signal', (data: { to: string; signal: RTCSessionDescriptionInit | RTCIceCandidateInit }) => {
-      try {
-        const { to: recipientId, signal } = data;
+    socket.on(
+      'signal',
+      (data: {
+        to: string;
+        signal: RTCSessionDescriptionInit | RTCIceCandidateInit;
+      }) => {
+        try {
+          const { to: recipientId, signal } = data;
 
-        logger.info(`=== SEÑAL WEBRTC RECIBIDA ===`);
-        logger.info(`De: ${user.name} (${user.id})`);
-        logger.info(`Para: ${recipientId}`);
-        logger.info(`Tipo: ${signal.type || 'unknown'}`);
-        logger.info(`Usuarios conectados: ${connectedUsers.length}`);
-        logger.info(
-          `Conectados: ${connectedUsers
-            .map(u => `${u.userId}(${u.socketId})`)
-            .join(', ')}`
-        );
-
-        // Encontrar TODOS los sockets del destinatario
-        const recipientSockets = connectedUsers.filter(
-          u => u.userId === recipientId
-        );
-
-        if (recipientSockets.length > 0) {
-          // Reenviar la señal a TODOS los sockets del destinatario
-          recipientSockets.forEach(recipientSocket => {
-            io.to(recipientSocket.socketId).emit('signal', {
-              from: user.id,
-              signal,
-            });
-
-            logger.info(
-              `✅ Señal WebRTC enviada de ${user.name} a ${recipientId} (${recipientSocket.socketId})`
-            );
-          });
-        } else {
-          logger.warn(
-            `❌ Destinatario ${recipientId} no encontrado para señal WebRTC`
+          logger.info(`=== SEÑAL WEBRTC RECIBIDA ===`);
+          logger.info(`De: ${user.name} (${user.id})`);
+          logger.info(`Para: ${recipientId}`);
+          logger.info(`Tipo: ${signal.type || 'unknown'}`);
+          logger.info(`Usuarios conectados: ${connectedUsers.length}`);
+          logger.info(
+            `Conectados: ${connectedUsers
+              .map(u => `${u.userId}(${u.socketId})`)
+              .join(', ')}`
           );
+
+          // Encontrar TODOS los sockets del destinatario
+          const recipientSockets = connectedUsers.filter(
+            u => u.userId === recipientId
+          );
+
+          if (recipientSockets.length > 0) {
+            // Reenviar la señal a TODOS los sockets del destinatario
+            recipientSockets.forEach(recipientSocket => {
+              io.to(recipientSocket.socketId).emit('signal', {
+                from: user.id,
+                signal,
+              });
+
+              logger.info(
+                `✅ Señal WebRTC enviada de ${user.name} a ${recipientId} (${recipientSocket.socketId})`
+              );
+            });
+          } else {
+            logger.warn(
+              `❌ Destinatario ${recipientId} no encontrado para señal WebRTC`
+            );
+          }
+        } catch (error) {
+          logger.error('Error al manejar señal WebRTC:', error);
         }
-      } catch (error) {
-        logger.error('Error al manejar señal WebRTC:', error);
       }
-    });
+    );
 
     // Desconexión
     socket.on('disconnect', async () => {

@@ -64,7 +64,9 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
+  const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>(
+    []
+  );
   const [activeCameraStreams, setActiveCameraStreams] = useState<
     Map<string, MediaStream>
   >(new Map());
@@ -75,7 +77,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     ticketId: string;
     callSessionId: string;
   } | null>(null);
-  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
+  const [peerConnection, setPeerConnection] =
+    useState<RTCPeerConnection | null>(null);
   const [callStartTime, setCallStartTime] = useState<number | null>(null);
   const [isPictureInPicture, setIsPictureInPicture] = useState(false);
 
@@ -185,7 +188,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       await webRTCNativeService.initiateCall(recipientId, ticketId);
       setIsInCall(true);
       setCallStartTime(Date.now());
-      
+
       // Get peer connection for stats
       const pc = webRTCNativeService.getPeerConnection(recipientId);
       setPeerConnection(pc);
@@ -246,7 +249,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         await webRTCNativeService.acceptCall(callerId);
         setIsInCall(true);
         setCallStartTime(Date.now());
-        
+
         // Get peer connection for stats
         const pc = webRTCNativeService.getPeerConnection(callerId);
         setPeerConnection(pc);
