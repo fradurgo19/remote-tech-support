@@ -18,7 +18,7 @@ export const IncomingCallModal: React.FC<IncomingCallModalProps> = ({
   isOpen,
   caller,
   ticketId,
-  callSessionId,
+  callSessionId: _callSessionId,
   onAccept,
   onDecline,
 }) => {

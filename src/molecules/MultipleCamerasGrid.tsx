@@ -13,7 +13,7 @@ interface CameraStreamProps {
 }
 
 const CameraStream: React.FC<CameraStreamProps> = ({
-  deviceId,
+  deviceId: _deviceId,
   stream,
   label,
   onRemove,

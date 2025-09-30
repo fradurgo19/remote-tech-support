@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, CreateUserData } from '../types';
+import { CreateUserData } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../atoms/Input';
 import { Button } from '../atoms/Button';

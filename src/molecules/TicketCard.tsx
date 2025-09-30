@@ -28,7 +28,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
   });
 
   // Mapear estado a variante de badge
-  const statusVariantMap: Record<Ticket['status'], any> = {
+  const statusVariantMap: Record<Ticket['status'], string> = {
     open: 'primary',
     in_progress: 'warning',
     resolved: 'success',
@@ -36,7 +36,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
   };
 
   // Mapear prioridad a variante de badge
-  const priorityVariantMap: Record<Ticket['priority'], any> = {
+  const priorityVariantMap: Record<Ticket['priority'], string> = {
     low: 'default',
     medium: 'secondary',
     high: 'warning',

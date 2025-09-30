@@ -105,7 +105,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Stream removal is handled automatically by WebRTC native
 
-      const onDevicesChangeHandler = (devices: any[]) => {
+      const onDevicesChangeHandler = (devices: MediaDeviceInfo[]) => {
         setAvailableDevices(devices);
       };
 

@@ -32,7 +32,6 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
     activeCameraStreams,
     activeCameraIds,
     initiateCall,
-    acceptCall,
     toggleVideo,
     toggleAudio,
     toggleScreenShare,
