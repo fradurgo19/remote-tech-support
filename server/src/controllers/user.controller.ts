@@ -31,7 +31,8 @@ export const createUser = async (req: Request, res: Response) => {
     });
 
     // Retornar el usuario sin la contraseña
-    const { password: _, ...userWithoutPassword } = user.toJSON();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user.toJSON();
     res.status(201).json({
       message: 'Usuario creado exitosamente',
       user: userWithoutPassword,
@@ -44,8 +45,8 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const user = req.user as any;
-    let whereClause: any = {};
+    const user = req.user as { id: string; role: string };
+    const whereClause: { role?: { [key: string]: string[] } } = {};
 
     // Filtrar usuarios según el rol del usuario que hace la petición
     if (user.role === 'customer') {

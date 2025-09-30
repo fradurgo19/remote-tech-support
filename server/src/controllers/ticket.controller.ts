@@ -218,9 +218,9 @@ export const testEmailConfiguration = async (req: Request, res: Response) => {
 export const updateTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, status, priority, category, technicianId } =
+    const { title, description, status, priority, technicianId } =
       req.body;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const ticket = await Ticket.findByPk(id);
     if (!ticket) {
@@ -235,7 +235,13 @@ export const updateTicket = async (req: Request, res: Response) => {
     }
 
     // Los clientes solo pueden actualizar ciertos campos
-    const updateData: any = {};
+    const updateData: {
+      title?: string;
+      description?: string;
+      status?: string;
+      priority?: string;
+      technicianId?: string;
+    } = {};
     if (user.role === 'customer') {
       // Los clientes solo pueden actualizar título y descripción
       if (title) updateData.title = title;
@@ -280,9 +286,9 @@ export const updateTicket = async (req: Request, res: Response) => {
         if (updatedTicket) {
           const emailSent =
             await emailService.sendTicketStatusChangeNotification({
-              ticket: updatedTicket as any,
-              customer: updatedTicket.customer as any,
-              technician: updatedTicket.technician as any,
+              ticket: updatedTicket as { id: string; title: string; description: string; priority: string; status: string },
+              customer: updatedTicket.customer as { id: string; name: string; email: string } | undefined,
+              technician: updatedTicket.technician as { id: string; name: string; email: string } | undefined,
               oldStatus,
               newStatus: status,
             });
@@ -314,7 +320,7 @@ export const updateTicket = async (req: Request, res: Response) => {
 export const deleteTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const ticket = await Ticket.findByPk(id);
 
