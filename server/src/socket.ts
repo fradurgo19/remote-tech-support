@@ -148,6 +148,9 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
             // Enviar solicitud de llamada a TODOS los sockets del destinatario
             const callRequestData = {
               from: user.id,
+              fromName: user.name,
+              fromEmail: user.email,
+              fromAvatar: user.avatar,
               ticketId,
               callSessionId: callSession.id,
             };

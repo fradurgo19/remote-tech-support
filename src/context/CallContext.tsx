@@ -117,31 +117,24 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       socketService.onCallRequest(async data => {
         console.log('CallContext: Llamada entrante recibida:', data);
 
-        // Obtener información del llamador
-        try {
-          const response = await fetch(`/api/users/${data.from}`);
-          const caller = await response.json();
+        // Usar información del llamador que viene del servidor
+        setIncomingCall({
+          isIncoming: true,
+          caller: {
+            id: data.from,
+            name: data.fromName || 'Usuario',
+            email: data.fromEmail || 'usuario@ejemplo.com',
+            avatar: data.fromAvatar,
+          },
+          ticketId: data.ticketId,
+          callSessionId: data.callSessionId,
+        });
 
-          setIncomingCall({
-            isIncoming: true,
-            caller,
-            ticketId: data.ticketId,
-            callSessionId: data.callSessionId,
-          });
-        } catch (error) {
-          console.error('Error obteniendo información del llamador:', error);
-          // Usar información básica si falla la API
-          setIncomingCall({
-            isIncoming: true,
-            caller: {
-              id: data.from,
-              name: 'Usuario',
-              email: 'usuario@ejemplo.com',
-            },
-            ticketId: data.ticketId,
-            callSessionId: data.callSessionId,
-          });
-        }
+        console.log('CallContext: Información del llamador:', {
+          id: data.from,
+          name: data.fromName,
+          email: data.fromEmail,
+        });
       });
 
       return () => {

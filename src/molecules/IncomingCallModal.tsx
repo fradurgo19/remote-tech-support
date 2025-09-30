@@ -47,14 +47,18 @@ export const IncomingCallModal: React.FC<IncomingCallModalProps> = ({
             {/* Caller Info */}
             <div className='mb-6'>
               <h3 className='text-xl font-semibold text-gray-900 mb-2'>
-                Llamada entrante
+                📞 Llamada Entrante
               </h3>
-              <p className='text-lg font-medium text-gray-700 mb-1'>
-                {caller.name}
-              </p>
-              <p className='text-sm text-gray-500'>{caller.email}</p>
-              <p className='text-xs text-gray-400 mt-2'>
-                Ticket: {ticketId.slice(0, 8)}...
+              <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3'>
+                <p className='text-lg font-semibold text-gray-900 mb-1'>
+                  {caller.name}
+                </p>
+                <p className='text-sm text-blue-600 font-medium'>
+                  {caller.email}
+                </p>
+              </div>
+              <p className='text-xs text-gray-500'>
+                📋 Ticket: {ticketId.slice(0, 8)}...
               </p>
             </div>
 
