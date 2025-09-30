@@ -1,6 +1,6 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../config/database';
 import bcrypt from 'bcryptjs';
+import { DataTypes, Model } from 'sequelize';
+import { sequelize } from '../config/database';
 
 export interface UserAttributes {
   id?: string;
@@ -116,4 +116,4 @@ User.init(
     // Hooks removidos: el hash se maneja en los controladores
     // para tener mejor control y evitar doble hashing
   }
-); 
+);

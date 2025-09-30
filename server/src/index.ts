@@ -22,24 +22,26 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+// Configurar CORS origins
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',')
+  : ['http://localhost:5173', 'http://localhost:5174'];
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CORS_ORIGIN || [
-      'http://localhost:5173',
-      'http://localhost:5174',
-    ],
-    methods: ['GET', 'POST'],
+    origin: corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
   },
 });
 
 // Middleware
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || [
-      'http://localhost:5173',
-      'http://localhost:5174',
-    ],
+    origin: corsOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 app.use(express.json({ limit: '10mb' }));
@@ -76,8 +78,12 @@ const startServer = async () => {
     await sequelize.sync();
     logger.info('Database models synchronized successfully.');
 
-    // Resetear contraseñas de todos los usuarios a 'admin123'
-    await resetAllPasswords();
+    // Resetear contraseñas de todos los usuarios a 'admin123' (SOLO EN DESARROLLO)
+    if (process.env.NODE_ENV !== 'production') {
+      await resetAllPasswords();
+    } else {
+      logger.info('Production mode: skipping password reset');
+    }
 
     // Iniciar servidor HTTP
     httpServer.listen(PORT, () => {

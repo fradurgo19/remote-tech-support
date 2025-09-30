@@ -7,6 +7,7 @@
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
+    "vercel-build": "tsc",
     "test": "jest",
     "seed": "ts-node src/scripts/seed.ts",
     "create-test-report": "ts-node src/scripts/createTestReport.ts"
