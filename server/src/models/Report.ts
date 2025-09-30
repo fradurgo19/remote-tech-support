@@ -16,7 +16,7 @@ export interface ReportAttributes {
   reviewedAt?: Date;
   tags?: string[];
   attachments?: string[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -43,7 +43,7 @@ export class Report
   public reviewedAt!: Date;
   public tags!: string[];
   public attachments!: string[];
-  public metadata!: any;
+  public metadata!: Record<string, unknown>;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }

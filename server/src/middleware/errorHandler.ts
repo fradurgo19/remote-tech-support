@@ -19,8 +19,9 @@ export class AppError extends Error {
 export const errorHandler = (
   err: Error | AppError,
   _req: Request,
-  res: Response,
-  _next: NextFunction
+  res: Response
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  , _next: NextFunction
 ) => {
   if (err instanceof AppError) {
     logger.error(`[${err.statusCode}] ${err.message}`);

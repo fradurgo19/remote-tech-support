@@ -10,7 +10,7 @@ export interface TicketHistoryAttributes {
   oldValue?: string;
   newValue?: string;
   changedById: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt?: Date;
 }
 
@@ -21,7 +21,7 @@ export class TicketHistory extends Model<TicketHistoryAttributes> implements Tic
   public oldValue!: string;
   public newValue!: string;
   public changedById!: string;
-  public metadata!: any;
+  public metadata!: Record<string, unknown>;
   public readonly createdAt!: Date;
 }
 

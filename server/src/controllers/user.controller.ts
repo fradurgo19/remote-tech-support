@@ -245,7 +245,7 @@ export const searchCustomers = async (req: Request, res: Response) => {
 
 export const uploadAvatar = async (req: Request, res: Response) => {
   try {
-    const user = req.user as any;
+    const user = req.user as { id: string };
 
     if (!req.file) {
       return res
