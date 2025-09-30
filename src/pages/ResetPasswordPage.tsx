@@ -15,7 +15,7 @@ const ResetPasswordPage: React.FC = () => {
       const response = await authService.resetPassword(token, newPassword);
       setMessage(response.message);
       setError('');
-    } catch (err) {
+    } catch {
       setError('Error al restablecer la contraseña');
       setMessage('');
     }

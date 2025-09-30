@@ -18,7 +18,8 @@ export const IncomingCallModal: React.FC<IncomingCallModalProps> = ({
   isOpen,
   caller,
   ticketId,
-  callSessionId: _callSessionId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  callSessionId,
   onAccept,
   onDecline,
 }) => {

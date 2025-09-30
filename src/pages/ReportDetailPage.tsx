@@ -143,7 +143,7 @@ const ReportDetailPage: React.FC<ReportDetailPageProps> = () => {
     if (attachment.startsWith('data:')) {
       const mimeMatch = attachment.match(/data:([^;]+)/);
       if (mimeMatch) {
-        const mimeType = mimeMatch[1];
+        const [, mimeType] = mimeMatch;
         if (mimeType.includes('pdf')) return '.pdf';
         if (mimeType.includes('image/jpeg')) return '.jpg';
         if (mimeType.includes('image/png')) return '.png';
@@ -174,7 +174,6 @@ const ReportDetailPage: React.FC<ReportDetailPageProps> = () => {
     if (attachment.startsWith('data:')) {
       const mimeMatch = attachment.match(/data:([^;]+)/);
       if (mimeMatch) {
-        const mimeType = mimeMatch[1];
         const extension = getFileExtension(attachment);
         return `archivo-${index + 1}${extension}`;
       }

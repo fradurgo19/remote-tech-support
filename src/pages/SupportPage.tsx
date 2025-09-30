@@ -10,6 +10,7 @@ import { categoryService } from '../services/api';
 import { ServiceCategory } from '../types';
 
 export const SupportPage: React.FC = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

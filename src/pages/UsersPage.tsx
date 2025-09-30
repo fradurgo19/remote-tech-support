@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../atoms/Card';
 import { Avatar } from '../atoms/Avatar';
 import { Badge } from '../atoms/Badge';
 import { Spinner } from '../atoms/Spinner';
-import { AlertCircle, Mail, UserCog, X, Edit, Trash2, MoreVertical, Phone } from 'lucide-react';
+import { AlertCircle, Mail, UserCog, X, Edit, Trash2, Phone } from 'lucide-react';
 import { Button } from '../atoms/Button';
 import { CreateUserForm } from '../molecules/CreateUserForm';
 import { useAuth } from '../context/AuthContext';

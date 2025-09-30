@@ -13,7 +13,8 @@ interface CameraStreamProps {
 }
 
 const CameraStream: React.FC<CameraStreamProps> = ({
-  deviceId: _deviceId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  deviceId,
   stream,
   label,
   onRemove,

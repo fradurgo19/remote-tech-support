@@ -139,7 +139,7 @@ export const TicketsListPage: React.FC = () => {
             <select
               className='bg-transparent border-none outline-none'
               value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value as any)}
+              onChange={e => setStatusFilter(e.target.value as Ticket['status'] | 'all')}
             >
               <option value='all'>Todos</option>
               <option value='open'>Abierto</option>
@@ -155,7 +155,7 @@ export const TicketsListPage: React.FC = () => {
             <select
               className='bg-transparent border-none outline-none'
               value={priorityFilter}
-              onChange={e => setPriorityFilter(e.target.value as any)}
+              onChange={e => setPriorityFilter(e.target.value as Ticket['priority'] | 'all')}
             >
               <option value='all'>Todas</option>
               <option value='urgent'>Urgente</option>

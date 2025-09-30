@@ -23,6 +23,7 @@ import { Report, User as UserType } from '../types';
 
 const ReportsPage: React.FC = () => {
   const navigate = useNavigate();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth();
 
   const [reports, setReports] = useState<Report[]>([]);

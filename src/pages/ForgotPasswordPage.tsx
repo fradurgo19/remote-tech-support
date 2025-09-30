@@ -14,7 +14,7 @@ const ForgotPasswordPage: React.FC = () => {
       const response = await authService.forgotPassword(email);
       setMessage(response.message);
       setError('');
-    } catch (err) {
+    } catch {
       setError('Error al solicitar recuperación de contraseña');
       setMessage('');
     }
