@@ -149,7 +149,6 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return () => {
         unsubscribeStream();
-        unsubscribeRemove();
         unsubscribeDevices();
         webRTCNativeService.cleanup();
       };

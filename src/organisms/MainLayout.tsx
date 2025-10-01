@@ -66,14 +66,14 @@ export const MainLayout: React.FC = () => {
             >
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </Button>
- 
+
             {/* Logo de la compañía */}
             <img
               src='https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png'
               alt='Partequipos Logo'
               className='h-10 w-auto object-contain'
             />
- 
+
             <NavLink to='/' className='flex items-center space-x-2'>
               <Headset size={24} className='text-primary' />
               <span className='font-bold text-lg hidden sm:inline-block'>
