@@ -1,12 +1,22 @@
-import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, Users, MessageSquare, Headphones, 
-  Settings, LogOut, Moon, Sun, Menu, X, Headset, FileText
+import {
+  FileText,
+  Headphones,
+  Headset,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Moon,
+  Settings,
+  Sun,
+  Users,
+  X,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import React from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Avatar } from '../atoms/Avatar';
 import { Button } from '../atoms/Button';
+import { useAuth } from '../context/AuthContext';
 
 export const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -29,7 +39,11 @@ export const MainLayout: React.FC = () => {
   };
 
   const menuItems = [
-    { path: '/', icon: <LayoutDashboard size={20} />, label: 'Panel Principal' },
+    {
+      path: '/',
+      icon: <LayoutDashboard size={20} />,
+      label: 'Panel Principal',
+    },
     { path: '/tickets', icon: <MessageSquare size={20} />, label: 'Tickets' },
     { path: '/support', icon: <Headphones size={20} />, label: 'Soporte' },
     { path: '/reports', icon: <FileText size={20} />, label: 'Informes' },
@@ -38,55 +52,69 @@ export const MainLayout: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className='min-h-screen bg-background flex flex-col'>
       {/* Encabezado */}
-      <header className="bg-background border-b border-border z-10">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <header className='bg-background border-b border-border z-10'>
+        <div className='container mx-auto px-4 h-16 flex items-center justify-between'>
           {/* Logo */}
-          <div className="flex items-center">
+          <div className='flex items-center space-x-3'>
             <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden mr-2"
+              variant='ghost'
+              size='icon'
+              className='md:hidden mr-2'
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </Button>
-            
-            <NavLink to="/" className="flex items-center space-x-2">
-              <Headset size={24} className="text-primary" />
-              <span className="font-bold text-lg hidden sm:inline-block">SoporteTécnico</span>
+ 
+            {/* Logo de la compañía */}
+            <img
+              src='https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png'
+              alt='Partequipos Logo'
+              className='h-10 w-auto object-contain'
+            />
+ 
+            <NavLink to='/' className='flex items-center space-x-2'>
+              <Headset size={24} className='text-primary' />
+              <span className='font-bold text-lg hidden sm:inline-block'>
+                SoporteTécnico
+              </span>
             </NavLink>
           </div>
-          
+
           {/* Controles del lado derecho */}
-          <div className="flex items-center space-x-2">
+          <div className='flex items-center space-x-3'>
             <Button
-              variant="ghost"
-              size="icon"
+              variant='ghost'
+              size='icon'
               onClick={() => setDarkMode(!darkMode)}
-              aria-label={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              aria-label={
+                darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
+              }
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
-            
+
             {user && (
-              <div className="flex items-center space-x-2">
-                <div className="hidden md:block text-right mr-2">
-                  <p className="text-sm font-medium">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {user.role === 'admin' ? 'Administrador' : 
-                     user.role === 'technician' ? 'Técnico' : 'Cliente'}
+              <div className='flex items-center space-x-2'>
+                <div className='hidden md:block text-right mr-2'>
+                  <p className='text-sm font-medium'>{user.name}</p>
+                  <p className='text-xs text-muted-foreground'>
+                    {user.role === 'admin'
+                      ? 'Administrador'
+                      : user.role === 'technician'
+                      ? 'Técnico'
+                      : 'Cliente'}
                   </p>
                 </div>
                 <Avatar src={user.avatar} status={user.status} />
-                
+
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant='ghost'
+                  size='icon'
                   onClick={handleLogout}
-                  aria-label="Cerrar sesión"
-                  className="hidden md:flex"
+                  aria-label='Cerrar sesión'
+                  className='hidden md:flex'
                 >
                   <LogOut size={18} />
                 </Button>
@@ -96,11 +124,11 @@ export const MainLayout: React.FC = () => {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className='flex flex-1 overflow-hidden'>
         {/* Barra lateral - Escritorio */}
-        <aside className="hidden md:flex flex-col w-64 bg-card border-r border-border p-4 overflow-y-auto">
-          <nav className="space-y-1 mt-4 flex-1">
-            {menuItems.map((item) => (
+        <aside className='hidden md:flex flex-col w-64 bg-card border-r border-border p-4 overflow-y-auto'>
+          <nav className='space-y-1 mt-4 flex-1'>
+            {menuItems.map(item => (
               <NavLink
                 key={item.path}
                 to={item.path}
@@ -109,7 +137,7 @@ export const MainLayout: React.FC = () => {
                     'flex items-center space-x-3 px-3 py-2 rounded-md transition-colors',
                     {
                       'bg-primary/10 text-primary font-medium': isActive,
-                      'text-foreground hover:bg-muted': !isActive
+                      'text-foreground hover:bg-muted': !isActive,
                     }
                   )
                 }
@@ -119,11 +147,11 @@ export const MainLayout: React.FC = () => {
               </NavLink>
             ))}
           </nav>
-          
-          <div className="mt-auto pt-4 border-t border-border">
+
+          <div className='mt-auto pt-4 border-t border-border'>
             <Button
-              variant="ghost"
-              className="w-full justify-start"
+              variant='ghost'
+              className='w-full justify-start'
               onClick={handleLogout}
               leftIcon={<LogOut size={18} />}
             >
@@ -134,23 +162,23 @@ export const MainLayout: React.FC = () => {
 
         {/* Menú móvil */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute inset-0 z-20 bg-background flex flex-col">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Headset size={24} className="text-primary" />
-                <span className="font-bold text-lg">SoporteTécnico</span>
+          <div className='md:hidden absolute inset-0 z-20 bg-background flex flex-col'>
+            <div className='p-4 border-b border-border flex items-center justify-between'>
+              <div className='flex items-center space-x-2'>
+                <Headset size={24} className='text-primary' />
+                <span className='font-bold text-lg'>SoporteTécnico</span>
               </div>
               <Button
-                variant="ghost"
-                size="icon"
+                variant='ghost'
+                size='icon'
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <X size={20} />
               </Button>
             </div>
-            
-            <nav className="flex-1 p-4 overflow-y-auto">
-              {menuItems.map((item) => (
+
+            <nav className='flex-1 p-4 overflow-y-auto'>
+              {menuItems.map(item => (
                 <NavLink
                   key={item.path}
                   to={item.path}
@@ -159,7 +187,7 @@ export const MainLayout: React.FC = () => {
                       'flex items-center space-x-3 px-3 py-3 rounded-md transition-colors mb-2',
                       {
                         'bg-primary/10 text-primary font-medium': isActive,
-                        'text-foreground hover:bg-muted': !isActive
+                        'text-foreground hover:bg-muted': !isActive,
                       }
                     )
                   }
@@ -170,11 +198,11 @@ export const MainLayout: React.FC = () => {
                 </NavLink>
               ))}
             </nav>
-            
-            <div className="p-4 border-t border-border">
+
+            <div className='p-4 border-t border-border'>
               <Button
-                variant="ghost"
-                className="w-full justify-start"
+                variant='ghost'
+                className='w-full justify-start'
                 onClick={handleLogout}
                 leftIcon={<LogOut size={18} />}
               >
@@ -185,8 +213,8 @@ export const MainLayout: React.FC = () => {
         )}
 
         {/* Contenido principal */}
-        <main className="flex-1 overflow-auto bg-background">
-          <div className="container mx-auto p-4 h-full">
+        <main className='flex-1 overflow-auto bg-background'>
+          <div className='container mx-auto p-4 h-full'>
             <Outlet />
           </div>
         </main>

@@ -22,6 +22,15 @@ const ForgotPasswordPage: React.FC = () => {
 
   return (
     <div className='flex items-center justify-center min-h-screen bg-gray-100'>
+      {/* Logo de la compañía - Esquina superior izquierda */}
+      <div className='absolute top-4 left-4 md:top-6 md:left-6'>
+        <img
+          src='https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png'
+          alt='Partequipos Logo'
+          className='h-12 md:h-16 w-auto object-contain'
+        />
+      </div>
+
       <div className='p-8 bg-white rounded shadow-md w-96'>
         <h1 className='mb-6 text-2xl font-bold text-center'>
           Recuperar Contraseña
