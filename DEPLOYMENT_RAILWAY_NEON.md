@@ -32,11 +32,13 @@
 ### **PASO 1: Crear Base de Datos en Neon** 💾 (5 minutos)
 
 #### **A. Crear cuenta:**
+
 1. Ir a https://neon.tech/
 2. Click "Sign Up" → Sign in with GitHub
 3. Autorizar Neon
 
 #### **B. Crear proyecto:**
+
 1. Click "Create a project"
 2. **Project name:** `remote-tech-support`
 3. **Region:** US East (Ohio) - más cercano
@@ -44,6 +46,7 @@
 5. Click "Create Project"
 
 #### **C. Obtener Connection String:**
+
 1. En el dashboard, ir a "Connection Details"
 2. **Copiar** el "Connection string":
    ```
@@ -54,6 +57,7 @@
 #### **D. Aplicar Schema (SQL Editor):**
 
 **OPCIÓN 1 - SQL Editor (Recomendado):**
+
 1. En Neon Dashboard → "SQL Editor"
 2. Abrir el archivo `server/neon-database-setup.sql` de tu proyecto
 3. **Copiar TODO el contenido** del archivo
@@ -62,6 +66,7 @@
 6. ✅ Deberías ver: "5 usuarios, 6 categorías creadas"
 
 **OPCIÓN 2 - psql (Avanzado):**
+
 ```bash
 # Conectar a Neon
 psql "postgresql://neondb_owner:xxxxx@ep-xxx.neon.tech/neondb?sslmode=require"
@@ -74,9 +79,10 @@ psql "postgresql://neondb_owner:xxxxx@ep-xxx.neon.tech/neondb?sslmode=require"
 ```
 
 **Usuarios creados por defecto:**
+
 - ✅ `admin@partequipos.com` - Admin (contraseña: `admin123`)
 - ✅ `auxiliar.garantiasbg@partequipos.com` - Técnico
-- ✅ `analista.mantenimiento@partequipos.com` - Técnico  
+- ✅ `analista.mantenimiento@partequipos.com` - Técnico
 - ✅ `miguel@empresa.com` - Cliente
 - ✅ `ana.garcia@empresa.com` - Cliente
 
@@ -87,17 +93,20 @@ psql "postgresql://neondb_owner:xxxxx@ep-xxx.neon.tech/neondb?sslmode=require"
 ### **PASO 2: Desplegar Backend en Railway** 🚂 (10 minutos)
 
 #### **A. Crear cuenta en Railway:**
+
 1. Ir a https://railway.app/
 2. Click "Login" → Sign in with GitHub
 3. Autorizar Railway
 
 #### **B. Crear nuevo proyecto:**
+
 1. Click "New Project"
 2. Select "Deploy from GitHub repo"
 3. **Seleccionar tu repositorio:** `remote-tech-support`
 4. Click en el repositorio
 
 #### **C. Configurar el servicio:**
+
 1. Railway detectará automáticamente que es Node.js
 2. **Root Directory:** Click "Settings" → "Root Directory" → `server`
 3. **Build Command:** `npm install && npm run build`
@@ -133,6 +142,7 @@ PORT=3000
 ```
 
 #### **E. Deploy:**
+
 1. Railway desplegará automáticamente
 2. Esperar a que termine (2-3 minutos)
 3. **Copiar la URL pública:**
@@ -142,6 +152,7 @@ PORT=3000
 4. **GUARDAR ESTA URL** - la necesitas para el frontend
 
 #### **F. Verificar deployment:**
+
 1. Abrir la URL en el navegador
 2. Deberías ver un mensaje del servidor o una respuesta JSON
 3. Verificar logs en Railway Dashboard
@@ -151,11 +162,13 @@ PORT=3000
 ### **PASO 3: Desplegar Frontend en Vercel** 🎨 (5 minutos)
 
 #### **A. Crear cuenta en Vercel:**
+
 1. Ir a https://vercel.com/
 2. "Sign Up" → Continue with GitHub
 3. Autorizar Vercel
 
 #### **B. Crear nuevo proyecto:**
+
 1. Click "Add New..." → "Project"
 2. Import tu repositorio `remote-tech-support`
 3. **Framework Preset:** Vite
@@ -177,6 +190,7 @@ VITE_WS_URL=https://remote-tech-support-api-production.up.railway.app
 ```
 
 #### **D. Deploy:**
+
 1. Click "Deploy"
 2. Esperar 2-3 minutos
 3. **Copiar la URL del frontend:**
@@ -200,6 +214,7 @@ VITE_WS_URL=https://remote-tech-support-api-production.up.railway.app
 ### **PASO 5: Testing en Producción** 🧪 (15 minutos)
 
 #### **A. Abrir la aplicación:**
+
 ```
 https://remote-tech-support.vercel.app
 ```
@@ -207,20 +222,24 @@ https://remote-tech-support.vercel.app
 #### **B. Verificar funcionalidades:**
 
 **Login:**
+
 - [ ] Email: `admin@gmail.com`
 - [ ] Password: `admin123`
 - [ ] ✅ Login exitoso
 
 **Socket.IO:**
+
 - [ ] Verificar Socket Debug Info en la app
 - [ ] Debe mostrar "Connected: ✅"
 
 **Tickets:**
+
 - [ ] Crear un ticket
 - [ ] Enviar mensajes
 - [ ] Ver actualización en tiempo real
 
 **Videollamadas:**
+
 - [ ] Login con 2 usuarios diferentes
 - [ ] Abrir mismo ticket
 - [ ] Iniciar videollamada
@@ -231,6 +250,7 @@ https://remote-tech-support.vercel.app
 ## 🛠️ **Comandos Útiles**
 
 ### **Ver logs de Railway:**
+
 ```bash
 # Instalar CLI (opcional)
 npm install -g @railway/cli
@@ -243,11 +263,13 @@ railway logs
 ```
 
 ### **Redeploy Railway:**
+
 ```bash
 railway up
 ```
 
 ### **Redeploy Vercel:**
+
 ```bash
 vercel --prod
 ```
@@ -257,6 +279,7 @@ vercel --prod
 ## ⚙️ **Variables de Entorno Completas**
 
 ### **Railway (Backend):**
+
 ```env
 NODE_ENV=production
 DATABASE_URL=postgresql://neondb_owner:xxx@ep-xxx.neon.tech/neondb?sslmode=require
@@ -271,6 +294,7 @@ PORT=3000
 ```
 
 ### **Vercel (Frontend):**
+
 ```env
 VITE_API_URL=https://your-backend.up.railway.app
 VITE_WS_URL=https://your-backend.up.railway.app
@@ -281,12 +305,15 @@ VITE_WS_URL=https://your-backend.up.railway.app
 ## 💰 **Costos Mensuales**
 
 ### **Plan Gratuito (Para empezar):**
+
 - **Neon:** GRATIS
+
   - 512 MB storage
   - 3 GB transfer
   - Perfecto para empezar
 
 - **Railway:** $5 de crédito gratis
+
   - Después ~$5-10/mes según uso
   - Incluye:
     - CPU: 0.5 vCPU
@@ -304,15 +331,15 @@ VITE_WS_URL=https://your-backend.up.railway.app
 
 ## 🎯 **Ventajas de Railway sobre Vercel para Backend:**
 
-| Feature | Railway | Vercel Serverless |
-|---------|---------|-------------------|
-| WebSockets | ✅ Full support | ⚠️ Limitado |
-| Conexiones persistentes | ✅ Sí | ❌ No |
-| Timeout | ✅ Ilimitado | ⚠️ 10-60s |
-| Cold starts | ✅ Mínimos | ⚠️ Frecuentes |
-| Socket.IO | ✅ Perfecto | ⚠️ Problemas |
-| Videollamadas | ✅ Excelente | ❌ No funciona bien |
-| Precio | $5-10/mes | Gratis* |
+| Feature                 | Railway         | Vercel Serverless   |
+| ----------------------- | --------------- | ------------------- |
+| WebSockets              | ✅ Full support | ⚠️ Limitado         |
+| Conexiones persistentes | ✅ Sí           | ❌ No               |
+| Timeout                 | ✅ Ilimitado    | ⚠️ 10-60s           |
+| Cold starts             | ✅ Mínimos      | ⚠️ Frecuentes       |
+| Socket.IO               | ✅ Perfecto     | ⚠️ Problemas        |
+| Videollamadas           | ✅ Excelente    | ❌ No funciona bien |
+| Precio                  | $5-10/mes       | Gratis\*            |
 
 **Para tu app con videollamadas: Railway es la opción correcta** ✅
 
@@ -321,6 +348,7 @@ VITE_WS_URL=https://your-backend.up.railway.app
 ## 📝 **Checklist de Deployment**
 
 ### **Pre-deployment:**
+
 - [x] Código limpio (0 errores)
 - [x] Hash de contraseñas
 - [x] Variables de entorno configuradas
@@ -330,6 +358,7 @@ VITE_WS_URL=https://your-backend.up.railway.app
 - [ ] Cuenta en Vercel creada
 
 ### **Deployment:**
+
 - [ ] Base de datos Neon creada y configurada
 - [ ] Backend desplegado en Railway
 - [ ] Variables configuradas en Railway
@@ -338,6 +367,7 @@ VITE_WS_URL=https://your-backend.up.railway.app
 - [ ] CORS actualizado con URL real
 
 ### **Post-deployment:**
+
 - [ ] Login funciona
 - [ ] Socket.IO conecta
 - [ ] Mensajes en tiempo real
@@ -349,13 +379,15 @@ VITE_WS_URL=https://your-backend.up.railway.app
 ## 🚀 **¡Listo para Deploy!**
 
 **El proyecto está perfectamente configurado para:**
+
 - ✅ Railway (Backend con WebSockets)
 - ✅ Vercel (Frontend)
 - ✅ Neon (Base de datos PostgreSQL)
 
-**Siguiente paso:** 
+**Siguiente paso:**
+
 1. Crear cuenta en Neon
-2. Crear cuenta en Railway  
+2. Crear cuenta en Railway
 3. Deploy (15-20 minutos total)
 
 **¿Quieres que te guíe en el proceso de crear las cuentas y hacer el deploy?** 🎯✨
