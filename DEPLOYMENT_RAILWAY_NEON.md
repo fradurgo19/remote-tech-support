@@ -52,12 +52,35 @@
 3. **GUARDAR ESTO** en un lugar seguro
 
 #### **D. Aplicar Schema (SQL Editor):**
+
+**OPCIÓN 1 - SQL Editor (Recomendado):**
 1. En Neon Dashboard → "SQL Editor"
-2. Ejecutar las migraciones una por una desde `server/migrations/`
-3. O conectarte con psql y ejecutar:
-   ```bash
-   psql "postgresql://neondb_owner:xxxxx@ep-xxx.neon.tech/neondb?sslmode=require"
-   ```
+2. Abrir el archivo `server/neon-database-setup.sql` de tu proyecto
+3. **Copiar TODO el contenido** del archivo
+4. **Pegar** en el SQL Editor de Neon
+5. Click "Run" (toma ~10 segundos)
+6. ✅ Deberías ver: "5 usuarios, 6 categorías creadas"
+
+**OPCIÓN 2 - psql (Avanzado):**
+```bash
+# Conectar a Neon
+psql "postgresql://neondb_owner:xxxxx@ep-xxx.neon.tech/neondb?sslmode=require"
+
+# Ejecutar el script
+\i server/neon-database-setup.sql
+
+# Salir
+\q
+```
+
+**Usuarios creados por defecto:**
+- ✅ `admin@partequipos.com` - Admin (contraseña: `admin123`)
+- ✅ `auxiliar.garantiasbg@partequipos.com` - Técnico
+- ✅ `analista.mantenimiento@partequipos.com` - Técnico  
+- ✅ `miguel@empresa.com` - Cliente
+- ✅ `ana.garcia@empresa.com` - Cliente
+
+**TODOS tienen la contraseña: `admin123`** 🔑
 
 ---
 
