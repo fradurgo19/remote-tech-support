@@ -68,7 +68,7 @@ export const register = async (req: Request, res: Response) => {
       email,
       password: hashedPassword,
       role: role || 'customer',
-      status: 'offline',
+      isActive: true,
     });
 
     res.status(201).json({

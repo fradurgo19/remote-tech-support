@@ -120,7 +120,7 @@ export const createTicket = async (req: Request, res: Response) => {
             password:
               'temp-password-' + Math.random().toString(36).substring(7), // Contraseña temporal
             role: 'customer',
-            status: 'offline',
+            isActive: true,
             emailVerified: false,
           });
         }

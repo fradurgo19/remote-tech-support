@@ -49,7 +49,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     });
 
     // Actualizar estado del usuario a online
-    User.update({ status: 'online' }, { where: { id: user.id } });
+    User.update({ isActive: true, lastLogin: new Date() }, { where: { id: user.id } });
 
     // Unirse a la sala de tickets
     socket.on('join_ticket', (ticketId: string) => {
@@ -368,7 +368,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       }
 
       // Actualizar estado del usuario a offline
-      await User.update({ status: 'offline' }, { where: { id: user.id } });
+      await User.update({ isActive: false }, { where: { id: user.id } });
       io.emit('user_status_changed', { userId: user.id, status: 'offline' });
     });
   });

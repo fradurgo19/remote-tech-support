@@ -29,7 +29,7 @@ export const createUser = async (req: Request, res: Response) => {
       password: hashedPassword,
       role: role || 'customer',
       phone: phone || null,
-      status: 'offline',
+      isActive: true,
       emailVerified: false,
     });
 
