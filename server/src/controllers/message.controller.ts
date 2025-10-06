@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import fs from 'fs';
 import multer from 'multer';
-import path from 'path';
 import { Message, User } from '../models';
 import { logger } from '../utils/logger';
+import { storageService } from '../services/storage.service';
 
 export const getMessages = async (req: Request, res: Response) => {
   try {
@@ -138,13 +137,16 @@ export const sendFileMessage = async (req: Request, res: Response) => {
       metadata: {},
     });
 
-    // Importar storage service y subir archivo a Supabase
-    const { storageService } = await import('../services/storage.service');
+    logger.info(`📤 Subiendo archivo a Supabase Storage (message-attachments): ${file.originalname}`);
+
+    // Subir archivo a Supabase Storage
     const uploadResult = await storageService.uploadMessageAttachment(
       ticketId,
       tempMessage.id,
       file
     );
+
+    logger.info(`✅ Archivo subido a Supabase: ${uploadResult.url}`);
 
     // Actualizar el mensaje con la información del archivo
     await tempMessage.update({
@@ -160,7 +162,7 @@ export const sendFileMessage = async (req: Request, res: Response) => {
       },
     });
 
-    logger.info(`Archivo enviado con ID: ${tempMessage.id}`);
+    logger.info(`✅ Mensaje con archivo creado: ${tempMessage.id}`);
 
     // Obtener el usuario por separado
     const user = await User.findByPk(senderId, {

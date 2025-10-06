@@ -44,7 +44,15 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
-app.use(express.json({ limit: '10mb' }));
+// Middleware condicional para JSON - NO aplicar a rutas de upload
+app.use((req, res, next) => {
+  // Excluir rutas de upload de multipart/form-data
+  if (req.path.includes('/avatar') || req.path.includes('/upload')) {
+    return next();
+  }
+  express.json({ limit: '10mb' })(req, res, next);
+});
+
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Servir archivos estáticos

@@ -1,12 +1,7 @@
 import { Request, Response } from 'express';
 import Report from '../models/Report';
-import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
-import fs from 'fs';
 import { createTransport } from 'nodemailer';
 import PDFDocument from 'pdfkit';
-
-// Importar storage service para Supabase
 import { storageService } from '../services/storage.service';
 
 // Configuración del cliente de correo
@@ -62,14 +57,15 @@ export const reportController = {
         // Subir archivos a Supabase Storage
         for (const file of req.files as Express.Multer.File[]) {
           try {
+            console.log(`📤 Subiendo archivo a Supabase (report-attachments): ${file.originalname}`);
             const uploadResult = await storageService.uploadReportAttachment(
               tempReport.id,
               file
             );
             attachments.push(uploadResult);
-            console.log('File uploaded:', uploadResult);
+            console.log(`✅ Archivo subido a Supabase: ${uploadResult.url}`);
           } catch (uploadError) {
-            console.error('Error uploading file:', uploadError);
+            console.error('❌ Error al subir archivo a Supabase:', uploadError);
           }
         }
 

@@ -298,7 +298,7 @@ export const userService = {
   uploadAvatar: async (file: File): Promise<{ avatarUrl: string }> => {
     const formData = new FormData();
     formData.append('avatar', file);
-    
+
     const response = await apiCall('/api/users/avatar', {
       method: 'POST',
       body: formData,
@@ -347,10 +347,15 @@ const apiCall = async (
   options: RequestInit = {}
 ): Promise<any> => {
   const token = getAuthToken();
+
+  // Detectar si es FormData (no agregar Content-Type para que el navegador lo maneje)
+  const isFormData = options.body instanceof FormData;
+
   const response = await fetch(`http://localhost:3000${url}`, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      // Solo agregar Content-Type si NO es FormData
+      ...(!isFormData && { 'Content-Type': 'application/json' }),
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
