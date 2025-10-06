@@ -295,6 +295,17 @@ export const userService = {
     });
     return response.user;
   },
+  uploadAvatar: async (file: File): Promise<{ avatarUrl: string }> => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    const response = await apiCall('/api/users/avatar', {
+      method: 'POST',
+      body: formData,
+      // No incluir Content-Type header - el navegador lo agrega automáticamente con boundary
+    });
+    return response;
+  },
   updateUserStatus: async (
     id: string,
     status: User['status']

@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import { User } from '../models';
+import { storageService } from '../services/storage.service';
 import { logger } from '../utils/logger';
 
 export const createUser = async (req: Request, res: Response) => {
@@ -257,9 +258,6 @@ export const uploadAvatar = async (req: Request, res: Response) => {
         .status(400)
         .json({ message: 'No se proporcionó archivo de avatar' });
     }
-
-    // Importar storage service
-    const { storageService } = await import('../services/storage.service');
 
     // Subir avatar a Supabase Storage
     const uploadResult = await storageService.uploadAvatar(user.id, req.file);

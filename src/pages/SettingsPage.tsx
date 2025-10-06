@@ -155,19 +155,11 @@ export const SettingsPage: React.FC = () => {
     if (!selectedFile || !user) return;
     setIsUploading(true);
     try {
-      // Comprimir la imagen antes de enviarla
-      const compressedBase64 = await compressImage(selectedFile, 400, 0.7);
+      // Subir avatar a Supabase Storage usando FormData
+      const result = await userService.uploadAvatar(selectedFile);
 
-      // Actualizar el usuario usando el endpoint existente
-      const updatedUser = await userService.updateUser(user.id, {
-        name: user.name,
-        email: user.email,
-        password: '', // No cambiar la contraseña
-        role: user.role,
-        avatar: compressedBase64,
-      });
-
-      // Actualizar el usuario en el contexto
+      // Actualizar el usuario en el contexto con la nueva URL
+      const updatedUser = { ...user, avatar: result.avatarUrl };
       updateUser(updatedUser);
 
       // Limpiar el estado local

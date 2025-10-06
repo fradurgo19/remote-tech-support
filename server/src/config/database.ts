@@ -13,17 +13,18 @@ export const sequelize = databaseUrl
   ? new Sequelize(databaseUrl, {
       dialect: 'postgres',
       dialectOptions: {
-        ssl: process.env.NODE_ENV === 'production' 
-          ? {
-              require: true,
-              rejectUnauthorized: false, // Necesario para Supabase/Neon
-            }
-          : false,
+        ssl:
+          process.env.NODE_ENV === 'production'
+            ? {
+                require: true,
+                rejectUnauthorized: false, // Necesario para Supabase/Neon
+              }
+            : false,
       },
       logging: false,
       pool: {
-        max: 10, // Aumentado para Supabase Pro
-        min: 2,
+        max: 2, // Reducido para Supabase Free tier pooling limits
+        min: 0,
         acquire: 60000, // Timeout más largo para conexiones remotas
         idle: 10000,
       },
@@ -37,8 +38,8 @@ export const sequelize = databaseUrl
       password: process.env.DB_PASSWORD || 'postgres',
       logging: false,
       pool: {
-        max: 10,
-        min: 2,
+        max: 2,
+        min: 0,
         acquire: 60000,
         idle: 10000,
       },
