@@ -19179,3 +19179,400 @@
 {"level":"info","message":"Usuario conectado: PruebasUsers (4da675ec-04c3-4e0a-897d-f810f6a190da)","timestamp":"2025-10-01T14:45:54.069Z"}
 {"level":"info","message":"Usuario conectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:45:58.217Z"}
 {"level":"info","message":"Usuario conectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:45:58.253Z"}
+{"level":"info","message":"Usuario desconectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:48:22.114Z"}
+{"level":"info","message":"Usuario desconectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:48:22.117Z"}
+{"level":"info","message":"Usuario conectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:48:23.116Z"}
+{"level":"info","message":"Usuario conectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:48:23.144Z"}
+{"level":"info","message":"Usuario desconectado: PruebasUsers (4da675ec-04c3-4e0a-897d-f810f6a190da)","timestamp":"2025-10-01T14:50:47.624Z"}
+{"level":"info","message":"Usuario desconectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:51:12.041Z"}
+{"level":"info","message":"Usuario desconectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:51:12.047Z"}
+{"level":"info","message":"Usuario conectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:51:12.951Z"}
+{"level":"info","message":"Usuario conectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:51:12.975Z"}
+{"level":"info","message":"Usuario desconectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:52:52.974Z"}
+{"level":"info","message":"Intento de login para email: admin@partequipos.com","timestamp":"2025-10-01T14:52:58.715Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T14:52:58.717Z"}
+{"level":"info","message":"Verificando contraseña para usuario: Administrador del Sistema","timestamp":"2025-10-01T14:52:58.718Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T14:52:58.782Z"}
+{"level":"info","message":"Login exitoso para usuario: Administrador del Sistema","timestamp":"2025-10-01T14:52:58.784Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440010)","timestamp":"2025-10-01T14:52:58.820Z"}
+{"level":"info","message":"Usuario desconectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440010)","timestamp":"2025-10-01T14:54:13.298Z"}
+{"level":"info","message":"Usuario desconectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T14:54:27.429Z"}
+{"level":"info","message":"Intento de login para email: jestrada@partequipos.com","timestamp":"2025-10-01T14:54:33.571Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T14:54:33.574Z"}
+{"level":"info","message":"Verificando contraseña para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T14:54:33.575Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T14:54:33.640Z"}
+{"level":"info","message":"Login exitoso para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T14:54:33.641Z"}
+{"level":"info","message":"Usuario conectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T14:54:33.676Z"}
+{"level":"info","message":"Usuario desconectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:01:32.430Z"}
+{"level":"info","message":"Intento de login para email: jestrada@partequipos.com","timestamp":"2025-10-01T15:01:42.568Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T15:01:42.571Z"}
+{"level":"info","message":"Verificando contraseña para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T15:01:42.571Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T15:01:42.641Z"}
+{"level":"info","message":"Login exitoso para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T15:01:42.642Z"}
+{"level":"info","message":"Usuario conectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:01:42.694Z"}
+{"level":"info","message":"Usuario desconectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:03:00.389Z"}
+{"level":"info","message":"Usuario desconectado: PruebasUsers (4da675ec-04c3-4e0a-897d-f810f6a190da)","timestamp":"2025-10-01T15:04:06.956Z"}
+{"level":"info","message":"Intento de login para email: admin@partequipos.com","timestamp":"2025-10-01T15:05:09.284Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T15:05:09.355Z"}
+{"level":"info","message":"Verificando contraseña para usuario: Administrador del Sistema","timestamp":"2025-10-01T15:05:09.356Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T15:05:09.445Z"}
+{"level":"info","message":"Login exitoso para usuario: Administrador del Sistema","timestamp":"2025-10-01T15:05:09.447Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440010)","timestamp":"2025-10-01T15:05:09.505Z"}
+{"level":"info","message":"Obteniendo mensajes para ticket: 550e8400-e29b-41d4-a716-446655440020","timestamp":"2025-10-01T15:07:10.299Z"}
+{"level":"info","message":"Encontrados 8 mensajes","timestamp":"2025-10-01T15:07:10.306Z"}
+{"level":"info","message":"Obteniendo mensajes para ticket: 550e8400-e29b-41d4-a716-446655440020","timestamp":"2025-10-01T15:07:10.317Z"}
+{"level":"info","message":"Encontrados 8 mensajes","timestamp":"2025-10-01T15:07:10.319Z"}
+{"level":"info","message":"Usuario desconectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440010)","timestamp":"2025-10-01T15:07:16.799Z"}
+{"level":"info","message":"Intento de login para email: jestrada@partequipos.com","timestamp":"2025-10-01T15:07:32.157Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T15:07:32.333Z"}
+{"level":"info","message":"Verificando contraseña para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T15:07:32.334Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T15:07:32.420Z"}
+{"level":"info","message":"Login exitoso para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T15:07:32.423Z"}
+{"level":"info","message":"Usuario conectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:07:32.475Z"}
+{"level":"info","message":"Usuario desconectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:07:49.759Z"}
+{"level":"info","message":"Intento de login para email: admin@gmail.com","timestamp":"2025-10-01T15:07:55.266Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T15:07:55.271Z"}
+{"level":"info","message":"Verificando contraseña para usuario: PruebasUsers","timestamp":"2025-10-01T15:07:55.272Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T15:07:55.352Z"}
+{"level":"info","message":"Login exitoso para usuario: PruebasUsers","timestamp":"2025-10-01T15:07:55.353Z"}
+{"level":"info","message":"Usuario conectado: PruebasUsers (4da675ec-04c3-4e0a-897d-f810f6a190da)","timestamp":"2025-10-01T15:07:55.439Z"}
+{"level":"info","message":"Intento de login para email: auxiliar.garantiasbg@partequipos.com","timestamp":"2025-10-01T15:09:30.097Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T15:09:30.101Z"}
+{"level":"info","message":"Verificando contraseña para usuario: Juan Técnico","timestamp":"2025-10-01T15:09:30.102Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T15:09:30.206Z"}
+{"level":"info","message":"Login exitoso para usuario: Juan Técnico","timestamp":"2025-10-01T15:09:30.209Z"}
+{"level":"info","message":"Usuario conectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T15:09:30.261Z"}
+{"level":"info","message":"Usuario desconectado: PruebasUsers (4da675ec-04c3-4e0a-897d-f810f6a190da)","timestamp":"2025-10-01T15:10:42.468Z"}
+{"level":"info","message":"Intento de login para email: jestrada@partequipos.com","timestamp":"2025-10-01T15:10:48.148Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T15:10:48.152Z"}
+{"level":"info","message":"Verificando contraseña para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T15:10:48.153Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T15:10:48.230Z"}
+{"level":"info","message":"Login exitoso para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T15:10:48.231Z"}
+{"level":"info","message":"Usuario conectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:10:48.284Z"}
+{"level":"info","message":"Ticket creation email sent successfully for ticket 12246BA2","timestamp":"2025-10-01T15:11:39.837Z"}
+{"level":"info","message":"Email notification sent for ticket 12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:11:39.838Z"}
+{"level":"info","message":"Manteniendo contraseña actual para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T15:16:26.878Z"}
+{"level":"info","message":"Usuario desconectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:16:30.679Z"}
+{"level":"info","message":"Usuario conectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:16:33.088Z"}
+{"level":"info","message":"Usuario conectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:16:33.116Z"}
+{"level":"info","message":"Ticket status change email sent successfully for ticket 12246BA2 - open → in_progress","timestamp":"2025-10-01T15:17:55.329Z"}
+{"level":"info","message":"Status change email sent for ticket 12246ba2-9943-41c7-a3a5-7490b645f6ad: open → in_progress","timestamp":"2025-10-01T15:17:55.329Z"}
+{"level":"info","message":"Obteniendo mensajes para ticket: 12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:19:15.582Z"}
+{"level":"info","message":"Encontrados 0 mensajes","timestamp":"2025-10-01T15:19:15.586Z"}
+{"level":"info","message":"Obteniendo mensajes para ticket: 12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:19:15.592Z"}
+{"level":"info","message":"Encontrados 0 mensajes","timestamp":"2025-10-01T15:19:15.594Z"}
+{"level":"info","message":"=== INICIANDO LLAMADA ===","timestamp":"2025-10-01T15:19:46.572Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.573Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.573Z"}
+{"level":"info","message":"Ticket: 12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:19:46.573Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.573Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.574Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.614Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.614Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.615Z"}
+{"level":"info","message":"Tipo: offer","timestamp":"2025-10-01T15:19:46.615Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.615Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.616Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.617Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.635Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.636Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.638Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.639Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.639Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.640Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.640Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.641Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.641Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.642Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.642Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.642Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.642Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.643Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.643Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.644Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.644Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.644Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.644Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.645Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.645Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.645Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.645Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.646Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.646Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.646Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.646Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.647Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.647Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.647Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.647Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.647Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.648Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.648Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.648Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.648Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.649Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.649Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.649Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.649Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.649Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.650Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.650Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.650Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.650Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.651Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.651Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.651Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.652Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.652Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.652Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.652Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.653Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.654Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.654Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.654Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.709Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.709Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.710Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.710Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.710Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.710Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.711Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.713Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.714Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.714Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.714Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.715Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.715Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.715Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.774Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.775Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.777Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.777Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.778Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.778Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.779Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.779Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.780Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.780Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.780Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.780Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.781Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.781Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.781Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.782Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.782Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.782Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.782Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.782Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.783Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.783Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.783Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.783Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.784Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.784Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.786Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.788Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.788Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.788Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.789Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.789Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.790Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.791Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.792Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.793Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.793Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.793Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.793Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.794Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.794Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.794Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.794Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.795Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.795Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.795Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.795Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.795Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.796Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:19:46.796Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:19:46.796Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:19:46.796Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:19:46.797Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:19:46.797Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:19:46.797Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:19:46.797Z"}
+{"level":"info","message":"Sesión de llamada creada: b80f787d-b2b9-4e43-bd64-66cc4241735e","timestamp":"2025-10-01T15:19:46.799Z"}
+{"level":"info","message":"Sockets del destinatario encontrados: 1","timestamp":"2025-10-01T15:19:46.799Z"}
+{"level":"info","message":"Socket IDs del destinatario: CwnX-cpUKirqoKUIAAAn","timestamp":"2025-10-01T15:19:46.800Z"}
+{"callSessionId":"b80f787d-b2b9-4e43-bd64-66cc4241735e","from":"d23b8154-3c56-48a7-aa7a-8e3807b12bef","fromAvatar":"data:image/jpeg;base64,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","fromEmail":"jestrada@partequipos.com","fromName":"JOHN ALVARO ANDRES ESTRADA MUÑOZ","level":"info","message":"Enviando call-request a CwnX-cpUKirqoKUIAAAn:","ticketId":"12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:19:46.800Z"}
+{"level":"info","message":"Llamada iniciada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 en ticket 12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:19:46.802Z"}
+{"level":"info","message":"Llamada b80f787d-b2b9-4e43-bd64-66cc4241735e aceptada por Juan Técnico","timestamp":"2025-10-01T15:20:09.310Z"}
+{"level":"info","message":"Obteniendo mensajes para ticket: 12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:21:34.393Z"}
+{"level":"info","message":"Encontrados 0 mensajes","timestamp":"2025-10-01T15:21:34.398Z"}
+{"level":"info","message":"Obteniendo mensajes para ticket: 12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:21:34.404Z"}
+{"level":"info","message":"Encontrados 0 mensajes","timestamp":"2025-10-01T15:21:34.406Z"}
+{"level":"info","message":"=== INICIANDO LLAMADA ===","timestamp":"2025-10-01T15:23:59.422Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.422Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.422Z"}
+{"level":"info","message":"Ticket: 12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:23:59.422Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.422Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.422Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.443Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.443Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.444Z"}
+{"level":"info","message":"Tipo: offer","timestamp":"2025-10-01T15:23:59.444Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.444Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.452Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.453Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.454Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.455Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.455Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.455Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.456Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.456Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.457Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.457Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.457Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.458Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.458Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.459Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.459Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.459Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.460Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.460Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.460Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.460Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.460Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.461Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.461Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.461Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.461Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.462Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.462Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.462Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.462Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.462Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.463Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.463Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.463Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.463Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.463Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.464Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.464Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.465Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.465Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.466Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.466Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.466Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.466Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.467Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.467Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.467Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.467Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.468Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.468Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.468Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.469Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.469Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.469Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.470Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.470Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.470Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.470Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.471Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.471Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.471Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.471Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.471Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.471Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.472Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.472Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.472Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.472Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.472Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.472Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.473Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.473Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.473Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.560Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.561Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.562Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.562Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.562Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.563Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.563Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.564Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.564Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.564Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.565Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.565Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.565Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.567Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.568Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.568Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.569Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.569Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.569Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.569Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.570Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.570Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.570Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.571Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.571Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.571Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.571Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.571Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.572Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.572Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.572Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.572Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.572Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.573Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.573Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.573Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.573Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.574Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.574Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.574Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.575Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.575Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.575Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.576Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.576Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.576Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.576Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.576Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.576Z"}
+{"level":"info","message":"=== SEÑAL WEBRTC RECIBIDA ===","timestamp":"2025-10-01T15:23:59.577Z"}
+{"level":"info","message":"De: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:23:59.577Z"}
+{"level":"info","message":"Para: 550e8400-e29b-41d4-a716-446655440011","timestamp":"2025-10-01T15:23:59.577Z"}
+{"level":"info","message":"Tipo: candidate","timestamp":"2025-10-01T15:23:59.577Z"}
+{"level":"info","message":"Usuarios conectados: 3","timestamp":"2025-10-01T15:23:59.577Z"}
+{"level":"info","message":"Conectados: 550e8400-e29b-41d4-a716-446655440011(CwnX-cpUKirqoKUIAAAn), d23b8154-3c56-48a7-aa7a-8e3807b12bef(BvsuD_YSlG4YosJwAAAs), d23b8154-3c56-48a7-aa7a-8e3807b12bef(Z2K3GwlVypy2i7cCAAAt)","timestamp":"2025-10-01T15:23:59.578Z"}
+{"level":"info","message":"✅ Señal WebRTC enviada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 (CwnX-cpUKirqoKUIAAAn)","timestamp":"2025-10-01T15:23:59.578Z"}
+{"level":"info","message":"Sesión de llamada creada: 51cdb783-1591-4322-8dbe-271b02a7bb3d","timestamp":"2025-10-01T15:23:59.623Z"}
+{"level":"info","message":"Sockets del destinatario encontrados: 1","timestamp":"2025-10-01T15:23:59.624Z"}
+{"level":"info","message":"Socket IDs del destinatario: CwnX-cpUKirqoKUIAAAn","timestamp":"2025-10-01T15:23:59.624Z"}
+{"callSessionId":"51cdb783-1591-4322-8dbe-271b02a7bb3d","from":"d23b8154-3c56-48a7-aa7a-8e3807b12bef","fromAvatar":"data:image/jpeg;base64,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","fromEmail":"jestrada@partequipos.com","fromName":"JOHN ALVARO ANDRES ESTRADA MUÑOZ","level":"info","message":"Enviando call-request a CwnX-cpUKirqoKUIAAAn:","ticketId":"12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:23:59.624Z"}
+{"level":"info","message":"Llamada iniciada de JOHN ALVARO ANDRES ESTRADA MUÑOZ a 550e8400-e29b-41d4-a716-446655440011 en ticket 12246ba2-9943-41c7-a3a5-7490b645f6ad","timestamp":"2025-10-01T15:23:59.625Z"}
+{"level":"info","message":"Llamada 51cdb783-1591-4322-8dbe-271b02a7bb3d aceptada por Juan Técnico","timestamp":"2025-10-01T15:24:02.464Z"}
+{"level":"info","message":"Usuario desconectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:35:01.789Z"}
+{"level":"info","message":"Usuario desconectado: Juan Técnico (550e8400-e29b-41d4-a716-446655440011)","timestamp":"2025-10-01T15:35:07.306Z"}
+{"level":"info","message":"Intento de login para email: jestrada@partequipos.com","timestamp":"2025-10-01T15:47:03.017Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T15:47:03.102Z"}
+{"level":"info","message":"Verificando contraseña para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T15:47:03.103Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T15:47:03.211Z"}
+{"level":"info","message":"Login exitoso para usuario: JOHN ALVARO ANDRES ESTRADA MUÑOZ","timestamp":"2025-10-01T15:47:03.212Z"}
+{"level":"info","message":"Usuario conectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T15:47:03.261Z"}
+{"level":"info","message":"Intento de login para email: admin@partequipos.com","timestamp":"2025-10-01T15:47:12.633Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-10-01T15:47:12.643Z"}
+{"level":"info","message":"Verificando contraseña para usuario: Administrador del Sistema","timestamp":"2025-10-01T15:47:12.643Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-10-01T15:47:12.752Z"}
+{"level":"info","message":"Login exitoso para usuario: Administrador del Sistema","timestamp":"2025-10-01T15:47:12.753Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440010)","timestamp":"2025-10-01T15:47:12.791Z"}
+{"level":"info","message":"Ticket creation email sent successfully for ticket 843AD3D5","timestamp":"2025-10-01T15:48:40.036Z"}
+{"level":"info","message":"Email notification sent for ticket 843ad3d5-8e1a-4896-95cf-ffae75c50ba4","timestamp":"2025-10-01T15:48:40.036Z"}
+{"level":"info","message":"Usuario desconectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440010)","timestamp":"2025-10-01T15:49:21.406Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440010)","timestamp":"2025-10-01T15:49:23.108Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440010)","timestamp":"2025-10-01T15:49:23.113Z"}
+{"level":"info","message":"Usuario desconectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T19:46:49.558Z"}
+{"level":"info","message":"Usuario desconectado: JOHN ALVARO ANDRES ESTRADA MUÑOZ (d23b8154-3c56-48a7-aa7a-8e3807b12bef)","timestamp":"2025-10-01T19:46:49.606Z"}

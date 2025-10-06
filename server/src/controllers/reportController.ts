@@ -6,17 +6,8 @@ import fs from 'fs';
 import { createTransport } from 'nodemailer';
 import PDFDocument from 'pdfkit';
 
-// Configuración del almacenamiento de archivos
-const UPLOADS_DIR = path.join(__dirname, '../../uploads');
-const REPORTS_DIR = path.join(UPLOADS_DIR, 'reports');
-
-// Asegurarse de que los directorios existan
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-if (!fs.existsSync(REPORTS_DIR)) {
-  fs.mkdirSync(REPORTS_DIR, { recursive: true });
-}
+// Importar storage service para Supabase
+import { storageService } from '../services/storage.service';
 
 // Configuración del cliente de correo
 const transporter = createTransport({
@@ -46,17 +37,52 @@ export const reportController = {
 
       console.log('Creating report with data:', { title, description, userId });
 
-      // Manejar archivos adjuntos
-      const attachments: string[] = [];
+      // Manejar archivos adjuntos con Supabase Storage
+      const attachments: Array<{
+        url: string;
+        path: string;
+        filename: string;
+        size: number;
+        mimeType: string;
+      }> = [];
       if (req.files && Array.isArray(req.files)) {
         console.log('Processing files:', req.files);
-        for (const file of req.files) {
-          const fileName = `${uuidv4()}-${file.originalname}`;
-          const filePath = path.join(REPORTS_DIR, fileName);
-          console.log('Saving file:', { fileName, filePath });
-          fs.writeFileSync(filePath, file.buffer);
-          attachments.push(fileName);
+        
+        // Crear el reporte primero para obtener su ID
+        const tempReport = await Report.create({
+          title,
+          description,
+          attachments: '[]', // JSON string vacío temporalmente
+          authorId: userId,
+          type: req.body.type || 'technical',
+          status: req.body.status || 'draft',
+          priority: req.body.priority || 'medium'
+        });
+
+        // Subir archivos a Supabase Storage
+        for (const file of req.files as Express.Multer.File[]) {
+          try {
+            const uploadResult = await storageService.uploadReportAttachment(
+              tempReport.id,
+              file
+            );
+            attachments.push(uploadResult);
+            console.log('File uploaded:', uploadResult);
+          } catch (uploadError) {
+            console.error('Error uploading file:', uploadError);
+          }
         }
+
+        // Actualizar el reporte con los attachments
+        await tempReport.update({
+          attachments: JSON.stringify(attachments)
+        });
+
+        console.log('Report created successfully:', tempReport.toJSON());
+        return res.status(201).json({
+          message: 'Informe creado exitosamente',
+          report: tempReport
+        });
       } else {
         console.log('No files found in request');
       }

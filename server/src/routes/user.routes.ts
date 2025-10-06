@@ -14,9 +14,9 @@ import { authenticate, authorize } from '../middleware/auth';
 
 const router = Router();
 
-// Configurar multer para subida de archivos
+// Configurar multer para subida de archivos (memoria para Supabase Storage)
 const upload = multer({
-  dest: 'uploads/avatars/',
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
   },

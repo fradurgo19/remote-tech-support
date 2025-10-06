@@ -258,18 +258,28 @@ export const uploadAvatar = async (req: Request, res: Response) => {
         .json({ message: 'No se proporcionó archivo de avatar' });
     }
 
-    // Generar URL del avatar (en este caso, usando Cloudinary o similar)
-    // Por ahora, vamos a simular una URL
-    const avatarUrl = `https://res.cloudinary.com/example/image/upload/v${Date.now()}/${
-      req.file.filename
-    }`;
+    // Importar storage service
+    const { storageService } = await import('../services/storage.service');
+
+    // Subir avatar a Supabase Storage
+    const uploadResult = await storageService.uploadAvatar(user.id, req.file);
+
+    // Obtener el usuario actual para eliminar el avatar anterior si existe
+    const currentUser = await User.findByPk(user.id);
+    if (currentUser?.avatar) {
+      // Extraer el path del avatar anterior de la URL
+      const oldAvatarPath = currentUser.avatar.split('/').slice(-2).join('/');
+      await storageService.deleteAvatar(oldAvatarPath).catch(() => {
+        // Ignorar errores al eliminar avatar anterior
+      });
+    }
 
     // Actualizar el usuario con la nueva URL del avatar
-    await User.update({ avatar: avatarUrl }, { where: { id: user.id } });
+    await User.update({ avatar: uploadResult.url }, { where: { id: user.id } });
 
     res.json({
       message: 'Avatar actualizado correctamente',
-      avatarUrl: avatarUrl,
+      avatarUrl: uploadResult.url,
     });
   } catch (error) {
     logger.error('Error al subir avatar:', error);

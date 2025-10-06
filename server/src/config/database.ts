@@ -6,7 +6,7 @@ import { Sequelize } from 'sequelize';
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 // Configuración de Sequelize
-// Soporta DATABASE_URL (Neon, Railway, Heroku) o variables individuales
+// Soporta DATABASE_URL (Supabase, Neon, Railway, Heroku) o variables individuales
 const databaseUrl = process.env.DATABASE_URL;
 
 export const sequelize = databaseUrl
@@ -16,15 +16,15 @@ export const sequelize = databaseUrl
         ssl: process.env.NODE_ENV === 'production' 
           ? {
               require: true,
-              rejectUnauthorized: false, // Necesario para Neon
+              rejectUnauthorized: false, // Necesario para Supabase/Neon
             }
           : false,
       },
       logging: false,
       pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
+        max: 10, // Aumentado para Supabase Pro
+        min: 2,
+        acquire: 60000, // Timeout más largo para conexiones remotas
         idle: 10000,
       },
     })
@@ -37,9 +37,9 @@ export const sequelize = databaseUrl
       password: process.env.DB_PASSWORD || 'postgres',
       logging: false,
       pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
+        max: 10,
+        min: 2,
+        acquire: 60000,
         idle: 10000,
       },
     });

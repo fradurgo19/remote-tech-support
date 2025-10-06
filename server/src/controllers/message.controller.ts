@@ -101,26 +101,9 @@ export const deleteMessage = async (req: Request, res: Response) => {
   }
 };
 
-// Configuración de multer para subir archivos
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads/messages');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(
-      null,
-      file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname)
-    );
-  },
-});
-
+// Configuración de multer para subir archivos (memoria para Supabase Storage)
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB límite
   },
@@ -142,29 +125,42 @@ export const sendFileMessage = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'No se proporcionó archivo' });
     }
 
-    const fileUrl = `/uploads/messages/${file.filename}`;
-
     logger.info(
       `Enviando archivo ${file.originalname} para ticket ${ticketId}`
     );
 
-    const message = await Message.create({
+    // Crear el mensaje primero para obtener su ID
+    const tempMessage = await Message.create({
       content: file.originalname,
       ticketId,
       senderId,
       type,
+      metadata: {},
+    });
+
+    // Importar storage service y subir archivo a Supabase
+    const { storageService } = await import('../services/storage.service');
+    const uploadResult = await storageService.uploadMessageAttachment(
+      ticketId,
+      tempMessage.id,
+      file
+    );
+
+    // Actualizar el mensaje con la información del archivo
+    await tempMessage.update({
       metadata: {
-        fileUrl,
+        fileUrl: uploadResult.url,
         attachment: {
           name: file.originalname,
-          url: fileUrl,
+          url: uploadResult.url,
           type: file.mimetype,
           size: file.size,
+          storagePath: uploadResult.path,
         },
       },
     });
 
-    logger.info(`Archivo enviado con ID: ${message.id}`);
+    logger.info(`Archivo enviado con ID: ${tempMessage.id}`);
 
     // Obtener el usuario por separado
     const user = await User.findByPk(senderId, {
@@ -172,7 +168,7 @@ export const sendFileMessage = async (req: Request, res: Response) => {
     });
 
     const messageWithUser = {
-      ...message.toJSON(),
+      ...tempMessage.toJSON(),
       sender: user,
     };
 
