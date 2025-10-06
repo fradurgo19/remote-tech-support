@@ -17,6 +17,9 @@ export interface UserAttributes {
   resetPasswordExpires?: Date | null;
   emailVerified?: boolean;
   emailVerificationToken?: string | null;
+  department?: string;
+  timezone?: string;
+  language?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -36,6 +39,9 @@ export class User extends Model<UserAttributes> implements UserAttributes {
   public resetPasswordExpires!: Date | null;
   public emailVerified!: boolean;
   public emailVerificationToken!: string | null;
+  public department!: string;
+  public timezone!: string;
+  public language!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -112,6 +118,20 @@ User.init(
       type: DataTypes.STRING(255),
       allowNull: true,
       field: 'emailVerificationToken',
+    },
+    department: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    timezone: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      defaultValue: 'America/Bogota',
+    },
+    language: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+      defaultValue: 'es',
     },
   },
   {
