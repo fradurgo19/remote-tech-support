@@ -9,14 +9,14 @@ export interface UserAttributes {
   password: string;
   role: 'admin' | 'technician' | 'customer';
   avatar?: string;
-  status: 'online' | 'away' | 'busy' | 'offline';
-  emailVerified?: boolean;
-  passwordResetToken?: string | null;
-  lastLoginAt?: Date;
   phone?: string;
-  department?: string;
-  timezone?: string;
-  language?: string;
+  company?: string;
+  isActive?: boolean;
+  lastLogin?: Date;
+  resetPasswordToken?: string | null;
+  resetPasswordExpires?: Date | null;
+  emailVerified?: boolean;
+  emailVerificationToken?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -28,14 +28,14 @@ export class User extends Model<UserAttributes> implements UserAttributes {
   public password!: string;
   public role!: 'admin' | 'technician' | 'customer';
   public avatar!: string;
-  public status!: 'online' | 'away' | 'busy' | 'offline';
-  public emailVerified!: boolean;
-  public passwordResetToken!: string | null;
-  public lastLoginAt!: Date;
   public phone!: string;
-  public department!: string;
-  public timezone!: string;
-  public language!: string;
+  public company!: string;
+  public isActive!: boolean;
+  public lastLogin!: Date;
+  public resetPasswordToken!: string | null;
+  public resetPasswordExpires!: Date | null;
+  public emailVerified!: boolean;
+  public emailVerificationToken!: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -72,42 +72,46 @@ User.init(
       allowNull: false,
     },
     avatar: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true,
     },
-    status: {
-      type: DataTypes.ENUM('online', 'away', 'busy', 'offline'),
-      defaultValue: 'offline',
+    phone: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+    company: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      field: 'isActive',
+    },
+    lastLogin: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'lastLogin',
+    },
+    resetPasswordToken: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      field: 'resetPasswordToken',
+    },
+    resetPasswordExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'resetPasswordExpires',
     },
     emailVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+      field: 'emailVerified',
     },
-    passwordResetToken: {
-      type: DataTypes.STRING,
+    emailVerificationToken: {
+      type: DataTypes.STRING(255),
       allowNull: true,
-    },
-    lastLoginAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    department: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    timezone: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      defaultValue: 'America/Bogota',
-    },
-    language: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      defaultValue: 'es',
+      field: 'emailVerificationToken',
     },
   },
   {
