@@ -23,7 +23,7 @@ import { Report, User as UserType } from '../types';
 
 const ReportsPage: React.FC = () => {
   const navigate = useNavigate();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const { user } = useAuth();
 
   const [reports, setReports] = useState<Report[]>([]);
@@ -149,19 +149,7 @@ const ReportsPage: React.FC = () => {
     }
 
     try {
-      // Convertir archivos a base64 para enviar al backend
-      const attachmentPromises = formData.attachments.map(async file => {
-        const base64 = await fileToBase64(file);
-        return {
-          name: file.name,
-          content: base64,
-          type: file.type,
-          size: file.size,
-        };
-      });
-
-      const attachments = await Promise.all(attachmentPromises);
-
+      // Preparar datos del reporte (sin attachments - se envían por separado)
       const reportData = {
         title: formData.title,
         description: formData.description,
@@ -169,11 +157,12 @@ const ReportsPage: React.FC = () => {
         priority: formData.priority,
         customerId: formData.customerId,
         tags: formData.tags,
-        attachments: attachments,
+        attachments: [], // Los archivos se envían como File objects
       };
 
+      // Pasar los archivos RAW como segundo parámetro
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await reportService.createReport(reportData as any);
+      await reportService.createReport(reportData as any, formData.attachments);
       toast.success('Informe creado exitosamente');
       setIsCreating(false);
       setFormData({

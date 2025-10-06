@@ -44,10 +44,17 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
-// Middleware condicional para JSON - NO aplicar a rutas de upload
+// Middleware condicional para JSON - NO aplicar a rutas de upload con archivos
 app.use((req, res, next) => {
   // Excluir rutas de upload de multipart/form-data
-  if (req.path.includes('/avatar') || req.path.includes('/upload')) {
+  const isFileUpload =
+    req.path.includes('/avatar') ||
+    req.path.includes('/upload') ||
+    (req.path === '/api/reports' &&
+      req.method === 'POST' &&
+      req.headers['content-type']?.includes('multipart'));
+
+  if (isFileUpload) {
     return next();
   }
   express.json({ limit: '10mb' })(req, res, next);

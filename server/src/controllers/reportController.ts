@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import Report from '../models/Report';
 import { createTransport } from 'nodemailer';
 import PDFDocument from 'pdfkit';
+import Report from '../models/Report';
 import { storageService } from '../services/storage.service';
 
 // Configuración del cliente de correo
@@ -19,18 +19,26 @@ export const reportController = {
   // Crear un nuevo informe
   async create(req: Request, res: Response) {
     try {
+      console.log('==========================================');
+      console.log('📝 CREATE REPORT - Petición recibida');
       console.log('Request body:', req.body);
       console.log('Request files:', req.files);
-      
-      const { title, description } = req.body;
+      console.log('==========================================');
+
+      const { title, description, customerId } = req.body;
       const userId = req.user?.id;
 
       if (!userId) {
-        console.log('No user ID found in request');
+        console.log('❌ No user ID found in request');
         return res.status(401).json({ error: 'Usuario no autenticado' });
       }
 
-      console.log('Creating report with data:', { title, description, userId });
+      console.log('✅ Creating report with data:', {
+        title,
+        description,
+        userId,
+        customerId: customerId || 'null',
+      });
 
       // Manejar archivos adjuntos con Supabase Storage
       const attachments: Array<{
@@ -42,22 +50,25 @@ export const reportController = {
       }> = [];
       if (req.files && Array.isArray(req.files)) {
         console.log('Processing files:', req.files);
-        
+
         // Crear el reporte primero para obtener su ID
         const tempReport = await Report.create({
           title,
           description,
-          attachments: '[]', // JSON string vacío temporalmente
+          attachments: [], // Array vacío
           authorId: userId,
+          customerId: req.body.customerId || null,
           type: req.body.type || 'technical',
           status: req.body.status || 'draft',
-          priority: req.body.priority || 'medium'
+          priority: req.body.priority || 'medium',
         });
 
         // Subir archivos a Supabase Storage
         for (const file of req.files as Express.Multer.File[]) {
           try {
-            console.log(`📤 Subiendo archivo a Supabase (report-attachments): ${file.originalname}`);
+            console.log(
+              `📤 Subiendo archivo a Supabase (report-attachments): ${file.originalname}`
+            );
             const uploadResult = await storageService.uploadReportAttachment(
               tempReport.id,
               file
@@ -69,15 +80,16 @@ export const reportController = {
           }
         }
 
-        // Actualizar el reporte con los attachments
+        // Actualizar el reporte con los attachments (array de URLs)
+        const attachmentUrls = attachments.map(a => a.url);
         await tempReport.update({
-          attachments: JSON.stringify(attachments)
+          attachments: attachmentUrls,
         });
 
         console.log('Report created successfully:', tempReport.toJSON());
         return res.status(201).json({
           message: 'Informe creado exitosamente',
-          report: tempReport
+          report: tempReport,
         });
       } else {
         console.log('No files found in request');
@@ -88,17 +100,18 @@ export const reportController = {
       const report = await Report.create({
         title,
         description,
-        attachments,
+        attachments: [], // Array vacío si no hay archivos
         authorId: userId,
+        customerId: req.body.customerId || null,
         type: req.body.type || 'technical',
         status: req.body.status || 'draft',
-        priority: req.body.priority || 'medium'
+        priority: req.body.priority || 'medium',
       });
 
       console.log('Report created successfully:', report.toJSON());
       res.status(201).json({
         message: 'Informe creado exitosamente',
-        report
+        report,
       });
     } catch (error) {
       console.error('Error al crear el informe:', error);
@@ -160,7 +173,9 @@ export const reportController = {
       console.log('File exists:', fs.existsSync(filePath));
 
       if (!fs.existsSync(filePath)) {
-        return res.status(404).json({ error: 'Archivo no encontrado en el servidor' });
+        return res
+          .status(404)
+          .json({ error: 'Archivo no encontrado en el servidor' });
       }
 
       res.download(filePath);
@@ -317,7 +332,9 @@ export const reportController = {
       // Verificar que el usuario sea el autor del informe o un administrador
       if (report.authorId !== userId) {
         // Aquí podrías agregar lógica para verificar si es administrador
-        return res.status(403).json({ error: 'No tienes permisos para eliminar este informe' });
+        return res
+          .status(403)
+          .json({ error: 'No tienes permisos para eliminar este informe' });
       }
 
       // Eliminar archivos adjuntos del servidor
@@ -345,4 +362,4 @@ export const reportController = {
       res.status(500).json({ error: 'Error al eliminar el informe' });
     }
   },
-}; 
+};

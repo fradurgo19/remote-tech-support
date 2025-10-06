@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Report, Ticket, User } from '../models';
+import { storageService } from '../services/storage.service';
 import { logger } from '../utils/logger';
 
 export const getReports = async (req: Request, res: Response) => {
@@ -92,37 +93,57 @@ export const createReport = async (req: Request, res: Response) => {
         .json({ message: 'Los clientes no pueden crear informes' });
     }
 
-    // Verificar que se proporcione un cliente
-    if (!customerId) {
-      return res.status(400).json({
-        message: 'Debe seleccionar un cliente para asignar el informe',
-      });
-    }
+    // customerId es opcional - puede ser null para reportes generales
+    console.log('✅ Datos recibidos:', {
+      title,
+      description,
+      customerId,
+      files: req.files?.length || 0,
+    });
 
-    // Procesar archivos adjuntos si existen
-    let processedAttachments: string[] = [];
-    if (attachments && Array.isArray(attachments)) {
-      processedAttachments = attachments.map((attachment: string | { content: string }) => {
-        // Si es un objeto con contenido base64, usar el contenido
-        if (typeof attachment === 'object' && attachment.content) {
-          return attachment.content;
-        }
-        // Si es un string, usarlo directamente
-        return attachment as string;
-      });
-    }
-
+    // Crear el reporte primero
     const report = await Report.create({
       title,
       description,
       type,
       priority,
       authorId: user.id,
-      customerId: customerId,
+      customerId: customerId || null,
       tags: tags || [],
-      attachments: processedAttachments,
+      attachments: [],
       status: 'draft',
     });
+
+    // Subir archivos a Supabase Storage si existen
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+      console.log(
+        `📤 Subiendo ${req.files.length} archivos a Supabase Storage...`
+      );
+      const uploadedUrls: string[] = [];
+
+      for (const file of req.files as Express.Multer.File[]) {
+        try {
+          console.log(`  📎 Subiendo: ${file.originalname}`);
+          const uploadResult = await storageService.uploadReportAttachment(
+            report.id,
+            file
+          );
+          uploadedUrls.push(uploadResult.url);
+          console.log(`  ✅ Subido: ${uploadResult.url}`);
+        } catch (uploadError) {
+          console.error(
+            `  ❌ Error al subir ${file.originalname}:`,
+            uploadError
+          );
+        }
+      }
+
+      // Actualizar el reporte con las URLs de los archivos
+      await report.update({ attachments: uploadedUrls });
+      console.log(
+        `✅ ${uploadedUrls.length} archivos subidos a Supabase Storage`
+      );
+    }
 
     // Obtener el informe con la información del autor y cliente
     const reportWithDetails = await Report.findByPk(report.id, {

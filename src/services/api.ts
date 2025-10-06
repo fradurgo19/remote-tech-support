@@ -474,8 +474,33 @@ export const reportService = {
     return data;
   },
   createReport: async (
-    reportData: Omit<Report, 'id' | 'createdAt' | 'updatedAt'>
+    reportData: Omit<Report, 'id' | 'createdAt' | 'updatedAt'>,
+    rawFiles?: File[]
   ): Promise<Report> => {
+    // Si hay archivos RAW (File objects), usar FormData
+    if (rawFiles && rawFiles.length > 0) {
+      const formData = new FormData();
+      formData.append('title', reportData.title);
+      formData.append('description', reportData.description);
+      if (reportData.type) formData.append('type', reportData.type);
+      if (reportData.status) formData.append('status', reportData.status);
+      if (reportData.priority) formData.append('priority', reportData.priority);
+      if (reportData.customerId)
+        formData.append('customerId', reportData.customerId);
+
+      // Agregar archivos
+      rawFiles.forEach(file => {
+        formData.append('attachments', file);
+      });
+
+      const data = await apiCall('/api/reports', {
+        method: 'POST',
+        body: formData,
+      });
+      return data.report;
+    }
+
+    // Sin archivos o con base64, usar JSON (compatibilidad)
     const data = await apiCall('/api/reports', {
       method: 'POST',
       body: JSON.stringify(reportData),

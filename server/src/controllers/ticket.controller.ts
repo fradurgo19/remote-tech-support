@@ -88,25 +88,49 @@ export const createTicket = async (req: Request, res: Response) => {
       priority,
       customerEmail,
       customerName,
+      customerId: providedCustomerId,
     } = req.body;
     const user = req.user as { id: string; role: string; email: string };
     let customerId: string;
 
+    logger.info(`🎫 Creando ticket - Datos recibidos:`, {
+      title,
+      category,
+      priority,
+      customerEmail,
+      customerName,
+      providedCustomerId,
+      userRole: user.role,
+      userId: user.id,
+    });
+
     // Buscar la categoría por nombre para obtener su ID
+    logger.info(`Buscando categoría: "${category}"`);
     const categoryRecord = await Category.findOne({
       where: { name: category },
     });
     if (!categoryRecord) {
+      logger.error(`❌ Categoría no encontrada: "${category}"`);
+      logger.info(
+        'Categorías disponibles:',
+        await Category.findAll({ attributes: ['name'] })
+      );
       return res.status(400).json({ message: 'Categoría no encontrada' });
     }
+    logger.info(`✅ Categoría encontrada: ${categoryRecord.id}`);
 
     // Determinar el customerId según el rol del usuario
     if (user.role === 'customer') {
       // Los clientes solo pueden crear tickets para sí mismos
       customerId = user.id;
+      logger.info(`✅ Cliente (self): ${customerId}`);
     } else if (user.role === 'admin' || user.role === 'technician') {
       // El personal de soporte puede asignar tickets a clientes
-      if (customerEmail) {
+      if (providedCustomerId) {
+        // Si se proporciona customerId directamente, usarlo
+        customerId = providedCustomerId;
+        logger.info(`✅ Cliente (por ID): ${customerId}`);
+      } else if (customerEmail) {
         // Buscar cliente existente por email
         let customer = await User.findOne({
           where: { email: customerEmail, role: 'customer' },
@@ -114,6 +138,7 @@ export const createTicket = async (req: Request, res: Response) => {
 
         if (!customer) {
           // Si no existe, crear un cliente temporal
+          logger.info(`Creando nuevo cliente: ${customerEmail}`);
           customer = await User.create({
             name: customerName || customerEmail.split('@')[0],
             email: customerEmail,
@@ -125,7 +150,9 @@ export const createTicket = async (req: Request, res: Response) => {
           });
         }
         customerId = customer.id;
+        logger.info(`✅ Cliente (por email): ${customerId}`);
       } else {
+        logger.error('❌ No se proporcionó customerId ni customerEmail');
         return res.status(400).json({
           message: 'Email del cliente es requerido para asignar el ticket',
         });
