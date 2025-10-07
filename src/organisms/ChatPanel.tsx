@@ -89,24 +89,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     });
 
     // Suscribirse a cambios de estado de conexión
-    // Usar un flag para evitar notificaciones en la conexión inicial
-    let isInitialConnection = true;
-    
     const handleConnect = () => {
       setIsConnected(true);
-      // Solo mostrar notificación si no es la conexión inicial
-      if (!isInitialConnection) {
-        toast.success('Conexión restablecida');
-      }
-      isInitialConnection = false;
+      // No mostrar toast - el usuario ya ve el indicador visual
     };
 
     const handleDisconnect = () => {
       setIsConnected(false);
-      // Solo mostrar notificación si ya se había conectado antes
-      if (!isInitialConnection) {
-        toast.error('Conexión perdida. Intentando reconectar...');
-      }
+      // No mostrar toast - el usuario ya ve el indicador "Reconectando..."
     };
 
     socketService.onConnectionChange(handleConnect, handleDisconnect);
