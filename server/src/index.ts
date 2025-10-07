@@ -94,6 +94,12 @@ const PORT = process.env.PORT || 3000;
 // Iniciar servidor
 const startServer = async () => {
   try {
+    // En producción, esperar un poco antes de conectar para evitar rate limiting
+    if (process.env.NODE_ENV === 'production') {
+      logger.info('Waiting 3 seconds before database connection...');
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+    
     // Conectar a la base de datos
     await sequelize.authenticate();
     logger.info('Database connection has been established successfully.');
