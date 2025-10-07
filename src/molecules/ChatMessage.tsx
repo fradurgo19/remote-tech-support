@@ -70,8 +70,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                 </p>
               </div>
               <a
-                href={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${attachment.url}`}
+                href={attachment.url.startsWith('http') ? attachment.url : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${attachment.url}`}
                 download={attachment.name}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="ml-2 p-1 rounded-full hover:bg-background/20 transition-colors"
                 aria-label="Descargar archivo"
               >
