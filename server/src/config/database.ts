@@ -28,10 +28,14 @@ export const sequelize = databaseUrl
       },
       logging: false,
       pool: {
-        max: parseInt(process.env.DB_POOL_MAX || '1'), // 1 conexión en Render para evitar problemas
+        max: parseInt(process.env.DB_POOL_MAX || '3'), // 3 conexiones para Supabase Free tier
         min: 0,
-        acquire: 60000, // Timeout más largo para conexiones remotas
-        idle: 10000,
+        acquire: 30000, // 30 segundos para adquirir conexión
+        idle: 5000, // Liberar después de 5 seg inactivo
+        evict: 5000, // Evaluar cada 5 seg
+      },
+      retry: {
+        max: 3, // Reintentar hasta 3 veces
       },
     })
   : new Sequelize({
