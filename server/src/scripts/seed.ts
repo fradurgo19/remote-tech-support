@@ -1,5 +1,5 @@
 import { sequelize } from '../config/database';
-import { User, Ticket, Message } from '../models';
+import { User, Ticket, Message, Category } from '../models';
 import bcrypt from 'bcryptjs';
 
 async function seed() {
@@ -39,12 +39,15 @@ async function seed() {
     });
 
     // Create sample ticket
+    // Get the category ID first
+    const category = await Category.findOne({ where: { name: 'Soporte Remoto' } });
+    
     const ticket = await Ticket.create({
       title: 'Sample Support Ticket',
       description: 'This is a sample support ticket for testing purposes.',
       status: 'open',
       priority: 'medium',
-      category: 'Soporte Remoto',
+      categoryId: category?.id || null,
       customerId: customer.id,
       technicianId: technician.id,
     });

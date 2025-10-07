@@ -74,7 +74,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
             content: data.content,
             ticketId: data.ticketId,
             senderId: user.id,
-            type: data.type || 'text',
+            type: (data.type || 'text') as 'text' | 'image' | 'file' | 'system' | 'call_start' | 'call_end',
             fileUrl: data.fileUrl,
           });
 
@@ -96,7 +96,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     // Manejar cambios de estado
     socket.on('status_change', async (status: string) => {
       try {
-        await User.update({ status }, { where: { id: user.id } });
+        await User.update({ status: status as 'online' | 'offline' | 'away' }, { where: { id: user.id } });
         io.emit('user_status_changed', { userId: user.id, status });
       } catch (error) {
         logger.error('Error al cambiar estado:', error);
@@ -316,7 +316,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       'signal',
       (data: {
         to: string;
-        signal: RTCSessionDescriptionInit | RTCIceCandidateInit;
+        signal: any; // WebRTC types are available in browser, not in Node
       }) => {
         try {
           const { to: recipientId, signal } = data;

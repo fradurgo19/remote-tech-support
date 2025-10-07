@@ -4,7 +4,6 @@
  */
 
 import {
-  supabase,
   STORAGE_BUCKETS,
   uploadFile,
   deleteFile,
