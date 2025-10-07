@@ -392,3 +392,76 @@
 {"hasPassword":false,"host":"smtp-mail.outlook.com","level":"info","message":"Initializing email service with config:","port":587,"timestamp":"2025-10-06T22:39:31.279Z","user":""}
 {"level":"warn","message":"Email configuration incomplete. Email notifications will be disabled.","timestamp":"2025-10-06T22:39:31.282Z"}
 {"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-10-06T22:39:35.906Z"}
+{"hasPassword":false,"host":"smtp-mail.outlook.com","level":"info","message":"Initializing email service with config:","port":587,"timestamp":"2025-10-06T22:39:46.518Z","user":""}
+{"level":"warn","message":"Email configuration incomplete. Email notifications will be disabled.","timestamp":"2025-10-06T22:39:46.525Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-10-06T22:39:54.434Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-10-06T22:40:00.697Z"}
+{"level":"info","message":"=== RESETEANDO CONTRASEÑAS ===","timestamp":"2025-10-06T22:40:00.698Z"}
+{"level":"info","message":"Encontrados 3 usuarios","timestamp":"2025-10-06T22:40:01.094Z"}
+{"level":"info","message":"Hash generado: $2a$10$Ohl5vEKwX71j4aqy57/S4uU...","timestamp":"2025-10-06T22:40:01.167Z"}
+{"level":"info","message":"Reseteando contraseña para: Juan Técnico (auxiliar.garantiasbg@partequipos.com)","timestamp":"2025-10-06T22:40:01.167Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Juan Técnico","timestamp":"2025-10-06T22:40:01.404Z"}
+{"level":"info","message":"Reseteando contraseña para: Ana García (ana.garcia@empresa.com)","timestamp":"2025-10-06T22:40:01.406Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Ana García","timestamp":"2025-10-06T22:40:01.612Z"}
+{"level":"info","message":"Reseteando contraseña para: Administrador del Sistema (admin@partequipos.com)","timestamp":"2025-10-06T22:40:01.613Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Administrador del Sistema","timestamp":"2025-10-06T22:40:01.808Z"}
+{"level":"info","message":"\n=== VERIFICACIÓN ===","timestamp":"2025-10-06T22:40:01.809Z"}
+{"level":"info","message":"Juan Técnico: contraseña 'admin123' válida = true","timestamp":"2025-10-06T22:40:02.073Z"}
+{"level":"info","message":"Ana García: contraseña 'admin123' válida = true","timestamp":"2025-10-06T22:40:02.136Z"}
+{"level":"info","message":"Administrador del Sistema: contraseña 'admin123' válida = true","timestamp":"2025-10-06T22:40:02.198Z"}
+{"level":"info","message":"✅ Todas las contraseñas han sido reseteadas y verificadas correctamente","timestamp":"2025-10-06T22:40:02.199Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-10-06T22:40:02.200Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-06T22:50:30.292Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-06T22:50:31.272Z"}
+{"level":"info","message":"Usuario desconectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-06T23:01:28.097Z"}
+{"level":"info","message":"Usuario desconectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-06T23:01:28.102Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-06T23:01:30.108Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-06T23:01:30.722Z"}
+{"hasPassword":false,"host":"smtp-mail.outlook.com","level":"info","message":"Initializing email service with config:","port":587,"timestamp":"2025-10-07T13:20:19.347Z","user":""}
+{"level":"warn","message":"Email configuration incomplete. Email notifications will be disabled.","timestamp":"2025-10-07T13:20:19.352Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-10-07T13:20:20.582Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-10-07T13:20:24.335Z"}
+{"level":"info","message":"=== RESETEANDO CONTRASEÑAS ===","timestamp":"2025-10-07T13:20:24.338Z"}
+{"level":"info","message":"Encontrados 3 usuarios","timestamp":"2025-10-07T13:20:24.490Z"}
+{"level":"info","message":"Hash generado: $2a$10$94y7yFyssIKHCQtvaPgwf.Y...","timestamp":"2025-10-07T13:20:24.570Z"}
+{"level":"info","message":"Reseteando contraseña para: Administrador del Sistema (admin@partequipos.com)","timestamp":"2025-10-07T13:20:24.571Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Administrador del Sistema","timestamp":"2025-10-07T13:20:24.744Z"}
+{"level":"info","message":"Reseteando contraseña para: Juan Técnico (auxiliar.garantiasbg@partequipos.com)","timestamp":"2025-10-07T13:20:24.746Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Juan Técnico","timestamp":"2025-10-07T13:20:24.882Z"}
+{"level":"info","message":"Reseteando contraseña para: Ana García (ana.garcia@empresa.com)","timestamp":"2025-10-07T13:20:24.882Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Ana García","timestamp":"2025-10-07T13:20:25.016Z"}
+{"level":"info","message":"\n=== VERIFICACIÓN ===","timestamp":"2025-10-07T13:20:25.017Z"}
+{"level":"info","message":"Administrador del Sistema: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:20:25.213Z"}
+{"level":"info","message":"Juan Técnico: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:20:25.276Z"}
+{"level":"info","message":"Ana García: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:20:25.334Z"}
+{"level":"info","message":"✅ Todas las contraseñas han sido reseteadas y verificadas correctamente","timestamp":"2025-10-07T13:20:25.335Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-10-07T13:20:25.337Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:20:45.581Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:20:46.228Z"}
+{"level":"warn","message":"Email service not yet initialized, attempting to initialize...","timestamp":"2025-10-07T13:28:56.909Z"}
+{"hasPassword":false,"host":"smtp-mail.outlook.com","level":"info","message":"Initializing email service with config:","port":587,"timestamp":"2025-10-07T13:28:56.911Z","user":""}
+{"level":"warn","message":"Email configuration incomplete. Email notifications will be disabled.","timestamp":"2025-10-07T13:28:56.911Z"}
+{"level":"warn","message":"Email service not available - transporter not initialized","timestamp":"2025-10-07T13:28:57.420Z"}
+{"level":"warn","message":"Failed to send status change email for ticket 3ea68e2f-23bc-41bc-baf2-609ce7f25f1b","timestamp":"2025-10-07T13:28:57.421Z"}
+{"level":"info","message":"Obteniendo mensajes para ticket: 3ea68e2f-23bc-41bc-baf2-609ce7f25f1b","timestamp":"2025-10-07T13:29:35.610Z"}
+{"level":"info","message":"Encontrados 0 mensajes","timestamp":"2025-10-07T13:29:35.733Z"}
+{"level":"info","message":"Obteniendo mensajes para ticket: 3ea68e2f-23bc-41bc-baf2-609ce7f25f1b","timestamp":"2025-10-07T13:29:35.864Z"}
+{"level":"info","message":"Encontrados 0 mensajes","timestamp":"2025-10-07T13:29:35.987Z"}
+{"hasPassword":true,"host":"smtp-mail.outlook.com","level":"info","message":"Initializing email service with config:","port":587,"timestamp":"2025-10-07T13:35:23.926Z","user":"analista.mantenimiento@partequipos.com"}
+{"level":"info","message":"Email service initialized successfully","timestamp":"2025-10-07T13:35:23.931Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-10-07T13:35:25.147Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-10-07T13:35:28.806Z"}
+{"level":"info","message":"=== RESETEANDO CONTRASEÑAS ===","timestamp":"2025-10-07T13:35:28.807Z"}
+{"level":"info","message":"Encontrados 3 usuarios","timestamp":"2025-10-07T13:35:28.941Z"}
+{"level":"info","message":"Hash generado: $2a$10$0OOEdx8s.SbOtiiPMiNbl.G...","timestamp":"2025-10-07T13:35:29.043Z"}
+{"level":"info","message":"Reseteando contraseña para: Juan Técnico (auxiliar.garantiasbg@partequipos.com)","timestamp":"2025-10-07T13:35:29.043Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Juan Técnico","timestamp":"2025-10-07T13:35:29.210Z"}
+{"level":"info","message":"Reseteando contraseña para: Ana García (ana.garcia@empresa.com)","timestamp":"2025-10-07T13:35:29.212Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Ana García","timestamp":"2025-10-07T13:35:29.351Z"}
+{"level":"info","message":"Reseteando contraseña para: Administrador del Sistema (admin@partequipos.com)","timestamp":"2025-10-07T13:35:29.351Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Administrador del Sistema","timestamp":"2025-10-07T13:35:29.481Z"}
+{"level":"info","message":"\n=== VERIFICACIÓN ===","timestamp":"2025-10-07T13:35:29.481Z"}
+{"level":"info","message":"Juan Técnico: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:35:29.683Z"}
+{"level":"info","message":"Ana García: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:35:29.751Z"}
+{"level":"info","message":"Administrador del Sistema: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:35:29.821Z"}
+{"level":"info","message":"✅ Todas las contraseñas han sido reseteadas y verificadas correctamente","timestamp":"2025-10-07T13:35:29.821Z"}
