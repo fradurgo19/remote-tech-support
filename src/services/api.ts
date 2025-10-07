@@ -170,7 +170,7 @@ export const authService = {
 
     try {
       // Verificar si el token es válido haciendo una llamada al backend
-      const response = await fetch('http://localhost:3000/api/auth/me', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -263,7 +263,7 @@ export const userService = {
     return response;
   },
   getUsersPublic: async (): Promise<User[]> => {
-    const response = await fetch('http://localhost:3000/api/users/public');
+    const response = await fetch(`${API_BASE_URL}/api/users/public`);
     if (!response.ok) {
       throw new Error('Error al cargar usuarios');
     }
@@ -336,6 +336,9 @@ export const userService = {
   },
 };
 
+// Configuración de la URL base de la API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 // Función helper para obtener el token de autenticación
 const getAuthToken = (): string | null => {
   return localStorage.getItem('authToken');
@@ -351,7 +354,7 @@ const apiCall = async (
   // Detectar si es FormData (no agregar Content-Type para que el navegador lo maneje)
   const isFormData = options.body instanceof FormData;
 
-  const response = await fetch(`http://localhost:3000${url}`, {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
     headers: {
       // Solo agregar Content-Type si NO es FormData
@@ -440,7 +443,7 @@ export const messageService = {
     formData.append('type', 'file');
 
     const token = getAuthToken();
-    const response = await fetch('http://localhost:3000/api/messages/file', {
+    const response = await fetch(`${API_BASE_URL}/api/messages/file`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),

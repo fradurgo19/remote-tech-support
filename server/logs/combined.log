@@ -465,3 +465,33 @@
 {"level":"info","message":"Ana García: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:35:29.751Z"}
 {"level":"info","message":"Administrador del Sistema: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:35:29.821Z"}
 {"level":"info","message":"✅ Todas las contraseñas han sido reseteadas y verificadas correctamente","timestamp":"2025-10-07T13:35:29.821Z"}
+{"hasPassword":true,"host":"smtp-mail.outlook.com","level":"info","message":"Initializing email service with config:","port":587,"timestamp":"2025-10-07T13:35:45.691Z","user":"analista.mantenimiento@partequipos.com"}
+{"level":"info","message":"Email service initialized successfully","timestamp":"2025-10-07T13:35:45.703Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-10-07T13:35:46.563Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-10-07T13:35:49.774Z"}
+{"level":"info","message":"=== RESETEANDO CONTRASEÑAS ===","timestamp":"2025-10-07T13:35:49.777Z"}
+{"level":"info","message":"Encontrados 3 usuarios","timestamp":"2025-10-07T13:35:49.900Z"}
+{"level":"info","message":"Hash generado: $2a$10$tdCwtYUJHnX.eN9rCkDO5.7...","timestamp":"2025-10-07T13:35:49.982Z"}
+{"level":"info","message":"Reseteando contraseña para: Juan Técnico (auxiliar.garantiasbg@partequipos.com)","timestamp":"2025-10-07T13:35:49.983Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Juan Técnico","timestamp":"2025-10-07T13:35:50.108Z"}
+{"level":"info","message":"Reseteando contraseña para: Ana García (ana.garcia@empresa.com)","timestamp":"2025-10-07T13:35:50.110Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Ana García","timestamp":"2025-10-07T13:35:50.233Z"}
+{"level":"info","message":"Reseteando contraseña para: Administrador del Sistema (admin@partequipos.com)","timestamp":"2025-10-07T13:35:50.234Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Administrador del Sistema","timestamp":"2025-10-07T13:35:50.356Z"}
+{"level":"info","message":"\n=== VERIFICACIÓN ===","timestamp":"2025-10-07T13:35:50.358Z"}
+{"level":"info","message":"Juan Técnico: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:35:50.573Z"}
+{"level":"info","message":"Ana García: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:35:50.637Z"}
+{"level":"info","message":"Administrador del Sistema: contraseña 'admin123' válida = true","timestamp":"2025-10-07T13:35:50.704Z"}
+{"level":"info","message":"✅ Todas las contraseñas han sido reseteadas y verificadas correctamente","timestamp":"2025-10-07T13:35:50.704Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-10-07T13:35:50.706Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:35:54.379Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:35:54.394Z"}
+{"level":"info","message":"Ticket status change email sent successfully for ticket 3EA68E2F - closed → resolved","timestamp":"2025-10-07T13:36:54.588Z"}
+{"level":"info","message":"Status change email sent for ticket 3ea68e2f-23bc-41bc-baf2-609ce7f25f1b: closed → resolved","timestamp":"2025-10-07T13:36:54.589Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:43:19.571Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:43:31.765Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:43:32.448Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:43:47.437Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:43:47.960Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:43:57.698Z"}
+{"level":"info","message":"Usuario conectado: Administrador del Sistema (550e8400-e29b-41d4-a716-446655440000)","timestamp":"2025-10-07T13:43:57.976Z"}
