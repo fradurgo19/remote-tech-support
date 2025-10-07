@@ -20,10 +20,11 @@ export const sequelize = databaseUrl
                 rejectUnauthorized: false, // Necesario para Supabase/Neon
               }
             : false,
+        connectTimeout: 60000, // 60 segundos para conexión inicial
       },
       logging: false,
       pool: {
-        max: 2, // Reducido para Supabase Free tier pooling limits
+        max: parseInt(process.env.DB_POOL_MAX || '1'), // 1 conexión en Render para evitar problemas
         min: 0,
         acquire: 60000, // Timeout más largo para conexiones remotas
         idle: 10000,
