@@ -35,7 +35,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ ticketId, users, ticket })
       setError(null);
       try {
         const fetchedMessages = await messageService.getMessagesByTicket(ticketId);
-        setMessages(fetchedMessages);
+        // Ordenar mensajes por fecha/hora de creación (más antiguos primero)
+        const sortedMessages = fetchedMessages.sort((a, b) => 
+          new Date(a.createdAt || a.timestamp).getTime() - new Date(b.createdAt || b.timestamp).getTime()
+        );
+        setMessages(sortedMessages);
       } catch (err) {
         setError('Error al cargar los mensajes');
         console.error(err);
@@ -58,7 +62,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ ticketId, users, ticket })
           if (prev.some(m => m.id === message.id)) {
             return prev;
           }
-          return [...prev, message];
+          // Agregar nuevo mensaje y ordenar por fecha
+          const updated = [...prev, message];
+          return updated.sort((a, b) => 
+            new Date(a.createdAt || a.timestamp).getTime() - new Date(b.createdAt || b.timestamp).getTime()
+          );
         });
         
         // Mostrar notificación si el mensaje no es propio
