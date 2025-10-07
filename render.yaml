@@ -2,7 +2,7 @@ services:
   - type: web
     name: remote-tech-support-backend
     runtime: node
-    buildCommand: cd server && npm install
+    buildCommand: cd server && npm ci
     startCommand: cd server && npx ts-node --transpile-only src/index.ts
     healthCheckPath: /api/categories
     envVars:
