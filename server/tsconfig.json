@@ -8,6 +8,7 @@
     "outDir": "./dist",
     "moduleResolution": "node",
     "removeComments": true,
+    "strict": false,
     "noImplicitAny": false,
     "strictNullChecks": false,
     "strictFunctionTypes": false,
@@ -16,6 +17,7 @@
     "noUnusedParameters": false,
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": false,
+    "strictPropertyInitialization": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
@@ -25,4 +27,4 @@
   },
   "exclude": ["node_modules"],
   "include": ["./src/**/*.ts"]
-} 
+}
