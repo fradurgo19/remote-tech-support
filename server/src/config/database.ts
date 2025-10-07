@@ -21,6 +21,10 @@ export const sequelize = databaseUrl
               }
             : false,
         connectTimeout: 60000, // 60 segundos para conexión inicial
+        // Forzar IPv4 para evitar problemas con Render
+        host: process.env.NODE_ENV === 'production' 
+          ? 'aws-1-sa-east-1.pooler.supabase.com'
+          : undefined,
       },
       logging: false,
       pool: {
