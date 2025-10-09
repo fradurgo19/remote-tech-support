@@ -113,13 +113,15 @@ class SocketService {
 
   joinTicketRoom(ticketId: string): void {
     if (this.socket && this.isServerAvailable) {
-      this.socket.emit('join-ticket', ticketId);
+      console.log('SocketService: Joining ticket room:', ticketId);
+      this.socket.emit('join_ticket', ticketId); // Corregido: backend usa join_ticket con guion bajo
     }
   }
 
   leaveTicketRoom(ticketId: string): void {
     if (this.socket && this.isServerAvailable) {
-      this.socket.emit('leave-ticket', ticketId);
+      console.log('SocketService: Leaving ticket room:', ticketId);
+      this.socket.emit('leave_ticket', ticketId); // Corregido por consistencia
     }
   }
 
@@ -195,6 +197,9 @@ class SocketService {
   onCallRequest(
     callback: (data: {
       from: string;
+      fromName: string;
+      fromEmail: string;
+      fromAvatar?: string;
       ticketId: string;
       callSessionId: string;
     }) => void

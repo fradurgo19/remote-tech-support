@@ -23,7 +23,18 @@ export const IncomingCallModal: React.FC<IncomingCallModalProps> = ({
   onAccept,
   onDecline,
 }) => {
-  if (!isOpen) return null;
+  console.log('=== INCOMING CALL MODAL RENDER ===');
+  console.log('isOpen:', isOpen);
+  console.log('caller:', JSON.stringify(caller, null, 2));
+  console.log('ticketId:', ticketId);
+  console.log('callSessionId:', callSessionId);
+
+  if (!isOpen) {
+    console.log('Modal NO se muestra porque isOpen = false');
+    return null;
+  }
+
+  console.log('✅ Modal SE ESTÁ MOSTRANDO');
 
   return (
     <div className='fixed inset-0 bg-black/70 flex items-center justify-center z-50'>

@@ -125,26 +125,29 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       );
 
       socketService.onCallRequest(async data => {
-        console.log('CallContext: Llamada entrante recibida:', data);
+        console.log('=== CALLCONTEXT: CALL-REQUEST RECIBIDO ===');
+        console.log('CallContext: Datos completos recibidos:', JSON.stringify(data, null, 2));
 
-        // Usar información del llamador que viene del servidor
-        setIncomingCall({
+        // Crear objeto de llamada entrante
+        const incomingCallData = {
           isIncoming: true,
           caller: {
             id: data.from,
-            name: data.fromName || 'Usuario',
-            email: data.fromEmail || 'usuario@ejemplo.com',
+            name: data.fromName || 'Usuario Desconocido',
+            email: data.fromEmail || 'email@desconocido.com',
             avatar: data.fromAvatar,
           },
           ticketId: data.ticketId,
           callSessionId: data.callSessionId,
-        });
+        };
 
-        console.log('CallContext: Información del llamador:', {
-          id: data.from,
-          name: data.fromName,
-          email: data.fromEmail,
-        });
+        console.log('CallContext: Objeto incomingCall creado:', JSON.stringify(incomingCallData, null, 2));
+
+        // Actualizar estado
+        setIncomingCall(incomingCallData);
+
+        console.log('CallContext: Estado incomingCall actualizado');
+        console.log('CallContext: ¿Modal debería mostrarse? isIncoming =', incomingCallData.isIncoming);
       });
 
       return () => {

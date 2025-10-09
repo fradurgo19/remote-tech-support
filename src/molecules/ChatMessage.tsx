@@ -17,28 +17,32 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   const { content, createdAt, type, metadata } = message;
   const attachment = metadata?.attachment;
-  
+
   // Formatear fecha y hora
   const messageDate = new Date(createdAt);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  
+
   // Determinar si es hoy, ayer, o fecha completa
   const isToday = messageDate.toDateString() === today.toDateString();
   const isYesterday = messageDate.toDateString() === yesterday.toDateString();
-  
+
   const formattedTime = messageDate.toLocaleTimeString('es-ES', {
     hour: '2-digit',
     minute: '2-digit',
   });
-  
-  const formattedDate = isToday 
-    ? 'Hoy' 
-    : isYesterday 
-    ? 'Ayer' 
-    : messageDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  
+
+  const formattedDate = isToday
+    ? 'Hoy'
+    : isYesterday
+    ? 'Ayer'
+    : messageDate.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+
   const formattedDateTime = `${formattedDate} ${formattedTime}`;
 
   if (type === 'system') {
