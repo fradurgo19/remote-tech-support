@@ -61,27 +61,13 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
   }, [stream, isLocal]);
 
   // Check if video track is active
-  const videoTracks = stream?.getVideoTracks() || [];
-  const hasActiveVideo = videoTracks.some(
-    track =>
-      track.enabled &&
-      (track.readyState === 'live' || track.readyState === 'starting')
-  );
-
-  // DEBUG TEMPORAL: Ver estado de tracks
-  if (videoTracks.length > 0 && !isLocal) {
-    console.log(`🔍 DEBUG Video Remoto de ${user?.name}:`, {
-      totalTracks: videoTracks.length,
-      trackDetails: videoTracks.map(t => ({
-        enabled: t.enabled,
-        readyState: t.readyState,
-        muted: t.muted,
-        id: t.id,
-      })),
-      hasActiveVideo,
-      streamId: stream?.id,
-    });
-  }
+  const hasActiveVideo = stream
+    ?.getVideoTracks()
+    .some(
+      track =>
+        track.enabled &&
+        (track.readyState === 'live' || track.readyState === 'starting')
+    );
 
   return (
     <div className='relative overflow-hidden rounded-lg bg-gray-900 w-full h-full'>
