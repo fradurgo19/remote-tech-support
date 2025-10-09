@@ -21,6 +21,7 @@ class WebRTCNativeService {
   private activeCameraStreams: string[] = [];
   private onStreamCallbacks: ((data: PeerStreamData) => void)[] = [];
   private onDeviceCallbacks: ((devices: MediaDevice[]) => void)[] = [];
+  private pendingSignals: Map<string, any[]> = new Map(); // Buffer de señales pendientes
 
   constructor() {
     this.setupSocketListeners();
@@ -172,16 +173,32 @@ class WebRTCNativeService {
       this.localStream = await this.getLocalStream();
     }
 
-    // NO crear PeerConnection aquí - ya fue creado en handleSignal cuando llegó el 'offer'
-    // El PeerConnection se crea automáticamente en handleSignal cuando recibe señales
-    console.log('WebRTC Native: Local stream ready, waiting for offer signal...');
+    console.log('WebRTC Native: Local stream ready');
+    
+    // Procesar señales pendientes (que llegaron antes de aceptar)
+    const pendingSignals = this.pendingSignals.get(callerId);
+    if (pendingSignals && pendingSignals.length > 0) {
+      console.log(`WebRTC Native: Processing ${pendingSignals.length} buffered signals for ${callerId}`);
+      
+      // Procesar cada señal en orden
+      for (const signal of pendingSignals) {
+        console.log('WebRTC Native: Processing buffered signal:', signal.type);
+        await this.handleSignal(callerId, signal);
+      }
+      
+      // Limpiar buffer
+      this.pendingSignals.delete(callerId);
+      console.log('WebRTC Native: All buffered signals processed');
+    } else {
+      console.log('WebRTC Native: No pending signals to process');
+    }
     
     // Verificar si ya existe PeerConnection
     const existing = this.peerConnections.get(callerId);
     if (existing) {
-      console.log('WebRTC Native: PeerConnection already exists for:', callerId);
+      console.log('WebRTC Native: PeerConnection exists after processing signals');
     } else {
-      console.log('WebRTC Native: No PeerConnection yet, will be created when offer arrives');
+      console.log('WebRTC Native: No PeerConnection yet, waiting for signals...');
     }
   }
 
@@ -196,13 +213,21 @@ class WebRTCNativeService {
     let peerConnection = this.peerConnections.get(peerId);
 
     if (!peerConnection) {
-      // Solo crear PeerConnection si tenemos localStream (ya aceptamos la llamada)
+      console.log('WebRTC Native: No peer connection exists for:', peerId);
+      console.log('WebRTC Native: Current peer connections:', Array.from(this.peerConnections.keys()));
+      
+      // Si no tenemos localStream, almacenar la señal para procesar después
       if (!this.localStream) {
-        console.log('WebRTC Native: No local stream yet, ignoring signal (call not accepted yet)');
+        console.log('WebRTC Native: No local stream yet, buffering signal');
+        if (!this.pendingSignals.has(peerId)) {
+          this.pendingSignals.set(peerId, []);
+        }
+        this.pendingSignals.get(peerId)!.push(signal);
+        console.log(`WebRTC Native: Signal buffered. Total pending for ${peerId}:`, this.pendingSignals.get(peerId)!.length);
         return;
       }
       
-      console.log('WebRTC Native: Creating peer connection for:', peerId);
+      console.log('WebRTC Native: Creating new peer connection for:', peerId);
       peerConnection = this.createPeerConnection(peerId, false);
     }
 
