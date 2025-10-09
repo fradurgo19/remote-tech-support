@@ -24,18 +24,32 @@ class WebRTCNativeService {
   private pendingSignals: Map<string, any[]> = new Map(); // Buffer de señales pendientes
 
   constructor() {
-    this.setupSocketListeners();
+    // NO configurar listeners aquí - el socket puede no estar listo
+    console.log('WebRTC Native: Service created');
   }
 
   private setupSocketListeners(): void {
-    socketService.onSignal((data: { from: string; signal: any }) => {
+    console.log('WebRTC Native: Setting up socket listeners...');
+    console.log('WebRTC Native: Socket connected?', socketService.isConnected());
+    console.log('WebRTC Native: Socket available?', socketService.isServerAvailableStatus());
+    
+    const unsubscribe = socketService.onSignal((data: { from: string; signal: any }) => {
+      console.log('WebRTC Native: ✅ Signal received via socket:', {
+        from: data.from,
+        signalType: data.signal?.type,
+      });
       this.handleSignal(data.from, data.signal);
     });
+    
+    console.log('WebRTC Native: Socket listeners configured, unsubscribe function:', typeof unsubscribe);
   }
 
   async initialize(user: User): Promise<void> {
     this.user = user;
     console.log('WebRTC Native: Initialized with user:', user.name);
+    
+    // Configurar listeners DESPUÉS de que el usuario esté autenticado y el socket conectado
+    this.setupSocketListeners();
   }
 
   async getLocalStream(
