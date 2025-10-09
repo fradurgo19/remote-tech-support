@@ -113,15 +113,13 @@ class SocketService {
 
   joinTicketRoom(ticketId: string): void {
     if (this.socket && this.isServerAvailable) {
-      console.log('SocketService: Joining ticket room:', ticketId);
-      this.socket.emit('join_ticket', ticketId); // Corregido: backend usa join_ticket con guion bajo
+      this.socket.emit('join_ticket', ticketId);
     }
   }
 
   leaveTicketRoom(ticketId: string): void {
     if (this.socket && this.isServerAvailable) {
-      console.log('SocketService: Leaving ticket room:', ticketId);
-      this.socket.emit('leave_ticket', ticketId); // Corregido por consistencia
+      this.socket.emit('leave_ticket', ticketId);
     }
   }
 
@@ -169,26 +167,10 @@ class SocketService {
 
   // Handle call signaling
   initiateCall(recipientId: string, ticketId: string): void {
-    console.log('SocketService: initiateCall called with:', {
-      recipientId,
-      ticketId,
-    });
-    console.log('SocketService: Socket exists?', !!this.socket);
-    console.log('SocketService: User exists?', !!this.user);
-    console.log('SocketService: Server available?', this.isServerAvailable);
-    console.log('SocketService: Socket connected?', this.socket?.connected);
-
     if (this.socket && this.user && this.isServerAvailable) {
-      console.log('SocketService: Emitting call-initiate event');
       this.socket.emit('call-initiate', {
         from: this.user.id,
         to: recipientId,
-        ticketId,
-      });
-      console.log('SocketService: call-initiate event emitted');
-    } else {
-      console.log('SocketService: Mock: Call initiated', {
-        recipientId,
         ticketId,
       });
     }
@@ -205,13 +187,7 @@ class SocketService {
     }) => void
   ): () => void {
     if (this.socket && this.isServerAvailable) {
-      this.socket.on('call-request', data => {
-        console.log('=== CALL REQUEST RECEIVED ===');
-        console.log('Data:', data);
-        console.log('Socket ID:', this.socket?.id);
-        console.log('User:', this.user?.name);
-        callback(data);
-      });
+      this.socket.on('call-request', callback);
       return () => {
         this.socket?.off('call-request', callback);
       };

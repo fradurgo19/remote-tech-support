@@ -25,28 +25,16 @@ class WebRTCNativeService {
 
   constructor() {
     // NO configurar listeners aquí - el socket puede no estar listo
-    console.log('WebRTC Native: Service created');
   }
 
   private setupSocketListeners(): void {
-    console.log('WebRTC Native: Setting up socket listeners...');
-    console.log('WebRTC Native: Socket connected?', socketService.isConnected());
-    console.log('WebRTC Native: Socket available?', socketService.isServerAvailableStatus());
-    
-    const unsubscribe = socketService.onSignal((data: { from: string; signal: any }) => {
-      console.log('WebRTC Native: ✅ Signal received via socket:', {
-        from: data.from,
-        signalType: data.signal?.type,
-      });
+    socketService.onSignal((data: { from: string; signal: any }) => {
       this.handleSignal(data.from, data.signal);
     });
-    
-    console.log('WebRTC Native: Socket listeners configured, unsubscribe function:', typeof unsubscribe);
   }
 
   async initialize(user: User): Promise<void> {
     this.user = user;
-    console.log('WebRTC Native: Initialized with user:', user.name);
     
     // Configurar listeners DESPUÉS de que el usuario esté autenticado y el socket conectado
     this.setupSocketListeners();
@@ -57,7 +45,6 @@ class WebRTCNativeService {
     audio: boolean = true
   ): Promise<MediaStream> {
     try {
-      console.log('WebRTC Native: Getting local stream...');
       const constraints: MediaStreamConstraints = {
         video: video ? { width: 1280, height: 720 } : false,
         audio: audio,
@@ -65,23 +52,14 @@ class WebRTCNativeService {
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       this.localStream = stream;
-      console.log('WebRTC Native: Local stream obtained:', {
-        id: stream.id,
-        videoTracks: stream.getVideoTracks().length,
-        audioTracks: stream.getAudioTracks().length,
-      });
       return stream;
     } catch (error) {
-      console.error('WebRTC Native: Error getting local stream:', error);
+      console.error('Error al obtener stream local:', error);
       throw error;
     }
   }
 
   createPeerConnection(peerId: string, initiator: boolean): RTCPeerConnection {
-    console.log('WebRTC Native: Creating peer connection:', {
-      peerId,
-      initiator,
-    });
 
     const configuration: RTCConfiguration = {
       iceServers: [
@@ -113,7 +91,6 @@ class WebRTCNativeService {
     // Handle ICE candidates
     peerConnection.onicecandidate = event => {
       if (event.candidate) {
-        console.log('WebRTC Native: Sending ICE candidate:', event.candidate);
         socketService.sendSignal(peerId, {
           type: 'candidate',
           candidate: event.candidate,
@@ -123,11 +100,8 @@ class WebRTCNativeService {
 
     // Handle connection state changes
     peerConnection.onconnectionstatechange = () => {
-      console.log(
-        'WebRTC Native: Connection state:',
-        peerConnection.connectionState
-      );
       if (peerConnection.connectionState === 'failed') {
+        console.error('Conexión WebRTC falló');
         this.handlePeerDisconnect(peerId);
       }
     };
@@ -141,25 +115,12 @@ class WebRTCNativeService {
       throw new Error('User not initialized');
     }
 
-    console.log(
-      'WebRTC Native: Initiating call to:',
-      recipientId,
-      'ticket:',
-      ticketId
-    );
-    console.log(
-      'WebRTC Native: Socket connected?',
-      socketService.isConnected()
-    );
-
     if (!this.localStream) {
       this.localStream = await this.getLocalStream();
     }
 
-    console.log('WebRTC Native: Calling socketService.initiateCall');
     socketService.initiateCall(recipientId, ticketId);
 
-    console.log('WebRTC Native: Creating peer connection');
     const peerConnection = this.createPeerConnection(recipientId, true);
 
     // Create offer
@@ -167,87 +128,52 @@ class WebRTCNativeService {
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
 
-      console.log('WebRTC Native: Sending offer:', offer);
       socketService.sendSignal(recipientId, {
         type: 'offer',
         sdp: offer.sdp,
       });
     } catch (error) {
-      console.error('WebRTC Native: Error creating offer:', error);
+      console.error('Error al crear offer WebRTC:', error);
       throw error;
     }
-
-    console.log('WebRTC Native: Call initiation completed');
   }
 
   async acceptCall(callerId: string): Promise<void> {
-    console.log('WebRTC Native: Accepting call from:', callerId);
-
     if (!this.localStream) {
       this.localStream = await this.getLocalStream();
     }
 
-    console.log('WebRTC Native: Local stream ready');
-    
     // Procesar señales pendientes (que llegaron antes de aceptar)
     const pendingSignals = this.pendingSignals.get(callerId);
     if (pendingSignals && pendingSignals.length > 0) {
-      console.log(`WebRTC Native: Processing ${pendingSignals.length} buffered signals for ${callerId}`);
-      
       // Procesar cada señal en orden
       for (const signal of pendingSignals) {
-        console.log('WebRTC Native: Processing buffered signal:', signal.type);
         await this.handleSignal(callerId, signal);
       }
-      
+
       // Limpiar buffer
       this.pendingSignals.delete(callerId);
-      console.log('WebRTC Native: All buffered signals processed');
-    } else {
-      console.log('WebRTC Native: No pending signals to process');
-    }
-    
-    // Verificar si ya existe PeerConnection
-    const existing = this.peerConnections.get(callerId);
-    if (existing) {
-      console.log('WebRTC Native: PeerConnection exists after processing signals');
-    } else {
-      console.log('WebRTC Native: No PeerConnection yet, waiting for signals...');
     }
   }
 
   private async handleSignal(peerId: string, signal: any): Promise<void> {
-    console.log(
-      'WebRTC Native: Handling signal from:',
-      peerId,
-      'type:',
-      signal.type
-    );
-
     let peerConnection = this.peerConnections.get(peerId);
 
     if (!peerConnection) {
-      console.log('WebRTC Native: No peer connection exists for:', peerId);
-      console.log('WebRTC Native: Current peer connections:', Array.from(this.peerConnections.keys()));
-      
       // Si no tenemos localStream, almacenar la señal para procesar después
       if (!this.localStream) {
-        console.log('WebRTC Native: No local stream yet, buffering signal');
         if (!this.pendingSignals.has(peerId)) {
           this.pendingSignals.set(peerId, []);
         }
         this.pendingSignals.get(peerId)!.push(signal);
-        console.log(`WebRTC Native: Signal buffered. Total pending for ${peerId}:`, this.pendingSignals.get(peerId)!.length);
         return;
       }
-      
-      console.log('WebRTC Native: Creating new peer connection for:', peerId);
+
       peerConnection = this.createPeerConnection(peerId, false);
     }
 
     try {
       if (signal.type === 'offer') {
-        console.log('WebRTC Native: Processing offer');
         await peerConnection.setRemoteDescription(
           new RTCSessionDescription({
             type: 'offer',
@@ -258,13 +184,11 @@ class WebRTCNativeService {
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
 
-        console.log('WebRTC Native: Sending answer:', answer);
         socketService.sendSignal(peerId, {
           type: 'answer',
           sdp: answer.sdp,
         });
       } else if (signal.type === 'answer') {
-        console.log('WebRTC Native: Processing answer');
         await peerConnection.setRemoteDescription(
           new RTCSessionDescription({
             type: 'answer',
@@ -272,16 +196,14 @@ class WebRTCNativeService {
           })
         );
       } else if (signal.type === 'candidate') {
-        console.log('WebRTC Native: Processing ICE candidate');
         await peerConnection.addIceCandidate(signal.candidate);
       }
     } catch (error) {
-      console.error('WebRTC Native: Error handling signal:', error);
+      console.error('Error al procesar señal WebRTC:', error);
     }
   }
 
   private handlePeerDisconnect(peerId: string): void {
-    console.log('WebRTC Native: Handling peer disconnect:', peerId);
     const peerConnection = this.peerConnections.get(peerId);
     if (peerConnection) {
       peerConnection.close();

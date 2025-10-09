@@ -84,11 +84,9 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (user) {
-      console.log('CallContext: Initializing with user:', user.id, user.name);
       webRTCNativeService.initialize(user);
 
       const onStreamHandler = (data: PeerStreamData) => {
-        console.log('Received remote stream from peer:', data.peerId);
         setRemoteStreams(prev => {
           const existingStreamIndex = prev.findIndex(
             p => p.peerId === data.peerId
@@ -103,8 +101,6 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       };
 
-      // Stream removal is handled automatically by WebRTC native
-
       const onDevicesChangeHandler = (devices: MediaDeviceInfo[]) => {
         setAvailableDevices(devices);
       };
@@ -114,20 +110,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         onDevicesChangeHandler
       );
 
-      // Verificar conexión del socket
-      console.log(
-        'CallContext: Socket connected?',
-        socketService.isConnected()
-      );
-      console.log(
-        'CallContext: Socket available?',
-        socketService.isServerAvailableStatus()
-      );
-
       socketService.onCallRequest(async data => {
-        console.log('=== CALLCONTEXT: CALL-REQUEST RECIBIDO ===');
-        console.log('CallContext: Datos completos recibidos:', JSON.stringify(data, null, 2));
-
         // Crear objeto de llamada entrante
         const incomingCallData = {
           isIncoming: true,
@@ -141,13 +124,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
           callSessionId: data.callSessionId,
         };
 
-        console.log('CallContext: Objeto incomingCall creado:', JSON.stringify(incomingCallData, null, 2));
-
-        // Actualizar estado
         setIncomingCall(incomingCallData);
-
-        console.log('CallContext: Estado incomingCall actualizado');
-        console.log('CallContext: ¿Modal debería mostrarse? isIncoming =', incomingCallData.isIncoming);
       });
 
       return () => {
@@ -163,24 +140,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(true);
 
     try {
-      console.log(
-        'CallContext: Iniciating call to:',
-        recipientId,
-        'ticket:',
-        ticketId
-      );
-      console.log(
-        'CallContext: Socket connected before call?',
-        socketService.isConnected()
-      );
-
       // Get local stream first
       const stream = await webRTCNativeService.getLocalStream(true, true);
-      console.log('CallContext: Local stream obtained:', {
-        id: stream.id,
-        videoTracks: stream.getVideoTracks().length,
-        audioTracks: stream.getAudioTracks().length,
-      });
 
       setLocalStream(stream);
       setVideoEnabled(true);
@@ -194,10 +155,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       // Get peer connection for stats
       const pc = webRTCNativeService.getPeerConnection(recipientId);
       setPeerConnection(pc);
-
-      console.log('CallContext: Call initiated successfully');
     } catch (err) {
-      console.error('CallContext: Error initiating call:', err);
+      console.error('Error al iniciar llamada:', err);
       setError((err as Error).message);
     } finally {
       setIsLoading(false);
@@ -216,30 +175,17 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
       try {
         stream = await webRTCNativeService.getLocalStream(true, true);
-        console.log('CallContext: Stream obtenido con cámara y audio');
       } catch (cameraError) {
-        console.warn(
-          'CallContext: Cámara no disponible, intentando solo audio:',
-          cameraError
-        );
-
         try {
           // Intentar solo audio
           stream = await webRTCNativeService.getLocalStream(false, true);
           videoEnabled = false;
           audioEnabled = true;
-          console.log('CallContext: Stream obtenido solo con audio');
         } catch (audioError) {
-          console.warn(
-            'CallContext: Audio no disponible, creando stream vacío:',
-            audioError
-          );
-
           // Crear stream vacío (solo para la conexión WebRTC)
           stream = new MediaStream();
           videoEnabled = false;
           audioEnabled = false;
-          console.log('CallContext: Stream vacío creado');
         }
       }
 
@@ -255,19 +201,11 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         // Get peer connection for stats
         const pc = webRTCNativeService.getPeerConnection(callerId);
         setPeerConnection(pc);
-
-        console.log('CallContext: Llamada aceptada exitosamente');
-        console.log(
-          'CallContext: Video:',
-          videoEnabled,
-          'Audio:',
-          audioEnabled
-        );
       } else {
         throw new Error('No se pudo crear ningún stream de media');
       }
     } catch (err) {
-      console.error('Error accepting call:', err);
+      console.error('Error al aceptar llamada:', err);
       setError((err as Error).message);
     } finally {
       setIsLoading(false);
@@ -320,9 +258,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       const newVideoState = !videoEnabled;
       await webRTCNativeService.toggleVideo(newVideoState);
       setVideoEnabled(newVideoState);
-      console.log('Video toggled to:', newVideoState);
     } catch (err) {
-      console.error('Error toggling video:', err);
+      console.error('Error al alternar video:', err);
       setError((err as Error).message);
     }
   };
@@ -332,9 +269,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       const newAudioState = !audioEnabled;
       await webRTCNativeService.toggleAudio(newAudioState);
       setAudioEnabled(newAudioState);
-      console.log('Audio toggled to:', newAudioState);
     } catch (err) {
-      console.error('Error toggling audio:', err);
+      console.error('Error al alternar audio:', err);
       setError((err as Error).message);
     }
   };

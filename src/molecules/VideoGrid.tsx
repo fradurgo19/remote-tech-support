@@ -23,19 +23,11 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
   useEffect(() => {
     const video = videoRef.current;
     if (video && stream) {
-      console.log(`VideoContainer: Asignando stream ${isLocal ? 'LOCAL' : 'REMOTO'}:`, {
-        streamId: stream.id,
-        videoTracks: stream.getVideoTracks().length,
-        audioTracks: stream.getAudioTracks().length,
-        videoEnabled: stream.getVideoTracks()[0]?.enabled,
-        user: user?.name,
-      });
-
       video.srcObject = stream;
 
       // Forzar reproducción para todos los videos (local y remoto)
       video.play().catch(err => {
-        console.error(`Error reproduciendo video ${isLocal ? 'LOCAL' : 'REMOTO'}:`, err);
+        console.error(`Error al reproducir video:`, err);
       });
     }
 
@@ -165,37 +157,14 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
     }
   };
 
-  // Debug logging
-  useEffect(() => {
-    console.log('=== VIDEO GRID ESTADO ===');
-    console.log('Stream LOCAL:', {
-      existe: !!localStream,
-      streamId: localStream?.id,
-      videoTracks: localStream?.getVideoTracks().length || 0,
-      audioTracks: localStream?.getAudioTracks().length || 0,
-      usuario: localUser?.name,
-    });
-    console.log('Streams REMOTOS:', {
-      cantidad: remoteStreams.length,
-      detalles: remoteStreams.map(rs => ({
-        peerId: rs.peerId,
-        streamId: rs.stream.id,
-        videoTracks: rs.stream.getVideoTracks().length,
-        audioTracks: rs.stream.getAudioTracks().length,
-        usuario: remoteUsers[rs.peerId]?.name,
-      })),
-    });
-    console.log('Cámaras adicionales:', activeCameraStreams.size);
-    console.log('========================');
-  }, [
-    localStream,
-    remoteStreams,
-    activeCameraStreams,
-    activeCameraIds,
-    localUser,
-    remoteUsers,
-    isScreenSharing,
-  ]);
+  // Logging solo para desarrollo (se puede remover en producción)
+  // useEffect(() => {
+  //   console.log('VideoGrid:', {
+  //     local: !!localStream,
+  //     remote: remoteStreams.length,
+  //     cameras: activeCameraStreams.size,
+  //   });
+  // }, [localStream, remoteStreams, activeCameraStreams]);
 
   if (
     !localStream &&
