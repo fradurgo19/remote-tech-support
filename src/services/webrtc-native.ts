@@ -172,10 +172,17 @@ class WebRTCNativeService {
       this.localStream = await this.getLocalStream();
     }
 
-    const peerConnection = this.createPeerConnection(callerId, false);
-
-    // Create answer when offer is received
-    // This will be handled in handleSignal method
+    // NO crear PeerConnection aquí - ya fue creado en handleSignal cuando llegó el 'offer'
+    // El PeerConnection se crea automáticamente en handleSignal cuando recibe señales
+    console.log('WebRTC Native: Local stream ready, waiting for offer signal...');
+    
+    // Verificar si ya existe PeerConnection
+    const existing = this.peerConnections.get(callerId);
+    if (existing) {
+      console.log('WebRTC Native: PeerConnection already exists for:', callerId);
+    } else {
+      console.log('WebRTC Native: No PeerConnection yet, will be created when offer arrives');
+    }
   }
 
   private async handleSignal(peerId: string, signal: any): Promise<void> {
@@ -189,7 +196,13 @@ class WebRTCNativeService {
     let peerConnection = this.peerConnections.get(peerId);
 
     if (!peerConnection) {
-      // Create new peer connection if it doesn't exist
+      // Solo crear PeerConnection si tenemos localStream (ya aceptamos la llamada)
+      if (!this.localStream) {
+        console.log('WebRTC Native: No local stream yet, ignoring signal (call not accepted yet)');
+        return;
+      }
+      
+      console.log('WebRTC Native: Creating peer connection for:', peerId);
       peerConnection = this.createPeerConnection(peerId, false);
     }
 
