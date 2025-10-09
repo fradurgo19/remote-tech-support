@@ -23,12 +23,20 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
   useEffect(() => {
     const video = videoRef.current;
     if (video && stream) {
+      console.log(`VideoContainer: Asignando stream ${isLocal ? 'LOCAL' : 'REMOTO'}:`, {
+        streamId: stream.id,
+        videoTracks: stream.getVideoTracks().length,
+        audioTracks: stream.getAudioTracks().length,
+        videoEnabled: stream.getVideoTracks()[0]?.enabled,
+        user: user?.name,
+      });
+
       video.srcObject = stream;
 
-      // Force play for local streams
-      if (isLocal) {
-        video.play().catch(console.error);
-      }
+      // Forzar reproducción para todos los videos (local y remoto)
+      video.play().catch(err => {
+        console.error(`Error reproduciendo video ${isLocal ? 'LOCAL' : 'REMOTO'}:`, err);
+      });
     }
 
     return () => {
@@ -36,7 +44,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
         video.srcObject = null;
       }
     };
-  }, [stream, isLocal]);
+  }, [stream, isLocal, user]);
 
   // Force video element update when stream tracks change
   useEffect(() => {
@@ -82,26 +90,39 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
           }`}
         />
       ) : (
-        <div className='w-full h-full flex items-center justify-center bg-gray-800'>
-          <div className='text-center'>
+        <div className='w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900'>
+          <div className='text-center p-6'>
             <div className='mb-4'>
               <Avatar src={user?.avatar} size='xl' status={user?.status} />
             </div>
-            <p className='text-white text-sm'>
-              {isLocal
-                ? 'Cámara desactivada'
-                : `${user?.name || 'Usuario'} - Cámara desactivada`}
+            <p className='text-white text-lg font-medium mb-2'>
+              {user?.name || 'Usuario'}
             </p>
+            <p className='text-gray-400 text-sm'>
+              {isLocal
+                ? '📹 Tu cámara está desactivada'
+                : '📹 Cámara no disponible'}
+            </p>
+            {!isLocal && (
+              <p className='text-xs text-gray-500 mt-2'>
+                (El otro usuario puede no tener cámara o está en uso)
+              </p>
+            )}
           </div>
         </div>
       )}
 
       {user && (
-        <div className='absolute bottom-2 left-2 flex items-center gap-2 bg-gray-900/70 px-2 py-1 rounded-lg backdrop-blur-sm'>
+        <div className='absolute bottom-2 left-2 flex items-center gap-2 bg-gray-900/90 px-3 py-2 rounded-lg backdrop-blur-sm border border-white/20'>
           <Avatar src={user.avatar} size='sm' status={user.status} />
-          <span className='text-white text-sm font-medium'>
-            {isLocal ? `${user.name} (Tú)` : user.name}
-          </span>
+          <div className='flex flex-col'>
+            <span className='text-white text-sm font-medium'>
+              {user.name}
+            </span>
+            <span className={`text-xs ${isLocal ? 'text-green-400' : 'text-blue-400'}`}>
+              {isLocal ? '🟢 Tú (Local)' : '🔵 Remoto'}
+            </span>
+          </div>
         </div>
       )}
     </div>
@@ -146,21 +167,33 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
 
   // Debug logging
   useEffect(() => {
-    console.log('VideoGrid render:', {
-      hasLocalStream: !!localStream,
-      localStreamTracks: localStream?.getTracks().length || 0,
-      remoteStreamsCount: remoteStreams.length,
-      activeCameraStreamsCount: activeCameraStreams.size,
-      activeCameraIds: activeCameraIds,
-      localUser: localUser?.name,
-      isScreenSharing,
+    console.log('=== VIDEO GRID ESTADO ===');
+    console.log('Stream LOCAL:', {
+      existe: !!localStream,
+      streamId: localStream?.id,
+      videoTracks: localStream?.getVideoTracks().length || 0,
+      audioTracks: localStream?.getAudioTracks().length || 0,
+      usuario: localUser?.name,
     });
+    console.log('Streams REMOTOS:', {
+      cantidad: remoteStreams.length,
+      detalles: remoteStreams.map(rs => ({
+        peerId: rs.peerId,
+        streamId: rs.stream.id,
+        videoTracks: rs.stream.getVideoTracks().length,
+        audioTracks: rs.stream.getAudioTracks().length,
+        usuario: remoteUsers[rs.peerId]?.name,
+      })),
+    });
+    console.log('Cámaras adicionales:', activeCameraStreams.size);
+    console.log('========================');
   }, [
     localStream,
     remoteStreams,
     activeCameraStreams,
     activeCameraIds,
     localUser,
+    remoteUsers,
     isScreenSharing,
   ]);
 
