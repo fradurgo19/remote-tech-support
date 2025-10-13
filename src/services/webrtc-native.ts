@@ -47,10 +47,25 @@ class WebRTCNativeService {
     try {
       const constraints: MediaStreamConstraints = {
         video: video ? { width: 1280, height: 720 } : false,
-        audio: audio,
+        audio: audio ? {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        } : false,
       };
 
+      console.log('WebRTC: Solicitando stream local con constraints:', constraints);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      // Verificar tracks obtenidos
+      const videoTracks = stream.getVideoTracks();
+      const audioTracks = stream.getAudioTracks();
+      console.log(`WebRTC: Stream local obtenido - Video tracks: ${videoTracks.length}, Audio tracks: ${audioTracks.length}`);
+      
+      audioTracks.forEach((track, index) => {
+        console.log(`WebRTC: Audio track local ${index} - Enabled: ${track.enabled}, ReadyState: ${track.readyState}`);
+      });
+
       this.localStream = stream;
       return stream;
     } catch (error) {
@@ -74,14 +89,24 @@ class WebRTCNativeService {
     if (this.localStream) {
       this.localStream.getTracks().forEach(track => {
         peerConnection.addTrack(track, this.localStream!);
+        console.log(`WebRTC: Track agregado - Tipo: ${track.kind}, Enabled: ${track.enabled}, Estado: ${track.readyState}`);
       });
     }
 
     // Handle remote stream
     peerConnection.ontrack = event => {
-      console.log('WebRTC Native: Remote track received:', event);
+      console.log(`WebRTC: Remote track recibido - Tipo: ${event.track.kind}, Enabled: ${event.track.enabled}, Estado: ${event.track.readyState}`);
       const remoteStream = event.streams[0];
       if (remoteStream) {
+        // Verificar todos los tracks del stream remoto
+        const videoTracks = remoteStream.getVideoTracks();
+        const audioTracks = remoteStream.getAudioTracks();
+        console.log(`WebRTC: Stream remoto - Video tracks: ${videoTracks.length}, Audio tracks: ${audioTracks.length}`);
+        
+        audioTracks.forEach((track, index) => {
+          console.log(`WebRTC: Audio track ${index} - Enabled: ${track.enabled}, Muted: ${track.muted}, ReadyState: ${track.readyState}`);
+        });
+
         this.onStreamCallbacks.forEach(callback =>
           callback({ peerId, stream: remoteStream })
         );

@@ -25,6 +25,12 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
     if (video && stream) {
       video.srcObject = stream;
 
+      // Configurar atributos de audio para videos remotos
+      if (!isLocal && !isMuted) {
+        video.volume = 1.0; // Volumen al máximo
+        video.muted = false; // Asegurar que NO esté silenciado
+      }
+
       // Forzar reproducción para todos los videos (local y remoto)
       video.play().catch(err => {
         console.error(`Error al reproducir video:`, err);
@@ -36,7 +42,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
         video.srcObject = null;
       }
     };
-  }, [stream, isLocal, user]);
+  }, [stream, isLocal, user, isMuted]);
 
   // Force video element update when stream tracks change
   useEffect(() => {
@@ -214,6 +220,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
             stream={peerStream.stream}
             user={remoteUsers[peerStream.peerId]}
             isLocal={false}
+            isMuted={false}
           />
         </div>
       ))}
