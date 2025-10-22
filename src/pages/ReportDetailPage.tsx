@@ -23,7 +23,7 @@ import { reportService } from '../services/api';
 interface ReportDetailPageProps {}
 
 const ReportDetailPage: React.FC<ReportDetailPageProps> = () => {
-  const { id } = useParams<{ id: string }>();
+  const { reportId } = useParams<{ reportId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -32,12 +32,12 @@ const ReportDetailPage: React.FC<ReportDetailPageProps> = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchReport = React.useCallback(async () => {
-    if (!id) return;
+    if (!reportId) return;
 
     try {
       setIsLoading(true);
       setError(null);
-      const reportData = await reportService.getReportById(id);
+      const reportData = await reportService.getReportById(reportId);
       setReport(reportData);
     } catch (error) {
       console.error('Error fetching report:', error);
@@ -46,13 +46,13 @@ const ReportDetailPage: React.FC<ReportDetailPageProps> = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [reportId]);
 
   useEffect(() => {
-    if (id) {
+    if (reportId) {
       fetchReport();
     }
-  }, [id, fetchReport]);
+  }, [reportId, fetchReport]);
 
   const getStatusIcon = (status: Report['status']) => {
     switch (status) {

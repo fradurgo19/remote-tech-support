@@ -14,7 +14,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { ReportDetailPage } from './pages/ReportDetailPage';
+import ReportDetailPage from './pages/ReportDetailPage';
 import ReportsPage from './pages/ReportsPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import { SettingsPage } from './pages/SettingsPage';
