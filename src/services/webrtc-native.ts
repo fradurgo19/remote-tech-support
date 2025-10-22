@@ -411,47 +411,158 @@ class WebRTCNativeService {
   }
 
   async switchToFrontCamera(): Promise<void> {
-    console.log('WebRTC: Cambiando a cámara frontal');
+    console.log('🔄 WebRTC: Cambiando a cámara frontal');
+
+    if (!this.localStream) {
+      throw new Error('No hay stream local disponible');
+    }
 
     try {
+      // Enumerar dispositivos para encontrar la cámara frontal
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+
+      console.log(
+        '📹 Cámaras disponibles:',
+        videoDevices.map(d => ({
+          id: d.deviceId,
+          label: d.label,
+        }))
+      );
+
+      // Buscar cámara frontal por label o como primera opción
+      const frontCamera =
+        videoDevices.find(
+          d =>
+            d.label.toLowerCase().includes('front') ||
+            d.label.toLowerCase().includes('frontal') ||
+            d.label.toLowerCase().includes('user')
+        ) || videoDevices[0]; // Usar la primera si no se encuentra
+
+      if (!frontCamera) {
+        throw new Error('No se encontró cámara frontal');
+      }
+
+      console.log(
+        '📱 Using front camera:',
+        frontCamera.label,
+        frontCamera.deviceId
+      );
+
+      // Detener el track de video actual
+      const oldVideoTrack = this.localStream.getVideoTracks()[0];
+      if (oldVideoTrack) {
+        oldVideoTrack.stop();
+      }
+
+      // Obtener nuevo stream usando el deviceId (sin solicitar permisos nuevamente)
       const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
-        audio: true,
+        video: {
+          deviceId: frontCamera.deviceId,
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
       });
 
-      await this.replaceVideoTrack(newStream);
-      console.log('WebRTC: Cambiado a cámara frontal exitosamente');
+      const newVideoTrack = newStream.getVideoTracks()[0];
+      console.log('✅ Nuevo track obtenido:', newVideoTrack.getSettings());
+
+      // Reemplazar track en peer connections
+      this.peerConnections.forEach(pc => {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender && newVideoTrack) {
+          sender.replaceTrack(newVideoTrack);
+        }
+      });
+
+      // Actualizar localStream
+      const audioTracks = this.localStream.getAudioTracks();
+      this.localStream = new MediaStream([newVideoTrack, ...audioTracks]);
+
+      console.log('✅ Cambiado a cámara frontal exitosamente');
     } catch (error) {
-      console.error('Error cambiando a cámara frontal:', error);
+      console.error('❌ Error cambiando a cámara frontal:', error);
       throw error;
     }
   }
 
   async switchToBackCamera(): Promise<void> {
-    console.log('WebRTC: Cambiando a cámara trasera');
+    console.log('🔄 WebRTC: Cambiando a cámara trasera');
+
+    if (!this.localStream) {
+      throw new Error('No hay stream local disponible');
+    }
 
     try {
-      // Intentar con 'exact' primero
-      let newStream: MediaStream;
+      // Enumerar dispositivos para encontrar la cámara trasera
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
 
-      try {
-        newStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { exact: 'environment' } },
-          audio: true,
-        });
-      } catch (exactError) {
-        // Si falla con exact, intentar sin exact (más compatible)
-        console.log('WebRTC: exact environment falló, intentando sin exact...');
-        newStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
-          audio: true,
-        });
+      console.log(
+        '📹 Cámaras disponibles:',
+        videoDevices.map(d => ({
+          id: d.deviceId,
+          label: d.label,
+        }))
+      );
+
+      // Buscar cámara trasera por label
+      const backCamera =
+        videoDevices.find(
+          d =>
+            d.label.toLowerCase().includes('back') ||
+            d.label.toLowerCase().includes('trasera') ||
+            d.label.toLowerCase().includes('rear') ||
+            d.label.toLowerCase().includes('environment')
+        ) ||
+        videoDevices[1] ||
+        videoDevices[0]; // Usar la segunda o primera si no se encuentra
+
+      if (!backCamera) {
+        throw new Error('No se encontró cámara trasera');
       }
 
-      await this.replaceVideoTrack(newStream);
-      console.log('WebRTC: Cambiado a cámara trasera exitosamente');
+      console.log(
+        '📱 Using back camera:',
+        backCamera.label,
+        backCamera.deviceId
+      );
+
+      // Detener el track de video actual
+      const oldVideoTrack = this.localStream.getVideoTracks()[0];
+      if (oldVideoTrack) {
+        oldVideoTrack.stop();
+      }
+
+      // Obtener nuevo stream usando el deviceId
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          deviceId: backCamera.deviceId,
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      });
+
+      const newVideoTrack = newStream.getVideoTracks()[0];
+      console.log('✅ Nuevo track obtenido:', newVideoTrack.getSettings());
+
+      // Reemplazar track en peer connections
+      this.peerConnections.forEach(pc => {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender && newVideoTrack) {
+          sender.replaceTrack(newVideoTrack);
+        }
+      });
+
+      // Actualizar localStream
+      const audioTracks = this.localStream.getAudioTracks();
+      this.localStream = new MediaStream([newVideoTrack, ...audioTracks]);
+
+      console.log('✅ Cambiado a cámara trasera exitosamente');
     } catch (error) {
-      console.error('Error cambiando a cámara trasera:', error);
+      console.error('❌ Error cambiando a cámara trasera:', error);
       throw error;
     }
   }
