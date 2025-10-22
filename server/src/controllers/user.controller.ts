@@ -1,10 +1,13 @@
+import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
+import { Op } from 'sequelize';
 import { User } from '../models';
+import { storageService } from '../services/storage.service';
 import { logger } from '../utils/logger';
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
 
     // Validar que todos los campos requeridos estén presentes
     if (!name || !email || !password) {
@@ -19,18 +22,21 @@ export const createUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'El email ya está registrado' });
     }
 
-    // Temporalmente guardar contraseña en texto plano
+    // Hashear contraseña antes de guardar
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       name,
       email,
-      password: password, // Temporalmente en texto plano
+      password: hashedPassword,
       role: role || 'customer',
-      status: 'offline',
+      phone: phone || null,
+      isActive: true,
       emailVerified: false,
     });
 
     // Retornar el usuario sin la contraseña
-    const { password: _, ...userWithoutPassword } = user.toJSON();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _password, ...userWithoutPassword } = user.toJSON();
     res.status(201).json({
       message: 'Usuario creado exitosamente',
       user: userWithoutPassword,
@@ -43,14 +49,14 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const user = req.user as any;
-    let whereClause: any = {};
+    const user = req.user as { id: string; role: string };
+    const whereClause: { role?: { [key: string]: string[] } } = {};
 
     // Filtrar usuarios según el rol del usuario que hace la petición
     if (user.role === 'customer') {
       // Los clientes solo pueden ver administradores y técnicos (no otros clientes)
       whereClause.role = {
-        [require('sequelize').Op.in]: ['admin', 'technician'],
+        [Op.in]: ['admin', 'technician'],
       };
     }
     // Los administradores y técnicos pueden ver todos los usuarios (no se aplica filtro)
@@ -64,6 +70,7 @@ export const getUsers = async (req: Request, res: Response) => {
         'role',
         'status',
         'avatar',
+        'phone',
         'createdAt',
       ],
       order: [['name', 'ASC']],
@@ -86,6 +93,7 @@ export const getUsersPublic = async (req: Request, res: Response) => {
         'role',
         'status',
         'avatar',
+        'phone',
         'createdAt',
       ],
       order: [['name', 'ASC']],
@@ -108,6 +116,7 @@ export const getUserById = async (req: Request, res: Response) => {
         'role',
         'status',
         'avatar',
+        'phone',
         'createdAt',
       ],
     });
@@ -126,7 +135,7 @@ export const getUserById = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, email, password, role, status, avatar } = req.body;
+    const { name, email, password, role, status, avatar, phone } = req.body;
 
     const user = await User.findByPk(id);
     if (!user) {
@@ -134,19 +143,27 @@ export const updateUser = async (req: Request, res: Response) => {
     }
 
     // Preparar datos de actualización
-    const updateData: any = {
+    const updateData: {
+      name: string;
+      email: string;
+      role: string;
+      status: string;
+      avatar: string | null;
+      phone: string | null;
+    } = {
       name: name || user.name,
       email: email || user.email,
       role: role || user.role,
       status: status || user.status,
       avatar: avatar || user.avatar,
+      phone: phone !== undefined ? phone : user.phone,
     };
 
-    // Si se proporciona una nueva contraseña, guardarla (temporalmente en texto plano)
+    // Si se proporciona una nueva contraseña, hashearla antes de guardar
     if (password && password.trim() !== '') {
       logger.info(`Actualizando contraseña para usuario: ${user.name}`);
-      // Temporalmente guardar en texto plano hasta arreglar el hashing
-      user.password = password;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
     } else {
       logger.info(`Manteniendo contraseña actual para usuario: ${user.name}`);
     }
@@ -156,7 +173,8 @@ export const updateUser = async (req: Request, res: Response) => {
     await user.save();
 
     // Retornar el usuario sin la contraseña
-    const { password: _, ...userWithoutPassword } = user.toJSON();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _password, ...userWithoutPassword } = user.toJSON();
     res.json({
       message: 'Usuario actualizado exitosamente',
       user: userWithoutPassword,
@@ -194,25 +212,75 @@ export const searchCustomers = async (req: Request, res: Response) => {
         .json({ message: 'Email o nombre es requerido para buscar clientes' });
     }
 
-    const whereClause: any = { role: 'customer' };
+    // Usar OR en lugar de AND para buscar en cualquiera de los campos
+    const whereClause: {
+      role: string;
+      [key: symbol]: Array<
+        | { email?: { [key: symbol]: string } }
+        | { name?: { [key: symbol]: string } }
+      >;
+    } = {
+      role: 'customer',
+      [Op.or]: [],
+    };
 
     if (email) {
-      whereClause.email = { [require('sequelize').Op.iLike]: `%${email}%` };
+      whereClause[Op.or].push({
+        email: { [Op.iLike]: `%${email}%` },
+      });
     }
 
     if (name) {
-      whereClause.name = { [require('sequelize').Op.iLike]: `%${name}%` };
+      whereClause[Op.or].push({
+        name: { [Op.iLike]: `%${name}%` },
+      });
     }
 
     const customers = await User.findAll({
       where: whereClause,
-      attributes: ['id', 'name', 'email', 'status', 'createdAt'],
+      attributes: ['id', 'name', 'email', 'phone', 'status', 'createdAt'],
       limit: 10,
     });
 
     res.json(customers);
   } catch (error) {
     logger.error('Error al buscar clientes:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+export const uploadAvatar = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as { id: string };
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ message: 'No se proporcionó archivo de avatar' });
+    }
+
+    // Subir avatar a Supabase Storage
+    const uploadResult = await storageService.uploadAvatar(user.id, req.file);
+
+    // Obtener el usuario actual para eliminar el avatar anterior si existe
+    const currentUser = await User.findByPk(user.id);
+    if (currentUser?.avatar) {
+      // Extraer el path del avatar anterior de la URL
+      const oldAvatarPath = currentUser.avatar.split('/').slice(-2).join('/');
+      await storageService.deleteAvatar(oldAvatarPath).catch(() => {
+        // Ignorar errores al eliminar avatar anterior
+      });
+    }
+
+    // Actualizar el usuario con la nueva URL del avatar
+    await User.update({ avatar: uploadResult.url }, { where: { id: user.id } });
+
+    res.json({
+      message: 'Avatar actualizado correctamente',
+      avatarUrl: uploadResult.url,
+    });
+  } catch (error) {
+    logger.error('Error al subir avatar:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };

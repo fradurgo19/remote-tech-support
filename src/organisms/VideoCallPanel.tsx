@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { VideoGrid } from '../molecules/VideoGrid';
+import { PhoneCall } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Button } from '../atoms/Button';
+import { useCall } from '../context/CallContext';
 import { CallControls } from '../molecules/CallControls';
 import { DeviceSelector } from '../molecules/DeviceSelector';
-import { useCall } from '../context/CallContext';
-import { Button } from '../atoms/Button';
+import { VideoGrid } from '../molecules/VideoGrid';
 import { User } from '../types';
-import { PhoneCall } from 'lucide-react';
 
 interface VideoCallPanelProps {
   recipientId?: string;
@@ -29,12 +29,14 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
     audioEnabled,
     isScreenSharing,
     isRecording,
+    activeCameraStreams,
+    activeCameraIds,
     initiateCall,
-    acceptCall,
     toggleVideo,
     toggleAudio,
     toggleScreenShare,
     toggleRecording,
+    toggleCamera,
     endCall,
   } = useCall();
 
@@ -47,10 +49,16 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
       setCallError('Falta información del destinatario o ticket');
       return;
     }
-    
+
+    // Verificar que no se esté llamando a sí mismo
+    if (localUser && recipientId === localUser.id) {
+      setCallError('No puedes llamarte a ti mismo');
+      return;
+    }
+
     setCallError(null);
     setIsInitializingCall(true);
-    
+
     try {
       await initiateCall(recipientId, ticketId);
     } catch (error) {
@@ -73,61 +81,94 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
       audioTracks: localStream?.getAudioTracks().length || 0,
       isInCall,
       videoEnabled,
-      audioEnabled
+      audioEnabled,
     });
   }, [localStream, isInCall, videoEnabled, audioEnabled]);
 
   return (
-    <div className="flex flex-col h-full bg-gray-950 rounded-lg overflow-hidden">
-      <div className="flex-1 relative">
-        {isInCall || localStream ? (
+    <div className='flex flex-col h-full bg-gray-950 rounded-lg overflow-hidden'>
+      <div className='flex-1 relative'>
+        {isInCall || localStream || activeCameraStreams.size > 0 ? (
           <VideoGrid
             localStream={localStream}
             remoteStreams={remoteStreams}
             localUser={localUser}
             remoteUsers={remoteUsers}
             isScreenSharing={isScreenSharing}
+            activeCameraStreams={activeCameraStreams}
+            activeCameraIds={activeCameraIds}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-white p-6">
-            <div className="bg-gray-800/60 p-8 rounded-xl flex flex-col items-center max-w-md">
-              <div className="bg-primary/20 p-4 rounded-full mb-4">
-                <PhoneCall size={40} className="text-primary" />
+          <div className='flex flex-col items-center justify-center h-full text-white p-6'>
+            <div className='bg-gray-800/60 p-8 rounded-xl flex flex-col items-center max-w-md'>
+              <div className='bg-primary/20 p-4 rounded-full mb-4'>
+                <PhoneCall size={40} className='text-primary' />
               </div>
-              <h2 className="text-2xl font-semibold mb-2">Iniciar Llamada de Soporte</h2>
-              <p className="text-gray-400 text-center mb-6">
-                Conéctate con video y audio para brindar asistencia técnica en tiempo real
+              <h2 className='text-2xl font-semibold mb-2'>
+                Iniciar Llamada de Soporte
+              </h2>
+              <p className='text-gray-400 text-center mb-4'>
+                Conéctate con video y audio para brindar asistencia técnica en
+                tiempo real
               </p>
-              
-              <div className="space-y-3 w-full">
+
+              {recipientId && remoteUsers[recipientId] && (
+                <div className='bg-gray-700/50 p-4 rounded-lg mb-4'>
+                  <p className='text-sm text-gray-300 mb-1'>Llamando a:</p>
+                  <p className='text-lg font-medium text-white'>
+                    {remoteUsers[recipientId].name}
+                  </p>
+                  <p className='text-sm text-gray-400'>
+                    {remoteUsers[recipientId].email}
+                  </p>
+                </div>
+              )}
+
+              {!recipientId && (
+                <div className='bg-yellow-500/20 border border-yellow-500/30 p-4 rounded-lg mb-4'>
+                  <p className='text-yellow-200 text-sm'>
+                    ⚠️ No hay destinatario disponible para la llamada
+                  </p>
+                </div>
+              )}
+
+              <div className='space-y-3 w-full'>
                 <Button
                   onClick={handleInitiateCall}
-                  disabled={isLoading || isInitializingCall || !recipientId || !ticketId}
+                  disabled={
+                    isLoading ||
+                    isInitializingCall ||
+                    !recipientId ||
+                    !ticketId ||
+                    (localUser && recipientId === localUser.id)
+                  }
                   isLoading={isLoading || isInitializingCall}
-                  size="lg"
-                  className="w-full"
+                  size='lg'
+                  className='w-full'
                   leftIcon={<PhoneCall size={18} />}
                 >
                   {isInitializingCall ? 'Iniciando...' : 'Iniciar Llamada'}
                 </Button>
 
                 <Button
-                  variant="outline"
+                  variant='outline'
                   onClick={() => setShowDeviceSelector(true)}
-                  className="w-full"
+                  className='w-full'
                 >
                   Configurar Dispositivos
                 </Button>
               </div>
-              
-              {callError && <p className="text-destructive mt-2 text-sm">{callError}</p>}
+
+              {callError && (
+                <p className='text-destructive mt-2 text-sm'>{callError}</p>
+              )}
             </div>
           </div>
         )}
       </div>
-      
+
       {(isInCall || localStream) && (
-        <div className="p-4 flex justify-center">
+        <div className='p-4 flex justify-center'>
           <CallControls
             videoEnabled={videoEnabled}
             audioEnabled={audioEnabled}
@@ -147,6 +188,8 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
         isOpen={showDeviceSelector}
         onClose={() => setShowDeviceSelector(false)}
         onDeviceChange={handleDeviceChange}
+        onToggleCamera={toggleCamera}
+        activeCameraIds={activeCameraIds}
       />
     </div>
   );

@@ -9,10 +9,13 @@ export async function resetAllPasswords() {
     const users = await User.findAll();
     logger.info(`Encontrados ${users.length} usuarios`);
     
+    // Generar un solo hash para todos (más eficiente y consistente)
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    logger.info(`Hash generado: ${hashedPassword.substring(0, 30)}...`);
+    
     for (const user of users) {
       logger.info(`Reseteando contraseña para: ${user.name} (${user.email})`);
       
-      const hashedPassword = await bcrypt.hash('admin123', 10);
       user.password = hashedPassword;
       await user.save();
       
@@ -22,12 +25,19 @@ export async function resetAllPasswords() {
     // Recargar usuarios de la base de datos para verificar
     logger.info('\n=== VERIFICACIÓN ===');
     const updatedUsers = await User.findAll();
+    let allValid = true;
+    
     for (const user of updatedUsers) {
       const isValid = await bcrypt.compare('admin123', user.password);
       logger.info(`${user.name}: contraseña 'admin123' válida = ${isValid}`);
+      if (!isValid) allValid = false;
     }
     
-    logger.info('✅ Todas las contraseñas han sido reseteadas a "admin123"');
+    if (allValid) {
+      logger.info('✅ Todas las contraseñas han sido reseteadas y verificadas correctamente');
+    } else {
+      logger.warn('⚠️  Algunas contraseñas no se verificaron correctamente');
+    }
   } catch (error) {
     logger.error('Error reseteando contraseñas:', error);
     throw error;

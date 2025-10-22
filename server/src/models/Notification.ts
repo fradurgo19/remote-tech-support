@@ -12,7 +12,7 @@ export interface NotificationAttributes {
   ticketId?: string;
   isRead?: boolean;
   readAt?: Date;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -26,7 +26,7 @@ export class Notification extends Model<NotificationAttributes> implements Notif
   public ticketId!: string;
   public isRead!: boolean;
   public readAt!: Date;
-  public metadata!: any;
+  public metadata!: Record<string, unknown>;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }

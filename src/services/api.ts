@@ -3,6 +3,7 @@ import {
   Message,
   ServiceCategory,
   Ticket,
+  UpdateUserData,
   User,
 } from '../types';
 
@@ -65,7 +66,7 @@ const tickets: Ticket[] = [
     title: 'Outlook se cierra al iniciar',
     description:
       'Mi aplicación de Outlook se cierra inmediatamente después de abrirse.',
-    status: 'in-progress',
+    status: 'in_progress',
     priority: 'medium',
     createdAt: '2025-03-14T15:20:00Z',
     updatedAt: '2025-03-15T10:45:00Z',
@@ -103,7 +104,7 @@ const serviceCategories: ServiceCategory[] = [
     id: '1',
     name: 'Soporte Remoto',
     description:
-      'Asistencia técnica remota para resolver problemas de software, hardware y conectividad',
+      'Asistencia técnica remota para resolver problemas de Maquinaria Pesada',
     icon: 'headset',
   },
 ];
@@ -169,7 +170,7 @@ export const authService = {
 
     try {
       // Verificar si el token es válido haciendo una llamada al backend
-      const response = await fetch('http://localhost:3000/api/auth/me', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -262,7 +263,7 @@ export const userService = {
     return response;
   },
   getUsersPublic: async (): Promise<User[]> => {
-    const response = await fetch('http://localhost:3000/api/users/public');
+    const response = await fetch(`${API_BASE_URL}/api/users/public`);
     if (!response.ok) {
       throw new Error('Error al cargar usuarios');
     }
@@ -284,7 +285,7 @@ export const userService = {
     });
     return response.user;
   },
-  updateUser: async (id: string, userData: CreateUserData): Promise<User> => {
+  updateUser: async (id: string, userData: UpdateUserData): Promise<User> => {
     const response = await apiCall(`/api/users/${id}`, {
       method: 'PUT',
       headers: {
@@ -293,6 +294,17 @@ export const userService = {
       body: JSON.stringify(userData),
     });
     return response.user;
+  },
+  uploadAvatar: async (file: File): Promise<{ avatarUrl: string }> => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const response = await apiCall('/api/users/avatar', {
+      method: 'POST',
+      body: formData,
+      // No incluir Content-Type header - el navegador lo agrega automáticamente con boundary
+    });
+    return response;
   },
   updateUserStatus: async (
     id: string,
@@ -324,6 +336,9 @@ export const userService = {
   },
 };
 
+// Configuración de la URL base de la API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 // Función helper para obtener el token de autenticación
 const getAuthToken = (): string | null => {
   return localStorage.getItem('authToken');
@@ -335,10 +350,15 @@ const apiCall = async (
   options: RequestInit = {}
 ): Promise<any> => {
   const token = getAuthToken();
-  const response = await fetch(`http://localhost:3000${url}`, {
+
+  // Detectar si es FormData (no agregar Content-Type para que el navegador lo maneje)
+  const isFormData = options.body instanceof FormData;
+
+  const response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      // Solo agregar Content-Type si NO es FormData
+      ...(!isFormData && { 'Content-Type': 'application/json' }),
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
@@ -423,7 +443,7 @@ export const messageService = {
     formData.append('type', 'file');
 
     const token = getAuthToken();
-    const response = await fetch('http://localhost:3000/api/messages/file', {
+    const response = await fetch(`${API_BASE_URL}/api/messages/file`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -457,8 +477,33 @@ export const reportService = {
     return data;
   },
   createReport: async (
-    reportData: Omit<Report, 'id' | 'createdAt' | 'updatedAt'>
+    reportData: Omit<Report, 'id' | 'createdAt' | 'updatedAt'>,
+    rawFiles?: File[]
   ): Promise<Report> => {
+    // Si hay archivos RAW (File objects), usar FormData
+    if (rawFiles && rawFiles.length > 0) {
+      const formData = new FormData();
+      formData.append('title', reportData.title);
+      formData.append('description', reportData.description);
+      if (reportData.type) formData.append('type', reportData.type);
+      if (reportData.status) formData.append('status', reportData.status);
+      if (reportData.priority) formData.append('priority', reportData.priority);
+      if (reportData.customerId)
+        formData.append('customerId', reportData.customerId);
+
+      // Agregar archivos
+      rawFiles.forEach(file => {
+        formData.append('attachments', file);
+      });
+
+      const data = await apiCall('/api/reports', {
+        method: 'POST',
+        body: formData,
+      });
+      return data.report;
+    }
+
+    // Sin archivos o con base64, usar JSON (compatibilidad)
     const data = await apiCall('/api/reports', {
       method: 'POST',
       body: JSON.stringify(reportData),

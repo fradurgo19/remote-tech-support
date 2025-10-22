@@ -14,7 +14,7 @@ export interface CallSessionAttributes {
   duration?: number;
   recordingUrl?: string;
   screenShareEnabled?: boolean;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -30,7 +30,7 @@ export class CallSession extends Model<CallSessionAttributes> implements CallSes
   public duration!: number;
   public recordingUrl!: string;
   public screenShareEnabled!: boolean;
-  public metadata!: any;
+  public metadata!: Record<string, unknown>;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }

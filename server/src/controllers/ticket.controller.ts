@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
+import { sequelize } from '../config/database';
 import { Category, Message, Ticket, User } from '../models';
+import { emailService } from '../services/email.service';
 import { logger } from '../utils/logger';
 
 export const getTickets = async (req: Request, res: Response) => {
   try {
-    const user = req.user as any;
-    let whereClause: any = {};
+    const user = req.user as { id: string; role: string };
+    const whereClause: { customerId?: string } = {};
 
     // Filtrar tickets según el rol del usuario
     if (user.role === 'customer') {
@@ -20,6 +22,18 @@ export const getTickets = async (req: Request, res: Response) => {
         { model: User, as: 'customer', attributes: ['id', 'name', 'email'] },
         { model: User, as: 'technician', attributes: ['id', 'name', 'email'] },
       ],
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM "Messages" 
+              WHERE "Messages"."ticketId" = "Ticket"."id"
+            )`),
+            'messageCount',
+          ],
+        ],
+      },
     });
     res.json(tickets);
   } catch (error) {
@@ -31,7 +45,7 @@ export const getTickets = async (req: Request, res: Response) => {
 export const getTicketById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const ticket = await Ticket.findByPk(id, {
       include: [
@@ -74,25 +88,49 @@ export const createTicket = async (req: Request, res: Response) => {
       priority,
       customerEmail,
       customerName,
+      customerId: providedCustomerId,
     } = req.body;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string; email: string };
     let customerId: string;
 
+    logger.info(`🎫 Creando ticket - Datos recibidos:`, {
+      title,
+      category,
+      priority,
+      customerEmail,
+      customerName,
+      providedCustomerId,
+      userRole: user.role,
+      userId: user.id,
+    });
+
     // Buscar la categoría por nombre para obtener su ID
+    logger.info(`Buscando categoría: "${category}"`);
     const categoryRecord = await Category.findOne({
       where: { name: category },
     });
     if (!categoryRecord) {
+      logger.error(`❌ Categoría no encontrada: "${category}"`);
+      logger.info(
+        'Categorías disponibles:',
+        await Category.findAll({ attributes: ['name'] })
+      );
       return res.status(400).json({ message: 'Categoría no encontrada' });
     }
+    logger.info(`✅ Categoría encontrada: ${categoryRecord.id}`);
 
     // Determinar el customerId según el rol del usuario
     if (user.role === 'customer') {
       // Los clientes solo pueden crear tickets para sí mismos
       customerId = user.id;
+      logger.info(`✅ Cliente (self): ${customerId}`);
     } else if (user.role === 'admin' || user.role === 'technician') {
       // El personal de soporte puede asignar tickets a clientes
-      if (customerEmail) {
+      if (providedCustomerId) {
+        // Si se proporciona customerId directamente, usarlo
+        customerId = providedCustomerId;
+        logger.info(`✅ Cliente (por ID): ${customerId}`);
+      } else if (customerEmail) {
         // Buscar cliente existente por email
         let customer = await User.findOne({
           where: { email: customerEmail, role: 'customer' },
@@ -100,23 +138,24 @@ export const createTicket = async (req: Request, res: Response) => {
 
         if (!customer) {
           // Si no existe, crear un cliente temporal
+          logger.info(`Creando nuevo cliente: ${customerEmail}`);
           customer = await User.create({
             name: customerName || customerEmail.split('@')[0],
             email: customerEmail,
             password:
               'temp-password-' + Math.random().toString(36).substring(7), // Contraseña temporal
             role: 'customer',
-            status: 'offline',
+            isActive: true,
             emailVerified: false,
           });
         }
         customerId = customer.id;
+        logger.info(`✅ Cliente (por email): ${customerId}`);
       } else {
-        return res
-          .status(400)
-          .json({
-            message: 'Email del cliente es requerido para asignar el ticket',
-          });
+        logger.error('❌ No se proporcionó customerId ni customerEmail');
+        return res.status(400).json({
+          message: 'Email del cliente es requerido para asignar el ticket',
+        });
       }
     } else {
       return res
@@ -141,6 +180,36 @@ export const createTicket = async (req: Request, res: Response) => {
       ],
     });
 
+    // Enviar notificación por correo electrónico
+    try {
+      const emailSent = await emailService.sendTicketCreatedNotification({
+        ticket: ticketWithCustomer as {
+          id: string;
+          title: string;
+          description: string;
+          priority: string;
+          status: string;
+        },
+        customer: ticketWithCustomer?.customer as
+          | { id: string; name: string; email: string }
+          | undefined,
+        technician: ticketWithCustomer?.technician as
+          | { id: string; name: string; email: string }
+          | undefined,
+      });
+
+      if (emailSent) {
+        logger.info(`Email notification sent for ticket ${ticket.id}`);
+      } else {
+        logger.warn(
+          `Failed to send email notification for ticket ${ticket.id}`
+        );
+      }
+    } catch (emailError) {
+      logger.error('Error sending email notification:', emailError);
+      // No fallar la creación del ticket si el email falla
+    }
+
     res.status(201).json({
       message: 'Ticket creado exitosamente',
       ticket: ticketWithCustomer,
@@ -151,12 +220,43 @@ export const createTicket = async (req: Request, res: Response) => {
   }
 };
 
+export const testEmailConfiguration = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: 'Email es requerido para la prueba' });
+    }
+
+    const emailSent = await emailService.sendTestEmail(email);
+
+    if (emailSent) {
+      res.json({
+        message: 'Email de prueba enviado exitosamente',
+        success: true,
+      });
+    } else {
+      res.status(500).json({
+        message: 'Error al enviar email de prueba',
+        success: false,
+      });
+    }
+  } catch (error) {
+    logger.error('Error testing email configuration:', error);
+    res.status(500).json({
+      message: 'Error interno del servidor',
+      success: false,
+    });
+  }
+};
+
 export const updateTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, status, priority, category, technicianId } =
-      req.body;
-    const user = req.user as any;
+    const { title, description, status, priority, technicianId } = req.body;
+    const user = req.user as { id: string; role: string };
 
     const ticket = await Ticket.findByPk(id);
     if (!ticket) {
@@ -171,7 +271,13 @@ export const updateTicket = async (req: Request, res: Response) => {
     }
 
     // Los clientes solo pueden actualizar ciertos campos
-    const updateData: any = {};
+    const updateData: {
+      title?: string;
+      description?: string;
+      status?: string;
+      priority?: string;
+      technicianId?: string;
+    } = {};
     if (user.role === 'customer') {
       // Los clientes solo pueden actualizar título y descripción
       if (title) updateData.title = title;
@@ -185,7 +291,67 @@ export const updateTicket = async (req: Request, res: Response) => {
       updateData.technicianId = technicianId || ticket.technicianId;
     }
 
+    // Guardar el estado anterior para detectar cambios
+    const oldStatus = ticket.status;
+
     await ticket.update(updateData);
+
+    // Verificar si el estado cambió y enviar correo de notificación
+    if (
+      status &&
+      status !== oldStatus &&
+      (status === 'in_progress' || status === 'resolved')
+    ) {
+      try {
+        // Obtener el ticket actualizado con información del cliente y técnico
+        const updatedTicket = await Ticket.findByPk(id, {
+          include: [
+            {
+              model: User,
+              as: 'customer',
+              attributes: ['id', 'name', 'email'],
+            },
+            {
+              model: User,
+              as: 'technician',
+              attributes: ['id', 'name', 'email'],
+            },
+          ],
+        });
+
+        if (updatedTicket) {
+          const emailSent =
+            await emailService.sendTicketStatusChangeNotification({
+              ticket: updatedTicket as {
+                id: string;
+                title: string;
+                description: string;
+                priority: string;
+                status: string;
+              },
+              customer: updatedTicket.customer as
+                | { id: string; name: string; email: string }
+                | undefined,
+              technician: updatedTicket.technician as
+                | { id: string; name: string; email: string }
+                | undefined,
+              oldStatus,
+              newStatus: status,
+            });
+
+          if (emailSent) {
+            logger.info(
+              `Status change email sent for ticket ${id}: ${oldStatus} → ${status}`
+            );
+          } else {
+            logger.warn(`Failed to send status change email for ticket ${id}`);
+          }
+        }
+      } catch (emailError) {
+        logger.error('Error sending status change email:', emailError);
+        // No fallar la actualización del ticket si el email falla
+      }
+    }
 
     res.json({
       message: 'Ticket actualizado exitosamente',
@@ -200,7 +366,7 @@ export const updateTicket = async (req: Request, res: Response) => {
 export const deleteTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const ticket = await Ticket.findByPk(id);
 

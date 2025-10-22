@@ -17,7 +17,7 @@ export interface TicketAttributes {
   estimatedTime?: number;
   actualTime?: number;
   tags?: string[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -37,7 +37,7 @@ export class Ticket extends Model<TicketAttributes> implements TicketAttributes 
   public estimatedTime!: number;
   public actualTime!: number;
   public tags!: string[];
-  public metadata!: any;
+  public metadata!: Record<string, unknown>;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }

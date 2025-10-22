@@ -9,6 +9,13 @@ const router = Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+// Logging middleware para debug
+router.use((req, res, next) => {
+  console.log(`🔍 ROUTE /api/reports - ${req.method} ${req.path}`);
+  console.log('Headers:', req.headers);
+  next();
+});
+
 // Rutas protegidas que requieren autenticación
 router.use(authenticate);
 
@@ -22,7 +29,10 @@ router.post('/', upload.array('attachments'), reportController.create);
 router.get('/:reportId/pdf', reportController.generatePDF);
 
 // Descargar archivo adjunto
-router.get('/:reportId/attachments/:fileName', reportController.downloadAttachment);
+router.get(
+  '/:reportId/attachments/:fileName',
+  reportController.downloadAttachment
+);
 
 // Enviar informe por correo
 router.post('/:reportId/send-email', reportController.sendEmail);
@@ -30,4 +40,4 @@ router.post('/:reportId/send-email', reportController.sendEmail);
 // Eliminar informe
 router.delete('/:reportId', reportController.delete);
 
-export default router; 
+export default router;

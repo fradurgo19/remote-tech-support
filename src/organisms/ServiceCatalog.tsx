@@ -16,6 +16,7 @@ interface ServiceCatalogProps {
 }
 
 // Mapa de nombres de iconos a iconos reales de Lucide React
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const iconMap: Record<string, React.ReactNode> = {
   wifi: <Wifi size={24} />,
   'app-window': <AppWindow size={24} />,
@@ -25,9 +26,10 @@ const iconMap: Record<string, React.ReactNode> = {
   headset: <Headset size={24} />,
 };
 
-export const ServiceCatalog: React.FC<ServiceCatalogProps> = ({
-  categories,
-}) => {
+export const ServiceCatalog: React.FC<ServiceCatalogProps> = (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  { categories }
+) => {
   const navigate = useNavigate();
 
   const handleServiceSelect = () => {
@@ -50,8 +52,8 @@ export const ServiceCatalog: React.FC<ServiceCatalogProps> = ({
         </div>
         <h3 className='text-lg font-semibold mb-2'>Soporte Remoto</h3>
         <p className='text-sm text-muted-foreground mb-4'>
-          Asistencia técnica remota para resolver problemas de software,
-          hardware y conectividad de forma eficiente.
+          Asistencia técnica remota para resolver problemas de Maquinaria Pesada
+          de forma eficiente.
         </p>
       </div>
       <Button onClick={handleServiceSelect} className='w-full max-w-xs'>

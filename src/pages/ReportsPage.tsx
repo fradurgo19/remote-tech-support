@@ -23,6 +23,7 @@ import { Report, User as UserType } from '../types';
 
 const ReportsPage: React.FC = () => {
   const navigate = useNavigate();
+
   const { user } = useAuth();
 
   const [reports, setReports] = useState<Report[]>([]);
@@ -126,6 +127,19 @@ const ReportsPage: React.FC = () => {
     setShowCustomerSearch(false);
   };
 
+  // Función para convertir archivo a base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result);
+      };
+      reader.onerror = () => reject(new Error('Error al leer el archivo'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Función para crear informe
   const handleCreateReport = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,9 +149,7 @@ const ReportsPage: React.FC = () => {
     }
 
     try {
-      // Convertir archivos a nombres de archivo para enviar al backend
-      const attachmentNames = formData.attachments.map(file => file.name);
-
+      // Preparar datos del reporte (sin attachments - se envían por separado)
       const reportData = {
         title: formData.title,
         description: formData.description,
@@ -145,11 +157,12 @@ const ReportsPage: React.FC = () => {
         priority: formData.priority,
         customerId: formData.customerId,
         tags: formData.tags,
-        attachments: attachmentNames,
+        attachments: [], // Los archivos se envían como File objects
       };
 
+      // Pasar los archivos RAW como segundo parámetro
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await reportService.createReport(reportData as any);
+      await reportService.createReport(reportData as any, formData.attachments);
       toast.success('Informe creado exitosamente');
       setIsCreating(false);
       setFormData({

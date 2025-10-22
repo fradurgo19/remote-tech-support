@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { Report, Ticket, User } from '../models';
+import { storageService } from '../services/storage.service';
 import { logger } from '../utils/logger';
 
 export const getReports = async (req: Request, res: Response) => {
   try {
-    const user = req.user as any;
-    let whereClause: any = {};
+    const user = req.user as { id: string; role: string };
+    const whereClause: { customerId?: string } = {};
 
     // Filtrar informes según el rol del usuario
     if (user.role === 'customer') {
@@ -38,7 +39,7 @@ export const getReports = async (req: Request, res: Response) => {
 export const getReportById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const report = await Report.findByPk(id, {
       include: [
@@ -83,7 +84,7 @@ export const createReport = async (req: Request, res: Response) => {
       tags,
       attachments,
     } = req.body;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     // Verificar permisos de creación
     if (user.role === 'customer') {
@@ -92,26 +93,57 @@ export const createReport = async (req: Request, res: Response) => {
         .json({ message: 'Los clientes no pueden crear informes' });
     }
 
-    // Verificar que se proporcione un cliente
-    if (!customerId) {
-      return res
-        .status(400)
-        .json({
-          message: 'Debe seleccionar un cliente para asignar el informe',
-        });
-    }
+    // customerId es opcional - puede ser null para reportes generales
+    console.log('✅ Datos recibidos:', {
+      title,
+      description,
+      customerId,
+      files: req.files?.length || 0,
+    });
 
+    // Crear el reporte primero
     const report = await Report.create({
       title,
       description,
       type,
       priority,
       authorId: user.id,
-      customerId: customerId,
+      customerId: customerId || null,
       tags: tags || [],
-      attachments: attachments || [],
+      attachments: [],
       status: 'draft',
     });
+
+    // Subir archivos a Supabase Storage si existen
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+      console.log(
+        `📤 Subiendo ${req.files.length} archivos a Supabase Storage...`
+      );
+      const uploadedUrls: string[] = [];
+
+      for (const file of req.files as Express.Multer.File[]) {
+        try {
+          console.log(`  📎 Subiendo: ${file.originalname}`);
+          const uploadResult = await storageService.uploadReportAttachment(
+            report.id,
+            file
+          );
+          uploadedUrls.push(uploadResult.url);
+          console.log(`  ✅ Subido: ${uploadResult.url}`);
+        } catch (uploadError) {
+          console.error(
+            `  ❌ Error al subir ${file.originalname}:`,
+            uploadError
+          );
+        }
+      }
+
+      // Actualizar el reporte con las URLs de los archivos
+      await report.update({ attachments: uploadedUrls });
+      console.log(
+        `✅ ${uploadedUrls.length} archivos subidos a Supabase Storage`
+      );
+    }
 
     // Obtener el informe con la información del autor y cliente
     const reportWithDetails = await Report.findByPk(report.id, {
@@ -141,7 +173,7 @@ export const updateReport = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { title, description, type, priority, status, tags, attachments } =
       req.body;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const report = await Report.findByPk(id);
     if (!report) {
@@ -162,7 +194,16 @@ export const updateReport = async (req: Request, res: Response) => {
         .json({ message: 'No tienes permisos para actualizar este informe' });
     }
 
-    const updateData: any = {
+    const updateData: {
+      title: string;
+      description: string;
+      type: string;
+      priority: string;
+      tags?: string[];
+      attachments?: string[];
+      status?: string;
+      reviewedBy?: string;
+    } = {
       title: title || report.title,
       description: description || report.description,
       type: type || report.type,
@@ -195,7 +236,7 @@ export const updateReport = async (req: Request, res: Response) => {
 export const deleteReport = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const user = req.user as any;
+    const user = req.user as { id: string; role: string };
 
     const report = await Report.findByPk(id);
     if (!report) {

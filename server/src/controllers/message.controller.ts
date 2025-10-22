@@ -1,41 +1,40 @@
 import { Request, Response } from 'express';
+import multer from 'multer';
 import { Message, User } from '../models';
 import { logger } from '../utils/logger';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import { storageService } from '../services/storage.service';
 
 export const getMessages = async (req: Request, res: Response) => {
   try {
     const { ticketId } = req.params;
     logger.info(`Obteniendo mensajes para ticket: ${ticketId}`);
-    
+
     // Primero intentar obtener mensajes sin include para ver si el problema es la asociación
     const messages = await Message.findAll({
       where: { ticketId },
-      order: [['id', 'ASC']]
+      order: [['id', 'ASC']],
     });
-    
+
     logger.info(`Encontrados ${messages.length} mensajes`);
-    
+
     // Si hay mensajes, obtener los usuarios por separado
     if (messages.length > 0) {
       const userIds = [...new Set(messages.map(m => m.senderId))];
       const users = await User.findAll({
         where: { id: userIds },
-        attributes: ['id', 'name', 'email', 'avatar']
+        attributes: ['id', 'name', 'email', 'avatar'],
       });
-      
+
       const userMap = users.reduce((acc, user) => {
         acc[user.id] = user;
         return acc;
-      }, {} as any);
-      
+      }, {} as Record<string, { id: string; name: string; email: string; avatar: string }>);
+
       const messagesWithUsers = messages.map(message => ({
         ...message.toJSON(),
-        sender: userMap[message.senderId]
+        sender: userMap[message.senderId],
       }));
-      
+
       res.json(messagesWithUsers);
     } else {
       res.json([]);
@@ -49,32 +48,34 @@ export const getMessages = async (req: Request, res: Response) => {
 export const createMessage = async (req: Request, res: Response) => {
   try {
     const { content, ticketId, type = 'text' } = req.body;
-    const senderId = (req.user as any).id;
+    const senderId = (req.user as { id: string }).id;
 
-    logger.info(`Creando mensaje para ticket ${ticketId} por usuario ${senderId}`);
+    logger.info(
+      `Creando mensaje para ticket ${ticketId} por usuario ${senderId}`
+    );
 
     const message = await Message.create({
       content,
       ticketId,
       senderId,
-      type
+      type,
     });
 
     logger.info(`Mensaje creado con ID: ${message.id}`);
 
     // Obtener el usuario por separado para evitar problemas de asociación
     const user = await User.findByPk(senderId, {
-      attributes: ['id', 'name', 'email', 'avatar']
+      attributes: ['id', 'name', 'email', 'avatar'],
     });
 
     const messageWithUser = {
       ...message.toJSON(),
-      sender: user
+      sender: user,
     };
 
     res.status(201).json({
       message: 'Mensaje creado exitosamente',
-      data: messageWithUser
+      data: messageWithUser,
     });
   } catch (error) {
     logger.error('Error al crear mensaje:', error);
@@ -99,30 +100,16 @@ export const deleteMessage = async (req: Request, res: Response) => {
   }
 };
 
-// Configuración de multer para subir archivos
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads/messages');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ 
-  storage,
+// Configuración de multer para subir archivos (memoria para Supabase Storage)
+const upload = multer({
+  storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB límite
+    fileSize: 10 * 1024 * 1024, // 10MB límite
   },
   fileFilter: (req, file, cb) => {
     // Permitir todos los tipos de archivo
     cb(null, true);
-  }
+  },
 });
 
 export const uploadFile = upload.single('file');
@@ -130,51 +117,69 @@ export const uploadFile = upload.single('file');
 export const sendFileMessage = async (req: Request, res: Response) => {
   try {
     const { ticketId, type = 'file' } = req.body;
-    const senderId = (req.user as any).id;
+    const senderId = (req.user as { id: string }).id;
     const file = req.file;
 
     if (!file) {
       return res.status(400).json({ message: 'No se proporcionó archivo' });
     }
 
-    const fileUrl = `/uploads/messages/${file.filename}`;
+    logger.info(
+      `Enviando archivo ${file.originalname} para ticket ${ticketId}`
+    );
 
-    logger.info(`Enviando archivo ${file.originalname} para ticket ${ticketId}`);
-
-    const message = await Message.create({
+    // Crear el mensaje primero para obtener su ID
+    const tempMessage = await Message.create({
       content: file.originalname,
       ticketId,
       senderId,
       type,
-      metadata: {
-        fileUrl,
-        attachment: {
-          name: file.originalname,
-          url: fileUrl,
-          type: file.mimetype,
-          size: file.size
-        }
-      }
+      metadata: {},
     });
 
-    logger.info(`Archivo enviado con ID: ${message.id}`);
+    logger.info(`📤 Subiendo archivo a Supabase Storage (message-attachments): ${file.originalname}`);
+
+    // Subir archivo a Supabase Storage
+    const uploadResult = await storageService.uploadMessageAttachment(
+      ticketId,
+      tempMessage.id,
+      file
+    );
+
+    logger.info(`✅ Archivo subido a Supabase: ${uploadResult.url}`);
+
+    // Actualizar el mensaje con la información del archivo
+    await tempMessage.update({
+      metadata: {
+        fileUrl: uploadResult.url,
+        attachment: {
+          name: file.originalname,
+          url: uploadResult.url,
+          type: file.mimetype,
+          size: file.size,
+          storagePath: uploadResult.path,
+        },
+      },
+    });
+
+    logger.info(`✅ Mensaje con archivo creado: ${tempMessage.id}`);
 
     // Obtener el usuario por separado
     const user = await User.findByPk(senderId, {
-      attributes: ['id', 'name', 'email', 'avatar']
+      attributes: ['id', 'name', 'email', 'avatar'],
     });
 
     const messageWithUser = {
-      ...message.toJSON(),
-      sender: user
+      ...tempMessage.toJSON(),
+      sender: user,
     };
 
     res.status(201).json({
       message: 'Archivo enviado exitosamente',
-      data: messageWithUser
+      data: messageWithUser,
     });
   } catch (error) {
     logger.error('Error al enviar archivo:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
-}; 
+};

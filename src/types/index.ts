@@ -7,6 +7,7 @@ export interface User {
   status: 'online' | 'away' | 'busy' | 'offline';
   emailVerified: boolean;
   passwordResetToken: string | null;
+  phone?: string;
 }
 
 export interface CreateUserData {
@@ -14,20 +15,31 @@ export interface CreateUserData {
   email: string;
   password: string;
   role: 'admin' | 'technician' | 'customer';
+  phone?: string;
+}
+
+export interface UpdateUserData {
+  name: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'technician' | 'customer';
+  avatar?: string;
+  phone?: string;
 }
 
 export interface Ticket {
   id: string;
   title: string;
   description: string;
-  status: 'open' | 'in-progress' | 'resolved' | 'closed';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   createdAt: string;
   updatedAt: string;
   customerId: string;
   technicianId?: string;
   category: string;
   tags: string[];
+  messageCount?: number;
 }
 
 export interface Message {
