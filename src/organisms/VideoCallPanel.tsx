@@ -29,14 +29,13 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
     audioEnabled,
     isScreenSharing,
     isRecording,
-    activeCameraStreams,
-    activeCameraIds,
     initiateCall,
     toggleVideo,
     toggleAudio,
     toggleScreenShare,
     toggleRecording,
-    toggleCamera,
+    switchCamera,
+    switchMicrophone,
     endCall,
   } = useCall();
 
@@ -88,15 +87,13 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
   return (
     <div className='flex flex-col h-full bg-gray-950 rounded-lg overflow-hidden'>
       <div className='flex-1 relative'>
-        {isInCall || localStream || activeCameraStreams.size > 0 ? (
+        {isInCall || localStream ? (
           <VideoGrid
             localStream={localStream}
             remoteStreams={remoteStreams}
             localUser={localUser}
             remoteUsers={remoteUsers}
             isScreenSharing={isScreenSharing}
-            activeCameraStreams={activeCameraStreams}
-            activeCameraIds={activeCameraIds}
           />
         ) : (
           <div className='flex flex-col items-center justify-center h-full text-white p-6'>
@@ -188,8 +185,6 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
         isOpen={showDeviceSelector}
         onClose={() => setShowDeviceSelector(false)}
         onDeviceChange={handleDeviceChange}
-        onToggleCamera={toggleCamera}
-        activeCameraIds={activeCameraIds}
       />
     </div>
   );
