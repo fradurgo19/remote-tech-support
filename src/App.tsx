@@ -14,6 +14,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { ReportDetailPage } from './pages/ReportDetailPage';
 import ReportsPage from './pages/ReportsPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -69,6 +70,10 @@ const App: React.FC = () => {
                   <Route path='users' element={<UsersPage />} />
                   <Route path='settings' element={<SettingsPage />} />
                   <Route path='reports' element={<ReportsPage />} />
+                  <Route
+                    path='reports/:reportId'
+                    element={<ReportDetailPage />}
+                  />
                 </Route>
 
                 <Route path='*' element={<NotFoundPage />} />
