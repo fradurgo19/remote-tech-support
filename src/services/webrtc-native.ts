@@ -35,35 +35,75 @@ class WebRTCNativeService {
 
   async initialize(user: User): Promise<void> {
     this.user = user;
-    
+
     // Configurar listeners DESPUÉS de que el usuario esté autenticado y el socket conectado
     this.setupSocketListeners();
   }
 
   async getLocalStream(
     video: boolean = true,
-    audio: boolean = true
+    audio: boolean = true,
+    preferredFacingMode: 'user' | 'environment' = 'environment' // Preferir cámara trasera por defecto
   ): Promise<MediaStream> {
     try {
+      // Detectar si es móvil
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
+
       const constraints: MediaStreamConstraints = {
-        video: video ? { width: 1280, height: 720 } : false,
-        audio: audio ? {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        } : false,
+        video: video
+          ? {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: isMobile ? preferredFacingMode : undefined, // Solo aplicar facingMode en móviles
+            }
+          : false,
+        audio: audio
+          ? {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            }
+          : false,
       };
 
-      console.log('WebRTC: Solicitando stream local con constraints:', constraints);
+      console.log(
+        'WebRTC: Solicitando stream local con constraints:',
+        constraints
+      );
+      console.log(
+        'WebRTC: Es móvil:',
+        isMobile,
+        'FacingMode preferido:',
+        preferredFacingMode
+      );
+
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
+
       // Verificar tracks obtenidos
       const videoTracks = stream.getVideoTracks();
       const audioTracks = stream.getAudioTracks();
-      console.log(`WebRTC: Stream local obtenido - Video tracks: ${videoTracks.length}, Audio tracks: ${audioTracks.length}`);
-      
+      console.log(
+        `WebRTC: Stream local obtenido - Video tracks: ${videoTracks.length}, Audio tracks: ${audioTracks.length}`
+      );
+
+      // Log de la cámara actual en móvil
+      if (videoTracks.length > 0) {
+        const settings = videoTracks[0].getSettings();
+        console.log('WebRTC: Cámara activa:', {
+          facingMode: settings.facingMode,
+          deviceId: settings.deviceId,
+          width: settings.width,
+          height: settings.height,
+        });
+      }
+
       audioTracks.forEach((track, index) => {
-        console.log(`WebRTC: Audio track local ${index} - Enabled: ${track.enabled}, ReadyState: ${track.readyState}`);
+        console.log(
+          `WebRTC: Audio track local ${index} - Enabled: ${track.enabled}, ReadyState: ${track.readyState}`
+        );
       });
 
       this.localStream = stream;
@@ -75,7 +115,6 @@ class WebRTCNativeService {
   }
 
   createPeerConnection(peerId: string, initiator: boolean): RTCPeerConnection {
-
     const configuration: RTCConfiguration = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -89,22 +128,30 @@ class WebRTCNativeService {
     if (this.localStream) {
       this.localStream.getTracks().forEach(track => {
         peerConnection.addTrack(track, this.localStream!);
-        console.log(`WebRTC: Track agregado - Tipo: ${track.kind}, Enabled: ${track.enabled}, Estado: ${track.readyState}`);
+        console.log(
+          `WebRTC: Track agregado - Tipo: ${track.kind}, Enabled: ${track.enabled}, Estado: ${track.readyState}`
+        );
       });
     }
 
     // Handle remote stream
     peerConnection.ontrack = event => {
-      console.log(`WebRTC: Remote track recibido - Tipo: ${event.track.kind}, Enabled: ${event.track.enabled}, Estado: ${event.track.readyState}`);
+      console.log(
+        `WebRTC: Remote track recibido - Tipo: ${event.track.kind}, Enabled: ${event.track.enabled}, Estado: ${event.track.readyState}`
+      );
       const remoteStream = event.streams[0];
       if (remoteStream) {
         // Verificar todos los tracks del stream remoto
         const videoTracks = remoteStream.getVideoTracks();
         const audioTracks = remoteStream.getAudioTracks();
-        console.log(`WebRTC: Stream remoto - Video tracks: ${videoTracks.length}, Audio tracks: ${audioTracks.length}`);
-        
+        console.log(
+          `WebRTC: Stream remoto - Video tracks: ${videoTracks.length}, Audio tracks: ${audioTracks.length}`
+        );
+
         audioTracks.forEach((track, index) => {
-          console.log(`WebRTC: Audio track ${index} - Enabled: ${track.enabled}, Muted: ${track.muted}, ReadyState: ${track.readyState}`);
+          console.log(
+            `WebRTC: Audio track ${index} - Enabled: ${track.enabled}, Muted: ${track.muted}, ReadyState: ${track.readyState}`
+          );
         });
 
         this.onStreamCallbacks.forEach(callback =>
@@ -290,34 +337,148 @@ class WebRTCNativeService {
     }
 
     try {
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { deviceId: { exact: deviceId } },
-        audio: true,
-      });
+      // Intentar primero con deviceId exacto
+      let newStream: MediaStream;
+
+      try {
+        newStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: deviceId } },
+          audio: true,
+        });
+      } catch (err) {
+        // Si falla con exact, intentar sin exact (útil para móviles)
+        console.log('WebRTC: Reintentando sin deviceId exacto...');
+        newStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: deviceId },
+          audio: true,
+        });
+      }
+
+      console.log('WebRTC: Nuevo stream obtenido');
+
+      // Verificar la cámara seleccionada
+      const videoTrack = newStream.getVideoTracks()[0];
+      if (videoTrack) {
+        const settings = videoTrack.getSettings();
+        console.log('WebRTC: Nueva cámara activa:', {
+          facingMode: settings.facingMode,
+          deviceId: settings.deviceId,
+          label: videoTrack.label,
+        });
+      }
 
       // Replace video track in all peer connections
-      const videoTrack = newStream.getVideoTracks()[0];
       this.peerConnections.forEach(peerConnection => {
         const sender = peerConnection
           .getSenders()
           .find(s => s.track?.kind === 'video');
-        if (sender) {
+        if (sender && videoTrack) {
+          console.log('WebRTC: Reemplazando track de video en peer connection');
           sender.replaceTrack(videoTrack);
         }
       });
 
       // Stop old video tracks
       if (this.localStream) {
-        this.localStream.getVideoTracks().forEach(track => track.stop());
+        this.localStream.getVideoTracks().forEach(track => {
+          console.log(
+            'WebRTC: Deteniendo track de video anterior:',
+            track.label
+          );
+          track.stop();
+        });
       }
 
-      // Update local stream
-      this.localStream = newStream;
+      // Update local stream (mantener audio tracks antiguos, solo cambiar video)
+      const oldAudioTracks = this.localStream.getAudioTracks();
+      const newVideoTracks = newStream.getVideoTracks();
+
+      // Crear nuevo stream con video nuevo y audio antiguo
+      this.localStream = new MediaStream([
+        ...newVideoTracks,
+        ...oldAudioTracks,
+      ]);
+
       console.log('WebRTC Native: Camera switched successfully');
     } catch (error) {
       console.error('WebRTC Native: Error switching camera:', error);
       throw error;
     }
+  }
+
+  async switchToFrontCamera(): Promise<void> {
+    console.log('WebRTC: Cambiando a cámara frontal');
+
+    try {
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: true,
+      });
+
+      await this.replaceVideoTrack(newStream);
+      console.log('WebRTC: Cambiado a cámara frontal exitosamente');
+    } catch (error) {
+      console.error('Error cambiando a cámara frontal:', error);
+      throw error;
+    }
+  }
+
+  async switchToBackCamera(): Promise<void> {
+    console.log('WebRTC: Cambiando a cámara trasera');
+
+    try {
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: 'environment' } },
+        audio: true,
+      });
+
+      await this.replaceVideoTrack(newStream);
+      console.log('WebRTC: Cambiado a cámara trasera exitosamente');
+    } catch (error) {
+      console.error('Error cambiando a cámara trasera:', error);
+      throw error;
+    }
+  }
+
+  private async replaceVideoTrack(newStream: MediaStream): Promise<void> {
+    const videoTrack = newStream.getVideoTracks()[0];
+
+    if (!videoTrack) {
+      throw new Error('No se obtuvo track de video');
+    }
+
+    // Log de la nueva cámara
+    const settings = videoTrack.getSettings();
+    console.log('WebRTC: Track de video nuevo:', {
+      facingMode: settings.facingMode,
+      deviceId: settings.deviceId,
+      label: videoTrack.label,
+      width: settings.width,
+      height: settings.height,
+    });
+
+    // Replace video track in all peer connections
+    this.peerConnections.forEach(peerConnection => {
+      const sender = peerConnection
+        .getSenders()
+        .find(s => s.track?.kind === 'video');
+      if (sender) {
+        console.log('WebRTC: Reemplazando track en peer connection');
+        sender.replaceTrack(videoTrack);
+      }
+    });
+
+    // Stop old video tracks
+    if (this.localStream) {
+      this.localStream.getVideoTracks().forEach(track => {
+        console.log('WebRTC: Deteniendo track anterior:', track.label);
+        track.stop();
+      });
+    }
+
+    // Update local stream (mantener audio tracks, cambiar solo video)
+    const oldAudioTracks = this.localStream?.getAudioTracks() || [];
+    this.localStream = new MediaStream([videoTrack, ...oldAudioTracks]);
   }
 
   async switchMicrophone(deviceId: string): Promise<void> {

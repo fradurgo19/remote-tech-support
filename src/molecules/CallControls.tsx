@@ -1,9 +1,18 @@
+import {
+  Circle,
+  Mic,
+  MicOff,
+  Monitor,
+  MonitorUp,
+  PhoneOff,
+  Settings,
+  Square,
+  SwitchCamera,
+  Video,
+  VideoOff,
+} from 'lucide-react';
 import React from 'react';
 import { Button } from '../atoms/Button';
-import { 
-  Mic, MicOff, Video, VideoOff, PhoneOff, 
-  MonitorUp, Monitor, Circle, Square, Settings
-} from 'lucide-react';
 
 interface CallControlsProps {
   videoEnabled: boolean;
@@ -16,6 +25,7 @@ interface CallControlsProps {
   onToggleRecording: () => void;
   onEndCall: () => void;
   onOpenDeviceSettings?: () => void;
+  onSwitchCamera?: () => void;
 }
 
 export const CallControls: React.FC<CallControlsProps> = ({
@@ -29,67 +39,95 @@ export const CallControls: React.FC<CallControlsProps> = ({
   onToggleRecording,
   onEndCall,
   onOpenDeviceSettings,
+  onSwitchCamera,
 }) => {
+  // Detectar si es móvil
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
   return (
-    <div className="flex items-center justify-center space-x-3 bg-gray-800/90 p-3 rounded-lg backdrop-blur-sm">
+    <div className='flex items-center justify-center space-x-3 bg-gray-800/90 p-3 rounded-lg backdrop-blur-sm'>
       <Button
         variant={audioEnabled ? 'ghost' : 'destructive'}
-        size="icon"
+        size='icon'
         onClick={onToggleAudio}
         aria-label={audioEnabled ? 'Silenciar micrófono' : 'Activar micrófono'}
-        className="transition-all duration-200 ease-in-out"
+        className='transition-all duration-200 ease-in-out'
       >
         {audioEnabled ? <Mic size={20} /> : <MicOff size={20} />}
       </Button>
-      
+
       <Button
         variant={videoEnabled ? 'ghost' : 'destructive'}
-        size="icon"
+        size='icon'
         onClick={onToggleVideo}
         aria-label={videoEnabled ? 'Apagar cámara' : 'Encender cámara'}
-        className="transition-all duration-200 ease-in-out"
+        className='transition-all duration-200 ease-in-out'
       >
         {videoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
       </Button>
-      
+
+      {/* Botón de cambio de cámara - solo en móviles */}
+      {isMobile && videoEnabled && onSwitchCamera && (
+        <Button
+          variant='ghost'
+          size='icon'
+          onClick={onSwitchCamera}
+          aria-label='Cambiar cámara'
+          className='transition-all duration-200 ease-in-out'
+          title='Alternar entre cámara frontal y trasera'
+        >
+          <SwitchCamera size={20} />
+        </Button>
+      )}
+
       <Button
         variant={isScreenSharing ? 'secondary' : 'ghost'}
-        size="icon"
+        size='icon'
         onClick={onToggleScreenShare}
-        aria-label={isScreenSharing ? 'Dejar de compartir pantalla' : 'Compartir pantalla'}
-        className="transition-all duration-200 ease-in-out"
+        aria-label={
+          isScreenSharing ? 'Dejar de compartir pantalla' : 'Compartir pantalla'
+        }
+        className='transition-all duration-200 ease-in-out'
       >
         {isScreenSharing ? <Monitor size={20} /> : <MonitorUp size={20} />}
       </Button>
-      
+
       <Button
         variant={isRecording ? 'secondary' : 'ghost'}
-        size="icon"
+        size='icon'
         onClick={onToggleRecording}
         aria-label={isRecording ? 'Detener grabación' : 'Iniciar grabación'}
-        className={`transition-all duration-200 ease-in-out ${isRecording ? 'animate-pulse' : ''}`}
+        className={`transition-all duration-200 ease-in-out ${
+          isRecording ? 'animate-pulse' : ''
+        }`}
       >
-        {isRecording ? <Square size={20} className="text-destructive" /> : <Circle size={20} />}
+        {isRecording ? (
+          <Square size={20} className='text-destructive' />
+        ) : (
+          <Circle size={20} />
+        )}
       </Button>
 
       {onOpenDeviceSettings && (
         <Button
-          variant="ghost"
-          size="icon"
+          variant='ghost'
+          size='icon'
           onClick={onOpenDeviceSettings}
-          aria-label="Configurar dispositivos"
-          className="transition-all duration-200 ease-in-out"
+          aria-label='Configurar dispositivos'
+          className='transition-all duration-200 ease-in-out'
         >
           <Settings size={20} />
         </Button>
       )}
-      
+
       <Button
-        variant="destructive"
-        size="icon"
+        variant='destructive'
+        size='icon'
         onClick={onEndCall}
-        aria-label="Finalizar llamada"
-        className="transition-all duration-200 ease-in-out"
+        aria-label='Finalizar llamada'
+        className='transition-all duration-200 ease-in-out'
       >
         <PhoneOff size={20} />
       </Button>

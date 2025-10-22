@@ -45,6 +45,8 @@ interface CallContextType {
   toggleRecording: () => Promise<void>;
   switchCamera: (deviceId: string) => Promise<void>;
   switchMicrophone: (deviceId: string) => Promise<void>;
+  switchToFrontCamera: () => Promise<void>;
+  switchToBackCamera: () => Promise<void>;
   endCall: () => void;
 }
 
@@ -292,6 +294,28 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const switchToFrontCamera = async () => {
+    try {
+      console.log('🔄 Cambiando a cámara frontal...');
+      await webRTCNativeService.switchToFrontCamera();
+      console.log('✅ Cambiado a cámara frontal');
+    } catch (err) {
+      console.error('❌ Error al cambiar a cámara frontal:', err);
+      setError((err as Error).message);
+    }
+  };
+
+  const switchToBackCamera = async () => {
+    try {
+      console.log('🔄 Cambiando a cámara trasera...');
+      await webRTCNativeService.switchToBackCamera();
+      console.log('✅ Cambiado a cámara trasera');
+    } catch (err) {
+      console.error('❌ Error al cambiar a cámara trasera:', err);
+      setError((err as Error).message);
+    }
+  };
+
   const endCall = useCallback(() => {
     console.log('Ending call');
     webRTCNativeService.endCall();
@@ -354,6 +378,8 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         toggleRecording,
         switchCamera,
         switchMicrophone,
+        switchToFrontCamera,
+        switchToBackCamera,
         endCall,
       }}
     >
