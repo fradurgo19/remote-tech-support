@@ -72,16 +72,26 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       webRTCService.initialize(user);
 
       const onStreamHandler = (data: PeerStreamData) => {
-        console.log('Received remote stream from peer:', data.peerId);
+        console.log(
+          '🎥 CallContext: Received remote stream from peer:',
+          data.peerId,
+          {
+            streamId: data.stream.id,
+            videoTracks: data.stream.getVideoTracks().length,
+            audioTracks: data.stream.getAudioTracks().length,
+          }
+        );
         setRemoteStreams(prev => {
           const existingStreamIndex = prev.findIndex(
             p => p.peerId === data.peerId
           );
           if (existingStreamIndex >= 0) {
+            console.log('🔄 Updating existing remote stream for:', data.peerId);
             const updated = [...prev];
             updated[existingStreamIndex] = data;
             return updated;
           } else {
+            console.log('➕ Adding new remote stream for:', data.peerId);
             return [...prev, data];
           }
         });
@@ -175,15 +185,25 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(true);
 
     try {
+      console.log('🎯 Accepting call from:', callerId);
+
       const stream = await webRTCService.getLocalStream(true, true);
+      console.log('📹 Local stream obtained for accepting call:', {
+        id: stream.id,
+        videoTracks: stream.getVideoTracks().length,
+        audioTracks: stream.getAudioTracks().length,
+      });
+
       setLocalStream(stream);
       setVideoEnabled(true);
       setAudioEnabled(true);
 
+      console.log('🔗 Creating peer connection as receiver...');
       await webRTCService.acceptCall(callerId);
       setIsInCall(true);
+      console.log('✅ Call accepted successfully');
     } catch (err) {
-      console.error('Error accepting call:', err);
+      console.error('❌ Error accepting call:', err);
       setError((err as Error).message);
     } finally {
       setIsLoading(false);

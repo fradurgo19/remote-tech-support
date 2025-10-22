@@ -27,6 +27,7 @@ class WebRTCService {
   private onStreamCallbacks: ((data: PeerStreamData) => void)[] = [];
   private onStreamRemoveCallbacks: ((peerId: string) => void)[] = [];
   private onDevicesChangeCallbacks: ((devices: MediaDevice[]) => void)[] = [];
+  private pendingSignals: Map<string, any[]> = new Map(); // Señales pendientes
 
   initialize(user: User): void {
     this.user = user;
@@ -38,14 +39,20 @@ class WebRTCService {
   private setupSignalListeners(): void {
     socketService.onSignal(data => {
       const { from, signal } = data;
+      console.log('Received signal from:', from, 'Signal type:', signal.type);
 
-      // If we already have a peer for this user
+      // If we already have a peer for this user, process the signal
       if (this.peers.has(from)) {
         const peer = this.peers.get(from);
+        console.log('Processing signal for existing peer:', from);
         peer?.signal(signal);
-      } else if (this.localStream) {
-        // If not, create a new peer (as the receiver of the call)
-        this.createPeer(from, false, this.localStream);
+      } else {
+        // Store pending signals until peer is created
+        console.log('No peer exists yet, storing pending signal from:', from);
+        if (!this.pendingSignals.has(from)) {
+          this.pendingSignals.set(from, []);
+        }
+        this.pendingSignals.get(from)?.push(signal);
       }
     });
   }
@@ -208,6 +215,10 @@ class WebRTCService {
     initiator: boolean,
     stream: MediaStream
   ): SimplePeer.Instance {
+    console.log(
+      `Creating peer connection with ${peerId}, initiator: ${initiator}`
+    );
+
     const peer = new SimplePeer({
       initiator,
       stream,
@@ -224,16 +235,23 @@ class WebRTCService {
     });
 
     peer.on('signal', signal => {
+      console.log(`Sending signal to ${peerId}, type:`, signal.type);
       socketService.sendSignal(peerId, signal);
     });
 
     peer.on('stream', remoteStream => {
+      console.log(`Received remote stream from ${peerId}:`, {
+        id: remoteStream.id,
+        videoTracks: remoteStream.getVideoTracks().length,
+        audioTracks: remoteStream.getAudioTracks().length,
+      });
       this.onStreamCallbacks.forEach(callback =>
         callback({ peerId, stream: remoteStream })
       );
     });
 
     peer.on('close', () => {
+      console.log(`Peer connection closed with ${peerId}`);
       this.handlePeerDisconnect(peerId);
     });
 
@@ -243,6 +261,17 @@ class WebRTCService {
     });
 
     this.peers.set(peerId, peer);
+
+    // Process any pending signals for this peer
+    if (this.pendingSignals.has(peerId)) {
+      const signals = this.pendingSignals.get(peerId) || [];
+      console.log(`Processing ${signals.length} pending signals for ${peerId}`);
+      signals.forEach(signal => {
+        peer.signal(signal);
+      });
+      this.pendingSignals.delete(peerId);
+    }
+
     return peer;
   }
 
@@ -444,7 +473,9 @@ class WebRTCService {
   }
 
   private handlePeerDisconnect(peerId: string): void {
+    console.log(`Cleaning up peer ${peerId}`);
     this.peers.delete(peerId);
+    this.pendingSignals.delete(peerId); // Limpiar señales pendientes
     this.onStreamRemoveCallbacks.forEach(callback => callback(peerId));
   }
 
