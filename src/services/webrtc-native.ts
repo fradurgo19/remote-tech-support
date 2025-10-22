@@ -40,6 +40,10 @@ class WebRTCNativeService {
     this.setupSocketListeners();
   }
 
+  getLocalStreamInstance(): MediaStream | null {
+    return this.localStream;
+  }
+
   async getLocalStream(
     video: boolean = true,
     audio: boolean = true,
@@ -427,10 +431,22 @@ class WebRTCNativeService {
     console.log('WebRTC: Cambiando a cámara trasera');
 
     try {
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { exact: 'environment' } },
-        audio: true,
-      });
+      // Intentar con 'exact' primero
+      let newStream: MediaStream;
+
+      try {
+        newStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { exact: 'environment' } },
+          audio: true,
+        });
+      } catch (exactError) {
+        // Si falla con exact, intentar sin exact (más compatible)
+        console.log('WebRTC: exact environment falló, intentando sin exact...');
+        newStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+          audio: true,
+        });
+      }
 
       await this.replaceVideoTrack(newStream);
       console.log('WebRTC: Cambiado a cámara trasera exitosamente');

@@ -151,29 +151,42 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(true);
 
     try {
-      console.log('Iniciating call to:', recipientId);
+      console.log('📞 Initiating call to:', recipientId);
 
       // Get local stream first
+      console.log('📹 Requesting camera and microphone permissions...');
       const stream = await webRTCNativeService.getLocalStream(true, true);
-      console.log('📹 Local stream obtained:', {
+      console.log('✅ Local stream obtained:', {
         id: stream.id,
         videoTracks: stream.getVideoTracks().length,
         audioTracks: stream.getAudioTracks().length,
+        videoEnabled: stream.getVideoTracks()[0]?.enabled,
+        audioEnabled: stream.getAudioTracks()[0]?.enabled,
       });
 
       setLocalStream(stream);
       setVideoEnabled(true);
       setAudioEnabled(true);
 
+      // Delay importante: Esperar a que los permisos se procesen completamente
+      console.log('⏳ Waiting for permissions to settle...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Then initiate the call
-      console.log('🚀 Creating peer as initiator...');
+      console.log('🚀 Creating peer connection as initiator...');
       await webRTCNativeService.initiateCall(recipientId, ticketId);
       setIsInCall(true);
 
-      console.log('✅ Call initiated successfully');
+      console.log('✅ Call initiated and signal sent successfully');
     } catch (err) {
-      console.error('Error initiating call:', err);
+      console.error('❌ Error initiating call:', err);
       setError((err as Error).message);
+
+      // Limpiar stream si falla
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        setLocalStream(null);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -298,6 +311,13 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       console.log('🔄 Cambiando a cámara frontal...');
       await webRTCNativeService.switchToFrontCamera();
+
+      // Actualizar el localStream en el contexto
+      const newStream = webRTCNativeService.getLocalStreamInstance();
+      if (newStream) {
+        setLocalStream(newStream);
+      }
+
       console.log('✅ Cambiado a cámara frontal');
     } catch (err) {
       console.error('❌ Error al cambiar a cámara frontal:', err);
@@ -309,6 +329,13 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       console.log('🔄 Cambiando a cámara trasera...');
       await webRTCNativeService.switchToBackCamera();
+
+      // Actualizar el localStream en el contexto
+      const newStream = webRTCNativeService.getLocalStreamInstance();
+      if (newStream) {
+        setLocalStream(newStream);
+      }
+
       console.log('✅ Cambiado a cámara trasera');
     } catch (err) {
       console.error('❌ Error al cambiar a cámara trasera:', err);

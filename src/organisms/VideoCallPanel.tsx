@@ -44,7 +44,9 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
   const [callError, setCallError] = useState<string | null>(null);
   const [showDeviceSelector, setShowDeviceSelector] = useState(false);
   const [isInitializingCall, setIsInitializingCall] = useState(false);
-  const [isUsingFrontCamera, setIsUsingFrontCamera] = useState(false); // Track para móviles
+  const [currentFacingMode, setCurrentFacingMode] = useState<
+    'user' | 'environment'
+  >('environment'); // Inicia con trasera
 
   const handleInitiateCall = async () => {
     if (!recipientId || !ticketId) {
@@ -81,18 +83,29 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
 
   const handleSwitchCamera = async () => {
     try {
-      if (isUsingFrontCamera) {
-        // Cambiar a cámara trasera
-        await switchToBackCamera();
-        setIsUsingFrontCamera(false);
-      } else {
-        // Cambiar a cámara frontal
+      console.log('🔄 Switching camera, current:', currentFacingMode);
+
+      if (currentFacingMode === 'environment') {
+        // Actualmente trasera → Cambiar a frontal
+        console.log('📱 Changing to front camera...');
         await switchToFrontCamera();
-        setIsUsingFrontCamera(true);
+        setCurrentFacingMode('user');
+        console.log('✅ Changed to front camera');
+      } else {
+        // Actualmente frontal → Cambiar a trasera
+        console.log('📱 Changing to back camera...');
+        await switchToBackCamera();
+        setCurrentFacingMode('environment');
+        console.log('✅ Changed to back camera');
       }
     } catch (error) {
-      console.error('Error al cambiar cámara:', error);
-      setCallError('Error al cambiar de cámara');
+      console.error('❌ Error al cambiar cámara:', error);
+      setCallError('Error al cambiar de cámara. Intenta nuevamente.');
+
+      // Mostrar error más detallado en consola
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+      }
     }
   };
 
