@@ -128,7 +128,10 @@ export const TicketDetailPage: React.FC = () => {
     );
   }
 
-  const customer = users[ticket.customerId];
+  // Si el usuario actual es el cliente, usar currentUser como fallback
+  const customer =
+    users[ticket.customerId] ||
+    (currentUser?.id === ticket.customerId ? currentUser : undefined);
   const technician = ticket.technicianId
     ? users[ticket.technicianId]
     : undefined;
