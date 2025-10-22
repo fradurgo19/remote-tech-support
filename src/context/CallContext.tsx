@@ -1,7 +1,27 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { webRTCService, PeerStreamData } from '../services/webrtc';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { socketService } from '../services/socket';
+import { PeerStreamData, webRTCService } from '../services/webrtc';
 import { useAuth } from './AuthContext';
+
+interface IncomingCall {
+  isIncoming: boolean;
+  caller: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    status: string;
+    avatar?: string;
+  };
+  ticketId: string;
+  callSessionId: string;
+}
 
 interface CallContextType {
   localStream: MediaStream | null;
@@ -14,8 +34,11 @@ interface CallContextType {
   isScreenSharing: boolean;
   isRecording: boolean;
   availableDevices: any[];
+  incomingCall: IncomingCall | null;
   initiateCall: (recipientId: string, ticketId: string) => Promise<void>;
   acceptCall: (callerId: string) => Promise<void>;
+  acceptIncomingCall: () => Promise<void>;
+  declineIncomingCall: () => void;
   toggleVideo: () => Promise<void>;
   toggleAudio: () => Promise<void>;
   toggleScreenShare: () => Promise<void>;
@@ -27,9 +50,11 @@ interface CallContextType {
 
 const CallContext = createContext<CallContextType | undefined>(undefined);
 
-export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { user } = useAuth();
-  
+
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<PeerStreamData[]>([]);
   const [isInCall, setIsInCall] = useState(false);
@@ -40,15 +65,18 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [availableDevices, setAvailableDevices] = useState<any[]>([]);
+  const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
 
   useEffect(() => {
     if (user) {
       webRTCService.initialize(user);
-      
+
       const onStreamHandler = (data: PeerStreamData) => {
         console.log('Received remote stream from peer:', data.peerId);
         setRemoteStreams(prev => {
-          const existingStreamIndex = prev.findIndex(p => p.peerId === data.peerId);
+          const existingStreamIndex = prev.findIndex(
+            p => p.peerId === data.peerId
+          );
           if (existingStreamIndex >= 0) {
             const updated = [...prev];
             updated[existingStreamIndex] = data;
@@ -58,7 +86,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         });
       };
-      
+
       const onStreamRemoveHandler = (peerId: string) => {
         console.log('Remote stream removed from peer:', peerId);
         setRemoteStreams(prev => prev.filter(p => p.peerId !== peerId));
@@ -67,15 +95,40 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const onDevicesChangeHandler = (devices: any[]) => {
         setAvailableDevices(devices);
       };
-      
+
       const unsubscribeStream = webRTCService.onStream(onStreamHandler);
-      const unsubscribeRemove = webRTCService.onStreamRemove(onStreamRemoveHandler);
-      const unsubscribeDevices = webRTCService.onDevicesChange(onDevicesChangeHandler);
-      
-      socketService.onCallRequest(async (data) => {
-        console.log('Llamada entrante de:', data.from);
+      const unsubscribeRemove = webRTCService.onStreamRemove(
+        onStreamRemoveHandler
+      );
+      const unsubscribeDevices = webRTCService.onDevicesChange(
+        onDevicesChangeHandler
+      );
+
+      socketService.onCallRequest(async data => {
+        console.log('Llamada entrante de:', data);
+
+        // Crear objeto de llamada entrante con toda la información del usuario
+        const incomingCallData = {
+          isIncoming: true,
+          caller: {
+            id: data.from,
+            name: data.fromName || 'Usuario Desconocido',
+            email: data.fromEmail || '',
+            role: 'technician' as const,
+            status: 'online' as const,
+            avatar: data.fromAvatar,
+          },
+          ticketId: data.ticketId,
+          callSessionId: data.callSessionId || data.from + '-' + Date.now(),
+        };
+
+        setIncomingCall(incomingCallData);
+        console.log(
+          'Notificación de llamada entrante establecida:',
+          incomingCallData
+        );
       });
-      
+
       return () => {
         unsubscribeStream();
         unsubscribeRemove();
@@ -88,26 +141,26 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const initiateCall = async (recipientId: string, ticketId: string) => {
     setError(null);
     setIsLoading(true);
-    
+
     try {
       console.log('Iniciating call to:', recipientId);
-      
+
       // Get local stream first
       const stream = await webRTCService.getLocalStream(true, true);
       console.log('Local stream obtained:', {
         id: stream.id,
         videoTracks: stream.getVideoTracks().length,
-        audioTracks: stream.getAudioTracks().length
+        audioTracks: stream.getAudioTracks().length,
       });
-      
+
       setLocalStream(stream);
       setVideoEnabled(true);
       setAudioEnabled(true);
-      
+
       // Then initiate the call
       await webRTCService.initiateCall(recipientId, ticketId);
       setIsInCall(true);
-      
+
       console.log('Call initiated successfully');
     } catch (err) {
       console.error('Error initiating call:', err);
@@ -120,13 +173,13 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const acceptCall = async (callerId: string) => {
     setError(null);
     setIsLoading(true);
-    
+
     try {
       const stream = await webRTCService.getLocalStream(true, true);
       setLocalStream(stream);
       setVideoEnabled(true);
       setAudioEnabled(true);
-      
+
       await webRTCService.acceptCall(callerId);
       setIsInCall(true);
     } catch (err) {
@@ -168,7 +221,9 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         const screenStream = await webRTCService.startScreenSharing();
         if (!screenStream) {
-          throw new Error('No se pudo obtener el stream de pantalla compartida');
+          throw new Error(
+            'No se pudo obtener el stream de pantalla compartida'
+          );
         }
       }
       setIsScreenSharing(!isScreenSharing);
@@ -183,7 +238,10 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isRecording) {
         const recordingBlob = await webRTCService.stopRecording();
         if (recordingBlob) {
-          console.log('Grabación detenida, tamaño del blob:', recordingBlob.size);
+          console.log(
+            'Grabación detenida, tamaño del blob:',
+            recordingBlob.size
+          );
         }
       } else {
         webRTCService.startRecording();
@@ -222,12 +280,34 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsScreenSharing(false);
     setVideoEnabled(true);
     setAudioEnabled(true);
-    
+    setIncomingCall(null);
+
     if (isRecording) {
       webRTCService.stopRecording();
       setIsRecording(false);
     }
   }, [isRecording]);
+
+  const acceptIncomingCall = useCallback(async () => {
+    if (!incomingCall) return;
+
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      await acceptCall(incomingCall.caller.id);
+      setIncomingCall(null);
+    } catch (err) {
+      console.error('Error accepting call:', err);
+      setError((err as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [incomingCall]);
+
+  const declineIncomingCall = useCallback(() => {
+    setIncomingCall(null);
+  }, []);
 
   return (
     <CallContext.Provider
@@ -242,8 +322,11 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isScreenSharing,
         isRecording,
         availableDevices,
+        incomingCall,
         initiateCall,
         acceptCall,
+        acceptIncomingCall,
+        declineIncomingCall,
         toggleVideo,
         toggleAudio,
         toggleScreenShare,

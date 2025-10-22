@@ -1,0 +1,92 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/api';
+
+const ResetPasswordPage: React.FC = () => {
+  const [token, setToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await authService.resetPassword(token, newPassword);
+      setMessage(response.message);
+      setError('');
+    } catch {
+      setError('Error al restablecer la contraseña');
+      setMessage('');
+    }
+  };
+
+  return (
+    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
+      {/* Logo de la compañía - Esquina superior izquierda */}
+      <div className='absolute top-4 left-4 md:top-6 md:left-6'>
+        <img
+          src='https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png'
+          alt='Partequipos Logo'
+          className='h-12 md:h-16 w-auto object-contain'
+        />
+      </div>
+
+      <div className='p-8 bg-white rounded shadow-md w-96'>
+        <h1 className='mb-6 text-2xl font-bold text-center'>
+          Restablecer Contraseña
+        </h1>
+        <form onSubmit={handleSubmit}>
+          <div className='mb-4'>
+            <label
+              className='block mb-2 text-sm font-bold text-gray-700'
+              htmlFor='token'
+            >
+              Token
+            </label>
+            <input
+              id='token'
+              type='text'
+              value={token}
+              onChange={e => setToken(e.target.value)}
+              className='w-full px-3 py-2 border rounded'
+              required
+            />
+          </div>
+          <div className='mb-4'>
+            <label
+              className='block mb-2 text-sm font-bold text-gray-700'
+              htmlFor='newPassword'
+            >
+              Nueva Contraseña
+            </label>
+            <input
+              id='newPassword'
+              type='password'
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              className='w-full px-3 py-2 border rounded'
+              required
+            />
+          </div>
+          <button
+            type='submit'
+            className='w-full px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600'
+          >
+            Restablecer
+          </button>
+        </form>
+        {message && <p className='mt-4 text-green-600'>{message}</p>}
+        {error && <p className='mt-4 text-red-600'>{error}</p>}
+        <button
+          onClick={() => navigate('/login')}
+          className='w-full mt-4 text-blue-500 hover:underline'
+        >
+          Volver al login
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ResetPasswordPage;

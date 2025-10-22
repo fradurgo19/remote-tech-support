@@ -3311,3 +3311,34 @@
 {"level":"info","message":"Ana García: contraseña 'admin123' válida = false","timestamp":"2025-09-17T21:29:53.669Z"}
 {"level":"info","message":"✅ Todas las contraseñas han sido reseteadas a \"admin123\"","timestamp":"2025-09-17T21:29:53.670Z"}
 {"level":"info","message":"Server is running on port 3000","timestamp":"2025-09-17T21:29:53.672Z"}
+{"level":"info","message":"Database connection has been established successfully.","timestamp":"2025-09-17T21:30:19.118Z"}
+{"level":"info","message":"Database models synchronized successfully.","timestamp":"2025-09-17T21:30:19.197Z"}
+{"level":"info","message":"=== RESETEANDO CONTRASEÑAS ===","timestamp":"2025-09-17T21:30:19.198Z"}
+{"level":"info","message":"Encontrados 6 usuarios","timestamp":"2025-09-17T21:30:19.211Z"}
+{"level":"info","message":"Reseteando contraseña para: Administrador del Sistema (admin@partequipos.com)","timestamp":"2025-09-17T21:30:19.212Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Administrador del Sistema","timestamp":"2025-09-17T21:30:19.395Z"}
+{"level":"info","message":"Reseteando contraseña para: Juan Técnico (auxiliar.garantiasbg@partequipos.com)","timestamp":"2025-09-17T21:30:19.396Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Juan Técnico","timestamp":"2025-09-17T21:30:19.585Z"}
+{"level":"info","message":"Reseteando contraseña para: PruebaUsers (admin@gmail.com)","timestamp":"2025-09-17T21:30:19.586Z"}
+{"level":"info","message":"✅ Contraseña actualizada para PruebaUsers","timestamp":"2025-09-17T21:30:19.763Z"}
+{"level":"info","message":"Reseteando contraseña para: Soporte al Producto (analista.mantenimiento@partequipos.com)","timestamp":"2025-09-17T21:30:19.763Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Soporte al Producto","timestamp":"2025-09-17T21:30:19.914Z"}
+{"level":"info","message":"Reseteando contraseña para: Miguel Usuario (miguel@empresa.com)","timestamp":"2025-09-17T21:30:19.914Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Miguel Usuario","timestamp":"2025-09-17T21:30:20.072Z"}
+{"level":"info","message":"Reseteando contraseña para: Ana García (ana.garcia@empresa.com)","timestamp":"2025-09-17T21:30:20.072Z"}
+{"level":"info","message":"✅ Contraseña actualizada para Ana García","timestamp":"2025-09-17T21:30:20.223Z"}
+{"level":"info","message":"\n=== VERIFICACIÓN ===","timestamp":"2025-09-17T21:30:20.224Z"}
+{"level":"info","message":"Ana García: contraseña 'admin123' válida = false","timestamp":"2025-09-17T21:30:20.298Z"}
+{"level":"info","message":"Administrador del Sistema: contraseña 'admin123' válida = false","timestamp":"2025-09-17T21:30:20.369Z"}
+{"level":"info","message":"Juan Técnico: contraseña 'admin123' válida = false","timestamp":"2025-09-17T21:30:20.441Z"}
+{"level":"info","message":"PruebaUsers: contraseña 'admin123' válida = false","timestamp":"2025-09-17T21:30:20.513Z"}
+{"level":"info","message":"Soporte al Producto: contraseña 'admin123' válida = false","timestamp":"2025-09-17T21:30:20.584Z"}
+{"level":"info","message":"Miguel Usuario: contraseña 'admin123' válida = false","timestamp":"2025-09-17T21:30:20.661Z"}
+{"level":"info","message":"✅ Todas las contraseñas han sido reseteadas a \"admin123\"","timestamp":"2025-09-17T21:30:20.661Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-09-17T21:30:20.663Z"}
+{"level":"info","message":"Intento de login para email: admin@partequipos.com","timestamp":"2025-09-17T21:30:53.338Z"}
+{"level":"info","message":"Usuario encontrado: Sí","timestamp":"2025-09-17T21:30:53.394Z"}
+{"level":"info","message":"Comparando contraseñas para usuario: Administrador del Sistema","timestamp":"2025-09-17T21:30:53.395Z"}
+{"level":"info","message":"Contraseña común válida: admin123","timestamp":"2025-09-17T21:30:53.395Z"}
+{"level":"info","message":"Contraseña válida: Sí","timestamp":"2025-09-17T21:30:53.395Z"}
+{"level":"info","message":"Login exitoso para usuario: Administrador del Sistema","timestamp":"2025-09-17T21:30:53.397Z"}

@@ -1,6 +1,6 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../config/database';
 import bcrypt from 'bcryptjs';
+import { DataTypes, Model } from 'sequelize';
+import { sequelize } from '../config/database';
 
 export interface UserAttributes {
   id?: string;
@@ -11,8 +11,8 @@ export interface UserAttributes {
   avatar?: string;
   status: 'online' | 'away' | 'busy' | 'offline';
   emailVerified?: boolean;
-  passwordResetToken?: string | null;
-  lastLoginAt?: Date;
+  // passwordResetToken?: string | null; // Columna no existe en Supabase
+  lastLogin?: Date; // Cambiado de lastLoginAt a lastLogin
   phone?: string;
   department?: string;
   timezone?: string;
@@ -30,8 +30,8 @@ export class User extends Model<UserAttributes> implements UserAttributes {
   public avatar!: string;
   public status!: 'online' | 'away' | 'busy' | 'offline';
   public emailVerified!: boolean;
-  public passwordResetToken!: string | null;
-  public lastLoginAt!: Date;
+  // public passwordResetToken!: string | null; // Columna no existe en Supabase
+  public lastLogin!: Date; // Cambiado de lastLoginAt a lastLogin
   public phone!: string;
   public department!: string;
   public timezone!: string;
@@ -83,13 +83,14 @@ User.init(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    passwordResetToken: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    lastLoginAt: {
+    // passwordResetToken: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
+    lastLogin: {
       type: DataTypes.DATE,
       allowNull: true,
+      field: 'lastLogin', // Nombre de columna en Supabase
     },
     phone: {
       type: DataTypes.STRING,
@@ -128,4 +129,4 @@ User.init(
       },
     },
   }
-); 
+);

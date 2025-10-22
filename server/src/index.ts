@@ -12,7 +12,6 @@ import messageRoutes from './routes/message.routes';
 import reportRoutes from './routes/report.routes';
 import ticketRoutes from './routes/ticket.routes';
 import userRoutes from './routes/user.routes';
-import { resetAllPasswords } from './scripts/resetPasswords';
 import { setupSocketHandlers } from './socket';
 import { logger } from './utils/logger';
 
@@ -46,6 +45,11 @@ app.use(express.json());
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Health check endpoint para Fly.io
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -73,12 +77,12 @@ const startServer = async () => {
     await sequelize.sync();
     logger.info('Database models synchronized successfully.');
 
-    // Resetear contraseñas de todos los usuarios a 'admin123'
-    await resetAllPasswords();
+    // Resetear contraseñas solo en desarrollo (comentado para producción)
+    // await resetAllPasswords();
 
-    // Iniciar servidor HTTP
-    httpServer.listen(PORT, () => {
-      logger.info(`Server is running on port ${PORT}`);
+    // Iniciar servidor HTTP - Escuchar en 0.0.0.0 para Fly.io
+    httpServer.listen(PORT, '0.0.0.0', () => {
+      logger.info(`Server is running on 0.0.0.0:${PORT}`);
     });
   } catch (error) {
     logger.error('Unable to start server:', error);
