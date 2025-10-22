@@ -218,61 +218,83 @@ class WebRTCService {
     console.log(
       `Creating peer connection with ${peerId}, initiator: ${initiator}`
     );
-
-    const peer = new SimplePeer({
-      initiator,
-      stream,
-      trickle: true,
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun2.l.google.com:19302' },
-          { urls: 'stun:stun3.l.google.com:19302' },
-          { urls: 'stun:stun4.l.google.com:19302' },
-        ],
-      },
+    console.log('Stream info:', {
+      id: stream.id,
+      active: stream.active,
+      videoTracks: stream.getVideoTracks().length,
+      audioTracks: stream.getAudioTracks().length,
     });
 
-    peer.on('signal', signal => {
-      console.log(`Sending signal to ${peerId}, type:`, signal.type);
-      socketService.sendSignal(peerId, signal);
-    });
-
-    peer.on('stream', remoteStream => {
-      console.log(`Received remote stream from ${peerId}:`, {
-        id: remoteStream.id,
-        videoTracks: remoteStream.getVideoTracks().length,
-        audioTracks: remoteStream.getAudioTracks().length,
+    try {
+      const peer = new SimplePeer({
+        initiator,
+        stream,
+        trickle: true,
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' },
+          ],
+        },
       });
-      this.onStreamCallbacks.forEach(callback =>
-        callback({ peerId, stream: remoteStream })
-      );
-    });
 
-    peer.on('close', () => {
-      console.log(`Peer connection closed with ${peerId}`);
-      this.handlePeerDisconnect(peerId);
-    });
+      console.log('✅ SimplePeer instance created successfully');
 
-    peer.on('error', err => {
-      console.error(`Peer error with ${peerId}:`, err);
-      this.handlePeerDisconnect(peerId);
-    });
-
-    this.peers.set(peerId, peer);
-
-    // Process any pending signals for this peer
-    if (this.pendingSignals.has(peerId)) {
-      const signals = this.pendingSignals.get(peerId) || [];
-      console.log(`Processing ${signals.length} pending signals for ${peerId}`);
-      signals.forEach(signal => {
-        peer.signal(signal);
+      peer.on('signal', signal => {
+        console.log(`📡 Sending signal to ${peerId}, type:`, signal.type);
+        socketService.sendSignal(peerId, signal);
       });
-      this.pendingSignals.delete(peerId);
+
+      peer.on('stream', remoteStream => {
+        console.log(`🎥 Received remote stream from ${peerId}:`, {
+          id: remoteStream.id,
+          videoTracks: remoteStream.getVideoTracks().length,
+          audioTracks: remoteStream.getAudioTracks().length,
+        });
+        this.onStreamCallbacks.forEach(callback =>
+          callback({ peerId, stream: remoteStream })
+        );
+      });
+
+      peer.on('connect', () => {
+        console.log(`🔗 Peer connection established with ${peerId}`);
+      });
+
+      peer.on('close', () => {
+        console.log(`❌ Peer connection closed with ${peerId}`);
+        this.handlePeerDisconnect(peerId);
+      });
+
+      peer.on('error', err => {
+        console.error(`⚠️ Peer error with ${peerId}:`, err);
+        this.handlePeerDisconnect(peerId);
+      });
+
+      this.peers.set(peerId, peer);
+
+      // Process any pending signals for this peer
+      if (this.pendingSignals.has(peerId)) {
+        const signals = this.pendingSignals.get(peerId) || [];
+        console.log(
+          `📥 Processing ${signals.length} pending signals for ${peerId}`
+        );
+        setTimeout(() => {
+          signals.forEach(signal => {
+            console.log('Processing pending signal type:', signal.type);
+            peer.signal(signal);
+          });
+          this.pendingSignals.delete(peerId);
+        }, 100); // Small delay to ensure peer is ready
+      }
+
+      return peer;
+    } catch (error) {
+      console.error('❌ Error creating SimplePeer instance:', error);
+      throw error;
     }
-
-    return peer;
   }
 
   async initiateCall(recipientId: string, ticketId: string): Promise<void> {
