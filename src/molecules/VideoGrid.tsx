@@ -193,7 +193,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
             </div>
             
             {localStream && (
-              <div className='h-24 w-full border-t-2 border-white/20'>
+              <div className='h-40 w-full border-t-2 border-white/20'>
                 <VideoContainer
                   stream={localStream}
                   isMuted={true}
