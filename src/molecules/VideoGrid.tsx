@@ -174,11 +174,10 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
 
   return (
     <div className='relative h-full w-full overflow-hidden'>
-      {/* Contenedor principal para el video remoto */}
-      <div className='absolute inset-0 w-full h-full'>
-        {remoteStreams.length > 0 ? (
-          // Video remoto - pantalla completa de fondo
-          remoteStreams.map(peerStream => (
+      {/* Video remoto - pantalla completa de fondo (si hay alguien) */}
+      {remoteStreams.length > 0 && (
+        <div className='absolute inset-0 w-full h-full'>
+          {remoteStreams.map(peerStream => (
             <div key={peerStream.peerId} className='absolute inset-0 w-full h-full'>
               <VideoContainer
                 stream={peerStream.stream}
@@ -187,24 +186,19 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
                 isLocal={false}
               />
             </div>
-          ))
-        ) : (
-          // Si no hay video remoto, mostrar video local en pantalla completa
-          localStream && (
-            <VideoContainer
-              stream={localStream}
-              isMuted={true}
-              user={localUser}
-              isScreenShare={isScreenSharing}
-              isLocal={true}
-            />
-          )
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* Video local - Picture-in-Picture (solo si hay video remoto) */}
-      {localStream && hasSomeone && (
-        <div className='absolute bottom-4 right-4 w-64 h-48 z-10 shadow-2xl border-2 border-white/20 rounded-lg overflow-hidden'>
+      {/* Video local - Picture-in-Picture pequeño en esquina */}
+      {localStream && (
+        <div
+          className={
+            hasSomeone
+              ? 'absolute bottom-4 right-4 w-64 h-48 z-10 shadow-2xl border-2 border-white/20 rounded-lg overflow-hidden'
+              : 'absolute inset-0 w-full h-full'
+          }
+        >
           <VideoContainer
             stream={localStream}
             isMuted={true}
