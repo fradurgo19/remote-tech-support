@@ -480,23 +480,19 @@ class WebRTCNativeService {
         oldVideoTrack.stop();
       }
 
-      // Obtener nuevo stream usando el deviceId (mantener audio para no perder permisos)
+      // Obtener nuevo stream usando el deviceId (solo video, sin pedir audio de nuevo)
       const newStream = await navigator.mediaDevices.getUserMedia({
         video: {
           deviceId: frontCamera.deviceId,
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
-        audio: true, // Mantener audio para no perder permisos
+        audio: false, // No solicitar audio, usar el que ya tenemos
       });
 
       const newVideoTrack = newStream.getVideoTracks()[0];
-      const newAudioTracks = newStream.getAudioTracks();
       
       console.log('✅ Nuevo track obtenido:', newVideoTrack.getSettings());
-
-      // Detener los tracks de audio del nuevo stream (no los necesitamos)
-      newAudioTracks.forEach(track => track.stop());
 
       // Reemplazar track en peer connections
       this.peerConnections.forEach(pc => {
@@ -565,23 +561,19 @@ class WebRTCNativeService {
         oldVideoTrack.stop();
       }
 
-      // Obtener nuevo stream usando el deviceId (mantener audio para no perder permisos)
+      // Obtener nuevo stream usando el deviceId (solo video, sin pedir audio de nuevo)
       const newStream = await navigator.mediaDevices.getUserMedia({
         video: {
           deviceId: backCamera.deviceId,
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
-        audio: true, // Mantener audio para no perder permisos
+        audio: false, // No solicitar audio, usar el que ya tenemos
       });
 
       const newVideoTrack = newStream.getVideoTracks()[0];
-      const newAudioTracks = newStream.getAudioTracks();
       
       console.log('✅ Nuevo track obtenido:', newVideoTrack.getSettings());
-
-      // Detener los tracks de audio del nuevo stream (no los necesitamos)
-      newAudioTracks.forEach(track => track.stop());
 
       // Reemplazar track en peer connections
       this.peerConnections.forEach(pc => {
@@ -696,17 +688,42 @@ class WebRTCNativeService {
   }
 
   async toggleAudio(): Promise<void> {
-    if (!this.localStream) return;
+    if (!this.localStream) {
+      console.log('❌ toggleAudio: No local stream');
+      return;
+    }
 
     const audioTracks = this.localStream.getAudioTracks();
-    if (audioTracks.length === 0) return;
+    console.log(`🔊 toggleAudio: Found ${audioTracks.length} audio tracks`);
+    
+    if (audioTracks.length === 0) {
+      console.log('❌ toggleAudio: No audio tracks found');
+      return;
+    }
 
     const isEnabled = audioTracks[0].enabled;
-    audioTracks.forEach(track => {
-      track.enabled = !isEnabled;
+    const newState = !isEnabled;
+    
+    console.log(`🔊 toggleAudio: Current state: ${isEnabled}, New state: ${newState}`);
+    
+    // Actualizar estado de todos los tracks locales
+    audioTracks.forEach((track, index) => {
+      track.enabled = newState;
+      console.log(`🔊 Audio track ${index}: enabled=${track.enabled}, muted=${track.muted}, readyState=${track.readyState}`);
     });
 
-    console.log('WebRTC Native: Audio', isEnabled ? 'disabled' : 'enabled');
+    // También actualizar en todas las peer connections
+    this.peerConnections.forEach((pc, pcIndex) => {
+      const sender = pc.getSenders().find(s => s.track?.kind === 'audio');
+      if (sender && sender.track) {
+        sender.track.enabled = newState;
+        console.log(`🔊 PC ${pcIndex} audio sender: enabled=${sender.track.enabled}, muted=${sender.track.muted}`);
+      } else {
+        console.log(`⚠️ PC ${pcIndex}: No audio sender found`);
+      }
+    });
+
+    console.log('✅ WebRTC Native: Audio', newState ? 'enabled' : 'disabled');
   }
 
   async startScreenSharing(): Promise<MediaStream | null> {
