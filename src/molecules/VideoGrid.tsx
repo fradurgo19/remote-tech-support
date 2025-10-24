@@ -174,7 +174,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
 
   return (
     <div className='relative h-full w-full overflow-hidden'>
-      {/* Video remoto - pantalla completa de fondo (si hay alguien) */}
+      {/* Video remoto - pantalla completa */}
       {remoteStreams.length > 0 && (
         <div className='absolute inset-0 w-full h-full'>
           {remoteStreams.map(peerStream => (
@@ -190,15 +190,22 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         </div>
       )}
 
-      {/* Video local - Picture-in-Picture pequeño en esquina */}
-      {localStream && (
-        <div
-          className={
-            hasSomeone
-              ? 'absolute bottom-4 right-4 w-64 h-48 shadow-2xl border-2 border-white/20 rounded-lg overflow-hidden pointer-events-none'
-              : 'absolute inset-0 w-full h-full'
-          }
-        >
+      {/* Solo video local cuando no hay remoto */}
+      {localStream && !hasSomeone && (
+        <div className='absolute inset-0 w-full h-full'>
+          <VideoContainer
+            stream={localStream}
+            isMuted={true}
+            user={localUser}
+            isScreenShare={isScreenSharing}
+            isLocal={true}
+          />
+        </div>
+      )}
+
+      {/* Video local pequeño - Picture-in-Picture solo cuando hay remoto */}
+      {localStream && hasSomeone && (
+        <div className='absolute bottom-4 right-4 w-64 h-48 shadow-2xl border-2 border-white/20 rounded-lg overflow-hidden z-50'>
           <VideoContainer
             stream={localStream}
             isMuted={true}
