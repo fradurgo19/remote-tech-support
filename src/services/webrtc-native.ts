@@ -918,6 +918,39 @@ class WebRTCNativeService {
     return Promise.resolve(new Blob());
   }
 
+  // Device management methods
+  async enumerateDevices(): Promise<MediaDevice[]> {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      return devices.map(device => ({
+        deviceId: device.deviceId,
+        label: device.label,
+        kind: device.kind as 'videoinput' | 'audioinput' | 'audiooutput',
+      }));
+    } catch (error) {
+      console.error('Error enumerating devices:', error);
+      return [];
+    }
+  }
+
+  getCurrentVideoDeviceId(): string | null {
+    if (!this.localStream) return null;
+    const videoTrack = this.localStream.getVideoTracks()[0];
+    return videoTrack?.getSettings().deviceId || null;
+  }
+
+  getCurrentAudioDeviceId(): string | null {
+    if (!this.localStream) return null;
+    const audioTrack = this.localStream.getAudioTracks()[0];
+    return audioTrack?.getSettings().deviceId || null;
+  }
+
+  onDevicesChange(callback: (devices: MediaDevice[]) => void): () => void {
+    // Simplemente retornar una función vacía por ahora
+    // En el futuro se puede implementar un listener real
+    return () => {};
+  }
+
   cleanup(): void {
     console.log('WebRTC Native: Cleaning up...');
 
