@@ -167,6 +167,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           <VideoContainer
             stream={peerStream.stream}
             user={remoteUsers[peerStream.peerId]}
+            isMuted={false}
             isLocal={false}
           />
         </div>
