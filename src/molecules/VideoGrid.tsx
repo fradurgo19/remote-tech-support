@@ -175,12 +175,40 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
   return (
     <div className='relative h-full w-full overflow-hidden'>
       {hasSomeone ? (
-        // Layout sin superposición: remoto grande + local pequeño independientes
-        <div className='flex flex-col h-full w-full'>
-          {/* Video remoto - ocupa el espacio principal */}
-          <div className='flex-1 relative'>
+        // Layout adaptativo según cantidad de cámaras
+        remoteStreams.length === 1 ? (
+          // 1 cámara remota: layout principal grande + local pequeño abajo
+          <div className='flex flex-col h-full w-full'>
+            <div className='flex-1 relative'>
+              {remoteStreams.map(peerStream => (
+                <div key={peerStream.peerId} className='absolute inset-0 h-full w-full'>
+                  <VideoContainer
+                    stream={peerStream.stream}
+                    user={remoteUsers[peerStream.peerId]}
+                    isMuted={false}
+                    isLocal={false}
+                  />
+                </div>
+              ))}
+            </div>
+            
+            {localStream && (
+              <div className='h-24 w-full border-t-2 border-white/20'>
+                <VideoContainer
+                  stream={localStream}
+                  isMuted={true}
+                  user={localUser}
+                  isScreenShare={isScreenSharing}
+                  isLocal={true}
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          // 2+ cámaras remotas: Grid layout
+          <div className='grid grid-cols-2 h-full w-full gap-2 p-2'>
             {remoteStreams.map(peerStream => (
-              <div key={peerStream.peerId} className='absolute inset-0 h-full w-full'>
+              <div key={peerStream.peerId} className='relative'>
                 <VideoContainer
                   stream={peerStream.stream}
                   user={remoteUsers[peerStream.peerId]}
@@ -189,21 +217,20 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
                 />
               </div>
             ))}
+            
+            {localStream && (
+              <div className='relative'>
+                <VideoContainer
+                  stream={localStream}
+                  isMuted={true}
+                  user={localUser}
+                  isScreenShare={isScreenSharing}
+                  isLocal={true}
+                />
+              </div>
+            )}
           </div>
-          
-          {/* Video local pequeño en la parte inferior */}
-          {localStream && (
-            <div className='h-24 w-full border-t-2 border-white/20'>
-              <VideoContainer
-                stream={localStream}
-                isMuted={true}
-                user={localUser}
-                isScreenShare={isScreenSharing}
-                isLocal={true}
-              />
-            </div>
-          )}
-        </div>
+        )
       ) : (
         // Solo video local cuando no hay remoto
         localStream && (
