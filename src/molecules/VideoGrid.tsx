@@ -160,28 +160,38 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
   const hasSomeone = remoteStreams.length > 0;
 
   return (
-    <div className='relative h-full w-full'>
-      {/* Video remoto - pantalla principal */}
-      {remoteStreams.map(peerStream => (
-        <div key={peerStream.peerId} className='absolute inset-0 w-full h-full'>
-          <VideoContainer
-            stream={peerStream.stream}
-            user={remoteUsers[peerStream.peerId]}
-            isMuted={false}
-            isLocal={false}
-          />
-        </div>
-      ))}
+    <div className='relative h-full w-full overflow-hidden'>
+      {/* Contenedor principal para el video remoto */}
+      <div className='absolute inset-0 w-full h-full'>
+        {remoteStreams.length > 0 ? (
+          // Video remoto - pantalla completa de fondo
+          remoteStreams.map(peerStream => (
+            <div key={peerStream.peerId} className='absolute inset-0 w-full h-full'>
+              <VideoContainer
+                stream={peerStream.stream}
+                user={remoteUsers[peerStream.peerId]}
+                isMuted={false}
+                isLocal={false}
+              />
+            </div>
+          ))
+        ) : (
+          // Si no hay video remoto, mostrar video local en pantalla completa
+          localStream && (
+            <VideoContainer
+              stream={localStream}
+              isMuted={true}
+              user={localUser}
+              isScreenShare={isScreenSharing}
+              isLocal={true}
+            />
+          )
+        )}
+      </div>
 
-      {/* Video local - Picture-in-Picture (más pequeño cuando hay alguien más) */}
-      {localStream && (
-        <div
-          className={
-            hasSomeone
-              ? 'absolute bottom-4 right-4 w-64 h-48 z-10 shadow-2xl border-2 border-white/20 rounded-lg overflow-hidden'
-              : 'absolute inset-0 w-full h-full'
-          }
-        >
+      {/* Video local - Picture-in-Picture (solo si hay video remoto) */}
+      {localStream && hasSomeone && (
+        <div className='absolute bottom-4 right-4 w-64 h-48 z-10 shadow-2xl border-2 border-white/20 rounded-lg overflow-hidden'>
           <VideoContainer
             stream={localStream}
             isMuted={true}

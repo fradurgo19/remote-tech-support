@@ -480,18 +480,23 @@ class WebRTCNativeService {
         oldVideoTrack.stop();
       }
 
-      // Obtener nuevo stream usando el deviceId (sin solicitar permisos nuevamente)
+      // Obtener nuevo stream usando el deviceId (mantener audio para no perder permisos)
       const newStream = await navigator.mediaDevices.getUserMedia({
         video: {
           deviceId: frontCamera.deviceId,
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
-        audio: false,
+        audio: true, // Mantener audio para no perder permisos
       });
 
       const newVideoTrack = newStream.getVideoTracks()[0];
+      const newAudioTracks = newStream.getAudioTracks();
+      
       console.log('✅ Nuevo track obtenido:', newVideoTrack.getSettings());
+
+      // Detener los tracks de audio del nuevo stream (no los necesitamos)
+      newAudioTracks.forEach(track => track.stop());
 
       // Reemplazar track en peer connections
       this.peerConnections.forEach(pc => {
@@ -501,9 +506,9 @@ class WebRTCNativeService {
         }
       });
 
-      // Actualizar localStream
-      const audioTracks = this.localStream.getAudioTracks();
-      this.localStream = new MediaStream([newVideoTrack, ...audioTracks]);
+      // Actualizar localStream - mantener audio tracks originales
+      const oldAudioTracks = this.localStream.getAudioTracks();
+      this.localStream = new MediaStream([newVideoTrack, ...oldAudioTracks]);
 
       console.log('✅ Cambiado a cámara frontal exitosamente');
     } catch (error) {
@@ -560,18 +565,23 @@ class WebRTCNativeService {
         oldVideoTrack.stop();
       }
 
-      // Obtener nuevo stream usando el deviceId
+      // Obtener nuevo stream usando el deviceId (mantener audio para no perder permisos)
       const newStream = await navigator.mediaDevices.getUserMedia({
         video: {
           deviceId: backCamera.deviceId,
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
-        audio: false,
+        audio: true, // Mantener audio para no perder permisos
       });
 
       const newVideoTrack = newStream.getVideoTracks()[0];
+      const newAudioTracks = newStream.getAudioTracks();
+      
       console.log('✅ Nuevo track obtenido:', newVideoTrack.getSettings());
+
+      // Detener los tracks de audio del nuevo stream (no los necesitamos)
+      newAudioTracks.forEach(track => track.stop());
 
       // Reemplazar track en peer connections
       this.peerConnections.forEach(pc => {
@@ -581,9 +591,9 @@ class WebRTCNativeService {
         }
       });
 
-      // Actualizar localStream
-      const audioTracks = this.localStream.getAudioTracks();
-      this.localStream = new MediaStream([newVideoTrack, ...audioTracks]);
+      // Actualizar localStream - mantener audio tracks originales
+      const oldAudioTracks = this.localStream.getAudioTracks();
+      this.localStream = new MediaStream([newVideoTrack, ...oldAudioTracks]);
 
       console.log('✅ Cambiado a cámara trasera exitosamente');
     } catch (error) {
