@@ -242,7 +242,15 @@ class WebRTCNativeService {
   }
 
   async acceptCall(callerId: string): Promise<void> {
+    console.log('🎯 WebRTC Native: acceptCall called for:', callerId);
+    console.log('🎯 Current state:', {
+      hasLocalStream: !!this.localStream,
+      hasPeerConnection: this.peerConnections.has(callerId),
+      pendingSignals: this.pendingSignals.get(callerId)?.length || 0,
+    });
+
     if (!this.localStream) {
+      console.log('📹 Getting local stream for acceptCall...');
       this.localStream = await this.getLocalStream();
     }
 
@@ -263,7 +271,11 @@ class WebRTCNativeService {
 
       // Limpiar buffer
       this.pendingSignals.delete(callerId);
+    } else {
+      console.log('⚠️ No pending signals to process for:', callerId);
     }
+    
+    console.log('✅ WebRTC Native: acceptCall completed');
   }
 
   private async handleSignal(peerId: string, signal: any): Promise<void> {
