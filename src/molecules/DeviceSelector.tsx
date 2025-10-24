@@ -2,7 +2,7 @@ import { Camera, Check, Mic } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Button } from '../atoms/Button';
 import { Card, CardContent } from '../atoms/Card';
-import { MediaDevice, webRTCService } from '../services/webrtc';
+import { MediaDevice, webRTCNativeService } from '../services/webrtc-native';
 import { cn } from '../utils/cn';
 
 interface DeviceSelectorProps {
@@ -33,13 +33,13 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
   useEffect(() => {
     if (isOpen) {
       loadDevices();
-      setCurrentVideoDevice(webRTCService.getCurrentVideoDeviceId());
-      setCurrentAudioDevice(webRTCService.getCurrentAudioDeviceId());
+      setCurrentVideoDevice(webRTCNativeService.getCurrentVideoDeviceId());
+      setCurrentAudioDevice(webRTCNativeService.getCurrentAudioDeviceId());
     }
   }, [isOpen]);
 
   useEffect(() => {
-    const unsubscribe = webRTCService.onDevicesChange(devices => {
+    const unsubscribe = webRTCNativeService.onDevicesChange(devices => {
       const videos = devices.filter(d => d.kind === 'videoinput');
       const audios = devices.filter(d => d.kind === 'audioinput');
       setVideoDevices(videos);
@@ -51,7 +51,7 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
 
   const loadDevices = async () => {
     try {
-      const devices = await webRTCService.enumerateDevices();
+      const devices = await webRTCNativeService.enumerateDevices();
       const videos = devices.filter(d => d.kind === 'videoinput');
       const audios = devices.filter(d => d.kind === 'audioinput');
       setVideoDevices(videos);
@@ -64,7 +64,7 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
   const handleVideoDeviceChange = async (deviceId: string) => {
     setIsLoading(true);
     try {
-      await webRTCService.switchCamera(deviceId);
+      await webRTCNativeService.switchCamera(deviceId);
       setCurrentVideoDevice(deviceId);
       onDeviceChange?.(deviceId, 'video');
     } catch (error) {
@@ -77,7 +77,7 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
   const handleAudioDeviceChange = async (deviceId: string) => {
     setIsLoading(true);
     try {
-      await webRTCService.switchMicrophone(deviceId);
+      await webRTCNativeService.switchMicrophone(deviceId);
       setCurrentAudioDevice(deviceId);
       onDeviceChange?.(deviceId, 'audio');
     } catch (error) {
