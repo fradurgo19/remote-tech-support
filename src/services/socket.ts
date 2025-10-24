@@ -167,12 +167,24 @@ class SocketService {
 
   // Handle call signaling
   initiateCall(recipientId: string, ticketId: string): void {
+    console.log('📞 SocketService: initiateCall called', {
+      recipientId,
+      ticketId,
+      socket: !!this.socket,
+      socketConnected: this.socket?.connected,
+      user: !!this.user,
+      serverAvailable: this.isServerAvailable,
+    });
+    
     if (this.socket && this.user && this.isServerAvailable) {
       this.socket.emit('call-initiate', {
         from: this.user.id,
         to: recipientId,
         ticketId,
       });
+      console.log('✅ SocketService: call-initiate event emitted');
+    } else {
+      console.error('❌ SocketService: Cannot initiate call - missing requirements');
     }
   }
 
@@ -186,8 +198,17 @@ class SocketService {
       callSessionId: string;
     }) => void
   ): () => void {
+    console.log('📞 SocketService: Setting up onCallRequest listener', {
+      socket: !!this.socket,
+      socketConnected: this.socket?.connected,
+      serverAvailable: this.isServerAvailable,
+    });
+    
     if (this.socket && this.isServerAvailable) {
-      this.socket.on('call-request', callback);
+      this.socket.on('call-request', (data) => {
+        console.log('📞 SocketService: Received call-request event:', data);
+        callback(data);
+      });
       return () => {
         this.socket?.off('call-request', callback);
       };
