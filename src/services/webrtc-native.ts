@@ -502,9 +502,23 @@ class WebRTCNativeService {
         }
       });
 
-      // Actualizar localStream - mantener audio tracks originales
+      // Actualizar localStream - mantener solo el primer audio track (evitar duplicados)
       const oldAudioTracks = this.localStream.getAudioTracks();
-      this.localStream = new MediaStream([newVideoTrack, ...oldAudioTracks]);
+      console.log(`🔊 Audio tracks antes del cambio frontal: ${oldAudioTracks.length}`);
+      
+      // Si hay más de un audio track, mantener solo el primero
+      const singleAudioTrack = oldAudioTracks.length > 0 ? [oldAudioTracks[0]] : [];
+      
+      // Detener los tracks de audio duplicados
+      if (oldAudioTracks.length > 1) {
+        oldAudioTracks.slice(1).forEach(track => {
+          track.stop();
+          console.log('🛑 Stopped duplicate audio track');
+        });
+      }
+      
+      this.localStream = new MediaStream([newVideoTrack, ...singleAudioTrack]);
+      console.log(`🔊 Audio tracks después del cambio frontal: ${this.localStream.getAudioTracks().length}`);
 
       console.log('✅ Cambiado a cámara frontal exitosamente');
     } catch (error) {
@@ -583,9 +597,23 @@ class WebRTCNativeService {
         }
       });
 
-      // Actualizar localStream - mantener audio tracks originales
+      // Actualizar localStream - mantener solo el primer audio track (evitar duplicados)
       const oldAudioTracks = this.localStream.getAudioTracks();
-      this.localStream = new MediaStream([newVideoTrack, ...oldAudioTracks]);
+      console.log(`🔊 Audio tracks antes del cambio trasera: ${oldAudioTracks.length}`);
+      
+      // Si hay más de un audio track, mantener solo el primero
+      const singleAudioTrack = oldAudioTracks.length > 0 ? [oldAudioTracks[0]] : [];
+      
+      // Detener los tracks de audio duplicados
+      if (oldAudioTracks.length > 1) {
+        oldAudioTracks.slice(1).forEach(track => {
+          track.stop();
+          console.log('🛑 Stopped duplicate audio track');
+        });
+      }
+      
+      this.localStream = new MediaStream([newVideoTrack, ...singleAudioTrack]);
+      console.log(`🔊 Audio tracks después del cambio trasera: ${this.localStream.getAudioTracks().length}`);
 
       console.log('✅ Cambiado a cámara trasera exitosamente');
     } catch (error) {

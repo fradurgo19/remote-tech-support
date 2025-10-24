@@ -23,9 +23,22 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
+      
+      // Asegurar que los tracks de audio estén habilitados para streams remotos
+      if (!isLocal) {
+        const audioTracks = stream.getAudioTracks();
+        audioTracks.forEach(track => {
+          track.enabled = true;
+          console.log(`🔊 Remoto: Audio track enabled=${track.enabled}, muted=${track.muted}`);
+        });
+      }
 
       // Force play for local streams
       if (isLocal) {
+        videoRef.current.play().catch(console.error);
+      } else {
+        // Para streams remotos, asegurar que el video no esté muteado
+        videoRef.current.muted = isMuted;
         videoRef.current.play().catch(console.error);
       }
     }
@@ -35,7 +48,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
         videoRef.current.srcObject = null;
       }
     };
-  }, [stream, isLocal]);
+  }, [stream, isLocal, isMuted]);
 
   // Force video element update when stream tracks change
   useEffect(() => {
