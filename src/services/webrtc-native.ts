@@ -84,7 +84,7 @@ class WebRTCNativeService {
         preferredFacingMode
       );
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      let stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       // Verificar tracks obtenidos
       const videoTracks = stream.getVideoTracks();
