@@ -110,6 +110,22 @@ class WebRTCNativeService {
         );
       });
 
+      // Si hay múltiples audio tracks, mantener solo el primero
+      if (audioTracks.length > 1) {
+        console.log(`⚠️ Found ${audioTracks.length} audio tracks, keeping only the first one`);
+        const firstAudioTrack = audioTracks[0];
+        
+        // Detener los tracks duplicados
+        audioTracks.slice(1).forEach(track => {
+          track.stop();
+          console.log('🛑 Stopped duplicate audio track');
+        });
+        
+        // Crear nuevo stream con solo el primer audio track
+        stream = new MediaStream([...videoTracks, firstAudioTrack]);
+        console.log(`✅ Created new stream with single audio track`);
+      }
+
       this.localStream = stream;
       return stream;
     } catch (error) {
