@@ -156,6 +156,17 @@ class WebRTCNativeService {
           console.log(
             `WebRTC: Audio track ${index} - Enabled: ${track.enabled}, Muted: ${track.muted}, ReadyState: ${track.readyState}`
           );
+          
+          // Force enable audio tracks remotos
+          if (track.kind === 'audio' && track.muted) {
+            console.log('🔊 Forcing audio track to be unmuted');
+            track.enabled = true;
+            
+            // Esperar a que el track esté listo y luego intentar desmutear
+            setTimeout(() => {
+              console.log(`🔊 Audio track after timeout - enabled: ${track.enabled}, muted: ${track.muted}`);
+            }, 100);
+          }
         });
 
         this.onStreamCallbacks.forEach(callback =>
@@ -276,6 +287,22 @@ class WebRTCNativeService {
           sdp: answer.sdp,
         });
       } else if (signal.type === 'answer') {
+        // Verificar que no se haya procesado ya este answer
+        if (peerConnection.remoteDescription && peerConnection.remoteDescription.type === 'answer') {
+          console.log('⚠️ Answer already processed, ignoring duplicate');
+          return;
+        }
+        
+        // Verificar que tengamos localDescription antes de procesar answer
+        if (!peerConnection.localDescription) {
+          console.log('⏳ No local description yet, storing answer for later');
+          if (!this.pendingSignals.has(peerId)) {
+            this.pendingSignals.set(peerId, []);
+          }
+          this.pendingSignals.get(peerId)!.push(signal);
+          return;
+        }
+        
         await peerConnection.setRemoteDescription(
           new RTCSessionDescription({
             type: 'answer',
