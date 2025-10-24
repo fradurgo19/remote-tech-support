@@ -195,7 +195,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         <div
           className={
             hasSomeone
-              ? 'absolute bottom-4 right-4 w-64 h-48 z-10 shadow-2xl border-2 border-white/20 rounded-lg overflow-hidden'
+              ? 'absolute bottom-4 right-4 w-64 h-48 shadow-2xl border-2 border-white/20 rounded-lg overflow-hidden pointer-events-none'
               : 'absolute inset-0 w-full h-full'
           }
         >
