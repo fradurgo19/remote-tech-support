@@ -219,9 +219,16 @@ class WebRTCNativeService {
       this.localStream = await this.getLocalStream();
     }
 
+    // Crear la conexión primero si no existe
+    if (!this.peerConnections.has(callerId)) {
+      console.log('🔗 Creating peer connection for caller:', callerId);
+      this.createPeerConnection(callerId, false);
+    }
+
     // Procesar señales pendientes (que llegaron antes de aceptar)
     const pendingSignals = this.pendingSignals.get(callerId);
     if (pendingSignals && pendingSignals.length > 0) {
+      console.log(`📦 Processing ${pendingSignals.length} pending signals for:`, callerId);
       // Procesar cada señal en orden
       for (const signal of pendingSignals) {
         await this.handleSignal(callerId, signal);
@@ -238,6 +245,7 @@ class WebRTCNativeService {
     if (!peerConnection) {
       // Si no tenemos localStream, almacenar la señal para procesar después
       if (!this.localStream) {
+        console.log('⏳ No local stream yet, storing signal for:', peerId);
         if (!this.pendingSignals.has(peerId)) {
           this.pendingSignals.set(peerId, []);
         }
@@ -249,6 +257,8 @@ class WebRTCNativeService {
     }
 
     try {
+      console.log(`📡 Processing ${signal.type} signal from:`, peerId);
+      
       if (signal.type === 'offer') {
         await peerConnection.setRemoteDescription(
           new RTCSessionDescription({
@@ -260,6 +270,7 @@ class WebRTCNativeService {
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
 
+        console.log('✅ Answer created and sent to:', peerId);
         socketService.sendSignal(peerId, {
           type: 'answer',
           sdp: answer.sdp,
@@ -271,11 +282,25 @@ class WebRTCNativeService {
             sdp: signal.sdp,
           })
         );
+        console.log('✅ Answer received and set for:', peerId);
       } else if (signal.type === 'candidate') {
-        await peerConnection.addIceCandidate(signal.candidate);
+        // Solo añadir candidatos si la conexión está en estado válido
+        if (peerConnection.remoteDescription) {
+          await peerConnection.addIceCandidate(signal.candidate);
+          console.log('✅ ICE candidate added for:', peerId);
+        } else {
+          console.log('⏳ Storing ICE candidate for later:', peerId);
+          // Almacenar candidatos pendientes si no hay remoteDescription aún
+          if (!this.pendingSignals.has(peerId)) {
+            this.pendingSignals.set(peerId, []);
+          }
+          this.pendingSignals.get(peerId)!.push(signal);
+        }
       }
     } catch (error) {
-      console.error('Error al procesar señal WebRTC:', error);
+      console.error('❌ Error al procesar señal WebRTC:', error);
+      console.error('Signal type:', signal.type);
+      console.error('Peer ID:', peerId);
     }
   }
 
