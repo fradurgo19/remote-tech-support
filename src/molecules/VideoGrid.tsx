@@ -23,13 +23,15 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
-      
+
       // Asegurar que los tracks de audio estén habilitados para streams remotos
       if (!isLocal) {
         const audioTracks = stream.getAudioTracks();
         audioTracks.forEach(track => {
           track.enabled = true;
-          console.log(`🔊 Remoto: Audio track enabled=${track.enabled}, muted=${track.muted}`);
+          console.log(
+            `🔊 Remoto: Audio track enabled=${track.enabled}, muted=${track.muted}`
+          );
         });
       }
 
@@ -78,6 +80,23 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
         track.enabled &&
         (track.readyState === 'live' || track.readyState === 'starting')
     );
+
+  // Debug logging for video track status
+  useEffect(() => {
+    if (stream) {
+      const videoTracks = stream.getVideoTracks();
+      videoTracks.forEach((track, index) => {
+        console.log(`🎥 VideoContainer - Track ${index}:`, {
+          enabled: track.enabled,
+          readyState: track.readyState,
+          muted: track.muted,
+          label: track.label,
+          isLocal,
+        });
+      });
+      console.log(`🎥 VideoContainer - hasActiveVideo: ${hasActiveVideo}`);
+    }
+  }, [stream, hasActiveVideo, isLocal]);
 
   return (
     <div className='relative overflow-hidden rounded-lg bg-gray-900 w-full h-full'>
@@ -181,7 +200,10 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
           <div className='flex flex-col h-full w-full'>
             <div className='flex-1 relative'>
               {remoteStreams.map(peerStream => (
-                <div key={peerStream.peerId} className='absolute inset-0 h-full w-full'>
+                <div
+                  key={peerStream.peerId}
+                  className='absolute inset-0 h-full w-full'
+                >
                   <VideoContainer
                     stream={peerStream.stream}
                     user={remoteUsers[peerStream.peerId]}
@@ -191,7 +213,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
                 </div>
               ))}
             </div>
-            
+
             {localStream && (
               <div className='h-40 w-full border-t-2 border-white/20'>
                 <VideoContainer
@@ -217,7 +239,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
                 />
               </div>
             ))}
-            
+
             {localStream && (
               <div className='relative'>
                 <VideoContainer
