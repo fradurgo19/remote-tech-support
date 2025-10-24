@@ -174,46 +174,49 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
 
   return (
     <div className='relative h-full w-full overflow-hidden'>
-      {/* Video remoto - pantalla completa */}
-      {remoteStreams.length > 0 && (
-        <div className='absolute inset-0 w-full h-full'>
-          {remoteStreams.map(peerStream => (
-            <div key={peerStream.peerId} className='absolute inset-0 w-full h-full'>
+      {hasSomeone ? (
+        // Layout sin superposición: remoto grande + local pequeño independientes
+        <div className='flex flex-col h-full w-full'>
+          {/* Video remoto - ocupa el espacio principal */}
+          <div className='flex-1 relative'>
+            {remoteStreams.map(peerStream => (
+              <div key={peerStream.peerId} className='absolute inset-0 h-full w-full'>
+                <VideoContainer
+                  stream={peerStream.stream}
+                  user={remoteUsers[peerStream.peerId]}
+                  isMuted={false}
+                  isLocal={false}
+                />
+              </div>
+            ))}
+          </div>
+          
+          {/* Video local pequeño en la parte inferior */}
+          {localStream && (
+            <div className='h-48 w-full border-t-2 border-white/20'>
               <VideoContainer
-                stream={peerStream.stream}
-                user={remoteUsers[peerStream.peerId]}
-                isMuted={false}
-                isLocal={false}
+                stream={localStream}
+                isMuted={true}
+                user={localUser}
+                isScreenShare={isScreenSharing}
+                isLocal={true}
               />
             </div>
-          ))}
+          )}
         </div>
-      )}
-
-      {/* Solo video local cuando no hay remoto */}
-      {localStream && !hasSomeone && (
-        <div className='absolute inset-0 w-full h-full'>
-          <VideoContainer
-            stream={localStream}
-            isMuted={true}
-            user={localUser}
-            isScreenShare={isScreenSharing}
-            isLocal={true}
-          />
-        </div>
-      )}
-
-      {/* Video local pequeño - Picture-in-Picture solo cuando hay remoto */}
-      {localStream && hasSomeone && (
-        <div className='absolute bottom-4 right-4 w-64 h-48 shadow-2xl border-2 border-white/20 rounded-lg overflow-hidden z-50'>
-          <VideoContainer
-            stream={localStream}
-            isMuted={true}
-            user={localUser}
-            isScreenShare={isScreenSharing}
-            isLocal={true}
-          />
-        </div>
+      ) : (
+        // Solo video local cuando no hay remoto
+        localStream && (
+          <div className='h-full w-full'>
+            <VideoContainer
+              stream={localStream}
+              isMuted={true}
+              user={localUser}
+              isScreenShare={isScreenSharing}
+              isLocal={true}
+            />
+          </div>
+        )
       )}
     </div>
   );
