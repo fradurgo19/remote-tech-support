@@ -228,15 +228,20 @@ class WebRTCNativeService {
 
     // Create offer
     try {
+      console.log('📤 Creating offer for:', recipientId);
       const offer = await peerConnection.createOffer();
+      console.log('📤 Offer created:', { type: offer.type, sdpLength: offer.sdp?.length });
       await peerConnection.setLocalDescription(offer);
+      console.log('📤 Local description set');
 
+      console.log('📤 Sending offer signal to:', recipientId);
       socketService.sendSignal(recipientId, {
         type: 'offer',
         sdp: offer.sdp,
       });
+      console.log('✅ Offer signal sent successfully');
     } catch (error) {
-      console.error('Error al crear offer WebRTC:', error);
+      console.error('❌ Error al crear offer WebRTC:', error);
       throw error;
     }
   }
@@ -315,6 +320,13 @@ class WebRTCNativeService {
           sdp: answer.sdp,
         });
       } else if (signal.type === 'answer') {
+        console.log('📥 Processing answer signal from:', peerId);
+        console.log('📥 Current state:', {
+          hasRemoteDescription: !!peerConnection.remoteDescription,
+          remoteDescriptionType: peerConnection.remoteDescription?.type,
+          hasLocalDescription: !!peerConnection.localDescription,
+        });
+        
         // Verificar que no se haya procesado ya este answer
         if (peerConnection.remoteDescription && peerConnection.remoteDescription.type === 'answer') {
           console.log('⚠️ Answer already processed, ignoring duplicate');
@@ -331,6 +343,7 @@ class WebRTCNativeService {
           return;
         }
         
+        console.log('📥 Setting remote description with answer');
         await peerConnection.setRemoteDescription(
           new RTCSessionDescription({
             type: 'answer',
