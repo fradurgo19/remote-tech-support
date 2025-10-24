@@ -113,8 +113,12 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
         onDevicesChangeHandler
       );
 
-      socketService.onCallRequest(async data => {
-        console.log('Llamada entrante de:', data);
+      const unsubscribeCallRequest = socketService.onCallRequest(async data => {
+        console.log('📞 CallContext: Llamada entrante de:', data);
+        console.log('📞 CallContext: Socket status:', {
+          socket: !!socketService.getSocket(),
+          connected: socketService.getSocket()?.connected,
+        });
 
         // Crear objeto de llamada entrante con toda la información del usuario
         const incomingCallData = {
@@ -133,14 +137,17 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
         setIncomingCall(incomingCallData);
         console.log(
-          'Notificación de llamada entrante establecida:',
+          '✅ CallContext: Notificación de llamada entrante establecida:',
           incomingCallData
         );
       });
 
+      console.log('📞 CallContext: Call request listener registered');
+
       return () => {
         unsubscribeStream();
         unsubscribeDevices();
+        unsubscribeCallRequest();
         webRTCNativeService.cleanup();
       };
     }
