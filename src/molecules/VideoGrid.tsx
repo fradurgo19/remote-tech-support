@@ -80,7 +80,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
 
     const updateVideoTracks = () => {
       const videoTracks = stream.getVideoTracks();
-      videoTracks.forEach((track, index) => {
+      videoTracks.forEach((track) => {
         track.addEventListener('ended', handleTrackEnded);
         // Force play if track becomes enabled
         if (track.enabled && videoRef.current) {
@@ -97,7 +97,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
 
     const cleanup = updateVideoTracks();
     return cleanup;
-  }, [stream, hasActiveVideo]);
+  }, [stream]);
 
   // Force video element update when stream tracks change
   useEffect(() => {
