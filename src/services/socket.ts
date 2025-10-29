@@ -175,7 +175,7 @@ class SocketService {
       user: !!this.user,
       serverAvailable: this.isServerAvailable,
     });
-    
+
     if (this.socket && this.user && this.isServerAvailable) {
       this.socket.emit('call-initiate', {
         from: this.user.id,
@@ -184,7 +184,9 @@ class SocketService {
       });
       console.log('✅ SocketService: call-initiate event emitted');
     } else {
-      console.error('❌ SocketService: Cannot initiate call - missing requirements');
+      console.error(
+        '❌ SocketService: Cannot initiate call - missing requirements'
+      );
     }
   }
 
@@ -203,14 +205,16 @@ class SocketService {
       socketConnected: this.socket?.connected,
       serverAvailable: this.isServerAvailable,
     });
-    
+
     if (this.socket && this.isServerAvailable) {
-      this.socket.on('call-request', (data) => {
+      const handleCallRequest = (data: any) => {
         console.log('📞 SocketService: Received call-request event:', data);
         callback(data);
-      });
+      };
+
+      this.socket.on('call-request', handleCallRequest);
       return () => {
-        this.socket?.off('call-request', callback);
+        this.socket?.off('call-request', handleCallRequest);
       };
     }
     return () => {};

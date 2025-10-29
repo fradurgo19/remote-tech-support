@@ -33,6 +33,20 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
             `🔊 Remoto: Audio track enabled=${track.enabled}, muted=${track.muted}`
           );
         });
+
+        // Asegurar que los tracks de video estén habilitados para streams remotos
+        const videoTracks = stream.getVideoTracks();
+        videoTracks.forEach(track => {
+          if (!track.enabled) {
+            console.log(
+              '📹 Forcing video track to be enabled in VideoContainer'
+            );
+            track.enabled = true;
+          }
+          console.log(
+            `🎥 Remoto: Video track enabled=${track.enabled}, readyState=${track.readyState}, muted=${track.muted}`
+          );
+        });
       }
 
       // Force play for local streams
@@ -51,6 +65,39 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
       }
     };
   }, [stream, isLocal, isMuted]);
+
+  // Handle track state changes
+  useEffect(() => {
+    if (!stream || !videoRef.current) return;
+
+    const handleTrackEnded = () => {
+      console.log('Track ended, attempting to refresh video');
+      if (videoRef.current && stream) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(console.error);
+      }
+    };
+
+    const updateVideoTracks = () => {
+      const videoTracks = stream.getVideoTracks();
+      videoTracks.forEach((track, index) => {
+        track.addEventListener('ended', handleTrackEnded);
+        // Force play if track becomes enabled
+        if (track.enabled && videoRef.current) {
+          videoRef.current.play().catch(console.error);
+        }
+      });
+
+      return () => {
+        videoTracks.forEach(track => {
+          track.removeEventListener('ended', handleTrackEnded);
+        });
+      };
+    };
+
+    const cleanup = updateVideoTracks();
+    return cleanup;
+  }, [stream, hasActiveVideo]);
 
   // Force video element update when stream tracks change
   useEffect(() => {

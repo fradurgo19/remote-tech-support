@@ -112,15 +112,17 @@ class WebRTCNativeService {
 
       // Si hay múltiples audio tracks, mantener solo el primero
       if (audioTracks.length > 1) {
-        console.log(`⚠️ Found ${audioTracks.length} audio tracks, keeping only the first one`);
+        console.log(
+          `⚠️ Found ${audioTracks.length} audio tracks, keeping only the first one`
+        );
         const firstAudioTrack = audioTracks[0];
-        
+
         // Detener los tracks duplicados
         audioTracks.slice(1).forEach(track => {
           track.stop();
           console.log('🛑 Stopped duplicate audio track');
         });
-        
+
         // Crear nuevo stream con solo el primer audio track
         stream = new MediaStream([...videoTracks, firstAudioTrack]);
         console.log(`✅ Created new stream with single audio track`);
@@ -168,20 +170,29 @@ class WebRTCNativeService {
           `WebRTC: Stream remoto - Video tracks: ${videoTracks.length}, Audio tracks: ${audioTracks.length}`
         );
 
+        // Force enable remote video tracks
+        videoTracks.forEach((track, index) => {
+          console.log(
+            `WebRTC: Video track ${index} - Enabled: ${track.enabled}, Muted: ${track.muted}, ReadyState: ${track.readyState}`
+          );
+
+          // Force enable video track
+          if (track.enabled === false) {
+            console.log('📹 Forcing video track to be enabled');
+            track.enabled = true;
+          }
+        });
+
+        // Force enable audio tracks
         audioTracks.forEach((track, index) => {
           console.log(
             `WebRTC: Audio track ${index} - Enabled: ${track.enabled}, Muted: ${track.muted}, ReadyState: ${track.readyState}`
           );
-          
+
           // Force enable audio tracks remotos
-          if (track.kind === 'audio' && track.muted) {
-            console.log('🔊 Forcing audio track to be unmuted');
+          if (track.enabled === false) {
+            console.log('🔊 Forcing audio track to be enabled');
             track.enabled = true;
-            
-            // Esperar a que el track esté listo y luego intentar desmutear
-            setTimeout(() => {
-              console.log(`🔊 Audio track after timeout - enabled: ${track.enabled}, muted: ${track.muted}`);
-            }, 100);
           }
         });
 
@@ -230,7 +241,10 @@ class WebRTCNativeService {
     try {
       console.log('📤 Creating offer for:', recipientId);
       const offer = await peerConnection.createOffer();
-      console.log('📤 Offer created:', { type: offer.type, sdpLength: offer.sdp?.length });
+      console.log('📤 Offer created:', {
+        type: offer.type,
+        sdpLength: offer.sdp?.length,
+      });
       await peerConnection.setLocalDescription(offer);
       console.log('📤 Local description set');
 
@@ -268,7 +282,10 @@ class WebRTCNativeService {
     // Procesar señales pendientes (que llegaron antes de aceptar)
     const pendingSignals = this.pendingSignals.get(callerId);
     if (pendingSignals && pendingSignals.length > 0) {
-      console.log(`📦 Processing ${pendingSignals.length} pending signals for:`, callerId);
+      console.log(
+        `📦 Processing ${pendingSignals.length} pending signals for:`,
+        callerId
+      );
       // Procesar cada señal en orden
       for (const signal of pendingSignals) {
         await this.handleSignal(callerId, signal);
@@ -279,7 +296,7 @@ class WebRTCNativeService {
     } else {
       console.log('⚠️ No pending signals to process for:', callerId);
     }
-    
+
     console.log('✅ WebRTC Native: acceptCall completed');
   }
 
@@ -302,7 +319,7 @@ class WebRTCNativeService {
 
     try {
       console.log(`📡 Processing ${signal.type} signal from:`, peerId);
-      
+
       if (signal.type === 'offer') {
         await peerConnection.setRemoteDescription(
           new RTCSessionDescription({
@@ -326,13 +343,16 @@ class WebRTCNativeService {
           remoteDescriptionType: peerConnection.remoteDescription?.type,
           hasLocalDescription: !!peerConnection.localDescription,
         });
-        
+
         // Verificar que no se haya procesado ya este answer
-        if (peerConnection.remoteDescription && peerConnection.remoteDescription.type === 'answer') {
+        if (
+          peerConnection.remoteDescription &&
+          peerConnection.remoteDescription.type === 'answer'
+        ) {
           console.log('⚠️ Answer already processed, ignoring duplicate');
           return;
         }
-        
+
         // Verificar que tengamos localDescription antes de procesar answer
         if (!peerConnection.localDescription) {
           console.log('⏳ No local description yet, storing answer for later');
@@ -342,7 +362,7 @@ class WebRTCNativeService {
           this.pendingSignals.get(peerId)!.push(signal);
           return;
         }
-        
+
         console.log('📥 Setting remote description with answer');
         await peerConnection.setRemoteDescription(
           new RTCSessionDescription({
@@ -559,7 +579,7 @@ class WebRTCNativeService {
       });
 
       const newVideoTrack = newStream.getVideoTracks()[0];
-      
+
       console.log('✅ Nuevo track obtenido:', newVideoTrack.getSettings());
 
       // Reemplazar track en peer connections
@@ -572,11 +592,14 @@ class WebRTCNativeService {
 
       // Actualizar localStream - mantener solo el primer audio track (evitar duplicados)
       const oldAudioTracks = this.localStream.getAudioTracks();
-      console.log(`🔊 Audio tracks antes del cambio frontal: ${oldAudioTracks.length}`);
-      
+      console.log(
+        `🔊 Audio tracks antes del cambio frontal: ${oldAudioTracks.length}`
+      );
+
       // Si hay más de un audio track, mantener solo el primero
-      const singleAudioTrack = oldAudioTracks.length > 0 ? [oldAudioTracks[0]] : [];
-      
+      const singleAudioTrack =
+        oldAudioTracks.length > 0 ? [oldAudioTracks[0]] : [];
+
       // Detener los tracks de audio duplicados
       if (oldAudioTracks.length > 1) {
         oldAudioTracks.slice(1).forEach(track => {
@@ -584,9 +607,13 @@ class WebRTCNativeService {
           console.log('🛑 Stopped duplicate audio track');
         });
       }
-      
+
       this.localStream = new MediaStream([newVideoTrack, ...singleAudioTrack]);
-      console.log(`🔊 Audio tracks después del cambio frontal: ${this.localStream.getAudioTracks().length}`);
+      console.log(
+        `🔊 Audio tracks después del cambio frontal: ${
+          this.localStream.getAudioTracks().length
+        }`
+      );
 
       console.log('✅ Cambiado a cámara frontal exitosamente');
     } catch (error) {
@@ -654,7 +681,7 @@ class WebRTCNativeService {
       });
 
       const newVideoTrack = newStream.getVideoTracks()[0];
-      
+
       console.log('✅ Nuevo track obtenido:', newVideoTrack.getSettings());
 
       // Reemplazar track en peer connections
@@ -667,11 +694,14 @@ class WebRTCNativeService {
 
       // Actualizar localStream - mantener solo el primer audio track (evitar duplicados)
       const oldAudioTracks = this.localStream.getAudioTracks();
-      console.log(`🔊 Audio tracks antes del cambio trasera: ${oldAudioTracks.length}`);
-      
+      console.log(
+        `🔊 Audio tracks antes del cambio trasera: ${oldAudioTracks.length}`
+      );
+
       // Si hay más de un audio track, mantener solo el primero
-      const singleAudioTrack = oldAudioTracks.length > 0 ? [oldAudioTracks[0]] : [];
-      
+      const singleAudioTrack =
+        oldAudioTracks.length > 0 ? [oldAudioTracks[0]] : [];
+
       // Detener los tracks de audio duplicados
       if (oldAudioTracks.length > 1) {
         oldAudioTracks.slice(1).forEach(track => {
@@ -679,9 +709,13 @@ class WebRTCNativeService {
           console.log('🛑 Stopped duplicate audio track');
         });
       }
-      
+
       this.localStream = new MediaStream([newVideoTrack, ...singleAudioTrack]);
-      console.log(`🔊 Audio tracks después del cambio trasera: ${this.localStream.getAudioTracks().length}`);
+      console.log(
+        `🔊 Audio tracks después del cambio trasera: ${
+          this.localStream.getAudioTracks().length
+        }`
+      );
 
       console.log('✅ Cambiado a cámara trasera exitosamente');
     } catch (error) {
@@ -769,18 +803,21 @@ class WebRTCNativeService {
     }
   }
 
-  async toggleVideo(): Promise<void> {
+  async toggleVideo(enabled?: boolean): Promise<void> {
     if (!this.localStream) return;
 
     const videoTracks = this.localStream.getVideoTracks();
     if (videoTracks.length === 0) return;
 
-    const isEnabled = videoTracks[0].enabled;
+    // If enabled parameter is provided, use it; otherwise toggle
+    const newEnabled =
+      enabled !== undefined ? enabled : !videoTracks[0].enabled;
+
     videoTracks.forEach(track => {
-      track.enabled = !isEnabled;
+      track.enabled = newEnabled;
     });
 
-    console.log('WebRTC Native: Video', isEnabled ? 'disabled' : 'enabled');
+    console.log('WebRTC Native: Video', newEnabled ? 'enabled' : 'disabled');
   }
 
   async toggleAudio(): Promise<void> {
@@ -791,7 +828,7 @@ class WebRTCNativeService {
 
     const audioTracks = this.localStream.getAudioTracks();
     console.log(`🔊 toggleAudio: Found ${audioTracks.length} audio tracks`);
-    
+
     if (audioTracks.length === 0) {
       console.log('❌ toggleAudio: No audio tracks found');
       return;
@@ -799,13 +836,17 @@ class WebRTCNativeService {
 
     const isEnabled = audioTracks[0].enabled;
     const newState = !isEnabled;
-    
-    console.log(`🔊 toggleAudio: Current state: ${isEnabled}, New state: ${newState}`);
-    
+
+    console.log(
+      `🔊 toggleAudio: Current state: ${isEnabled}, New state: ${newState}`
+    );
+
     // Actualizar estado de todos los tracks locales
     audioTracks.forEach((track, index) => {
       track.enabled = newState;
-      console.log(`🔊 Audio track ${index}: enabled=${track.enabled}, muted=${track.muted}, readyState=${track.readyState}`);
+      console.log(
+        `🔊 Audio track ${index}: enabled=${track.enabled}, muted=${track.muted}, readyState=${track.readyState}`
+      );
     });
 
     // También actualizar en todas las peer connections
@@ -813,7 +854,9 @@ class WebRTCNativeService {
       const sender = pc.getSenders().find(s => s.track?.kind === 'audio');
       if (sender && sender.track) {
         sender.track.enabled = newState;
-        console.log(`🔊 PC ${pcIndex} audio sender: enabled=${sender.track.enabled}, muted=${sender.track.muted}`);
+        console.log(
+          `🔊 PC ${pcIndex} audio sender: enabled=${sender.track.enabled}, muted=${sender.track.muted}`
+        );
       } else {
         console.log(`⚠️ PC ${pcIndex}: No audio sender found`);
       }
