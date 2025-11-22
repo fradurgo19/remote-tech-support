@@ -44,6 +44,48 @@ class WebRTCNativeService {
     return this.localStream;
   }
 
+  // Detectar tipo de conexión (WiFi vs datos móviles)
+  private async detectConnectionType(): Promise<'wifi' | 'cellular' | 'unknown'> {
+    try {
+      // Network Information API (soporte limitado pero creciente)
+      const connection = (navigator as any).connection || 
+                        (navigator as any).mozConnection || 
+                        (navigator as any).webkitConnection;
+      
+      if (connection) {
+        const effectiveType = connection.effectiveType;
+        const type = connection.type;
+        
+        // Si es WiFi o ethernet, usar mejor calidad
+        if (type === 'wifi' || type === 'ethernet') {
+          return 'wifi';
+        }
+        
+        // Si es cellular pero tiene buena velocidad (4G/5G), considerar WiFi
+        if (type === 'cellular' && (effectiveType === '4g' || effectiveType === '5g')) {
+          // Verificar velocidad real si está disponible
+          const downlink = connection.downlink;
+          if (downlink && downlink > 2) { // Más de 2 Mbps
+            return 'wifi'; // Tratar como WiFi para mejor calidad
+          }
+        }
+        
+        return 'cellular';
+      }
+      
+      // Fallback: detectar por User Agent y asumir datos móviles en móviles
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
+      
+      return isMobile ? 'cellular' : 'wifi';
+    } catch (error) {
+      console.warn('⚠️ No se pudo detectar tipo de conexión:', error);
+      return 'unknown';
+    }
+  }
+
   async getLocalStream(
     video: boolean = true,
     audio: boolean = true,
@@ -56,13 +98,31 @@ class WebRTCNativeService {
           navigator.userAgent
         );
 
-      // Optimización para móviles: reducir resolución para ahorrar ancho de banda
-      // PC: 1280x720 (HD), Móvil: 640x480 (VGA) para mejor rendimiento en datos móviles
+      // Detectar tipo de conexión para optimizar calidad
+      const connectionType = await this.detectConnectionType();
+      const isWifi = connectionType === 'wifi';
+      
+      console.log('📡 Tipo de conexión detectado:', {
+        connectionType,
+        isMobile,
+        isWifi,
+      });
+
+      // Optimización inteligente:
+      // - Móvil en WiFi: Calidad media (960x540, 25fps, 400kbps) - mejor que datos pero no tan alta como PC
+      // - Móvil en datos: Calidad baja (640x480, 15-20fps, 250kbps) - ahorro de datos
+      // - PC: Calidad alta (1280x720, 30fps, ~1Mbps) - sin cambios
       const videoConstraints = video
         ? {
-            width: isMobile ? { ideal: 640, max: 640 } : { ideal: 1280 },
-            height: isMobile ? { ideal: 480, max: 480 } : { ideal: 720 },
-            frameRate: isMobile ? { ideal: 15, max: 20 } : { ideal: 30 },
+            width: isMobile 
+              ? (isWifi ? { ideal: 960, max: 960 } : { ideal: 640, max: 640 })
+              : { ideal: 1280 },
+            height: isMobile 
+              ? (isWifi ? { ideal: 540, max: 540 } : { ideal: 480, max: 480 })
+              : { ideal: 720 },
+            frameRate: isMobile 
+              ? (isWifi ? { ideal: 25, max: 25 } : { ideal: 15, max: 20 })
+              : { ideal: 30 },
             facingMode: isMobile ? preferredFacingMode : undefined, // Solo aplicar facingMode en móviles
           }
         : false;
@@ -157,24 +217,8 @@ class WebRTCNativeService {
 
     const peerConnection = new RTCPeerConnection(configuration);
 
-    // Optimización para móviles: configurar bitrate reducido para video
-    if (isMobile) {
-      // Configurar parámetros de codificación para reducir ancho de banda
-      peerConnection.getTransceivers().forEach(transceiver => {
-        if (transceiver.sender && transceiver.sender.track?.kind === 'video') {
-          const params = transceiver.sender.getParameters();
-          if (!params.encodings) {
-            params.encodings = [{}];
-          }
-          // Reducir bitrate máximo para móviles (250kbps en lugar de ~1Mbps)
-          params.encodings[0].maxBitrate = 250000; // 250 kbps
-          params.encodings[0].maxFramerate = 20; // Máximo 20 fps
-          transceiver.sender.setParameters(params).catch(err => {
-            console.warn('⚠️ No se pudo configurar bitrate reducido:', err);
-          });
-        }
-      });
-    }
+    // La configuración de bitrate se hará después de agregar tracks
+    // para asegurar que los transceivers estén disponibles
 
     // Add local stream tracks
     if (this.localStream) {
@@ -184,6 +228,9 @@ class WebRTCNativeService {
           `WebRTC: Track agregado - Tipo: ${track.kind}, Enabled: ${track.enabled}, Estado: ${track.readyState}`
         );
       });
+      
+      // Configurar bitrate después de agregar tracks (opción 5: Ajuste SDP)
+      this.configureVideoBitrate(peerConnection, isMobile);
     }
 
     // Handle remote stream
@@ -271,10 +318,40 @@ class WebRTCNativeService {
     // Create offer
     try {
       console.log('📤 Creating offer for:', recipientId);
-      const offer = await peerConnection.createOffer();
+      
+      // Configurar bitrate antes de crear offer (opción 5: Ajuste SDP)
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
+      
+      await this.configureVideoBitrate(peerConnection, isMobile);
+      
+      // Crear offer con opciones mejoradas
+      const offer = await peerConnection.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true,
+      });
+      
+      // Mejorar SDP para priorizar calidad cuando el receptor es PC (opción 5: Ajuste SDP avanzado)
+      if (offer.sdp && !isMobile) {
+        // Aumentar bitrate en SDP para PC
+        offer.sdp = offer.sdp.replace(
+          /a=fmtp:\d+ (.+)/g,
+          (match, params) => {
+            // Asegurar bitrate alto en SDP
+            if (!params.includes('x-google-max-bitrate')) {
+              return match + ';x-google-max-bitrate=1000000';
+            }
+            return match;
+          }
+        );
+      }
+      
       console.log('📤 Offer created:', {
         type: offer.type,
         sdpLength: offer.sdp?.length,
+        isMobile,
       });
       await peerConnection.setLocalDescription(offer);
       console.log('📤 Local description set');
@@ -359,31 +436,29 @@ class WebRTCNativeService {
           })
         );
 
-        // Optimización para móviles: configurar bitrate antes de crear answer
+        // Configurar bitrate antes de crear answer (opción 5: Ajuste SDP)
         const isMobile =
           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
             navigator.userAgent
           );
         
-        if (isMobile) {
-          // Configurar parámetros de codificación para reducir ancho de banda
-          peerConnection.getTransceivers().forEach(transceiver => {
-            if (transceiver.sender && transceiver.sender.track?.kind === 'video') {
-              const params = transceiver.sender.getParameters();
-              if (!params.encodings) {
-                params.encodings = [{}];
-              }
-              // Reducir bitrate máximo para móviles (250kbps en lugar de ~1Mbps)
-              params.encodings[0].maxBitrate = 250000; // 250 kbps
-              params.encodings[0].maxFramerate = 20; // Máximo 20 fps
-              transceiver.sender.setParameters(params).catch(err => {
-                console.warn('⚠️ No se pudo configurar bitrate reducido:', err);
-              });
-            }
-          });
-        }
+        await this.configureVideoBitrate(peerConnection, isMobile);
 
         const answer = await peerConnection.createAnswer();
+        
+        // Mejorar SDP en answer también (opción 5: Ajuste SDP avanzado)
+        if (answer.sdp && !isMobile) {
+          answer.sdp = answer.sdp.replace(
+            /a=fmtp:\d+ (.+)/g,
+            (match, params) => {
+              if (!params.includes('x-google-max-bitrate')) {
+                return match + ';x-google-max-bitrate=1000000';
+              }
+              return match;
+            }
+          );
+        }
+        
         await peerConnection.setLocalDescription(answer);
 
         console.log('✅ Answer created and sent to:', peerId);
@@ -444,6 +519,54 @@ class WebRTCNativeService {
       console.error('❌ Error al procesar señal WebRTC:', error);
       console.error('Signal type:', signal.type);
       console.error('Peer ID:', peerId);
+    }
+  }
+
+  // Configurar bitrate de video según tipo de conexión (opción 5: Ajuste SDP)
+  private async configureVideoBitrate(
+    peerConnection: RTCPeerConnection,
+    isMobile: boolean
+  ): Promise<void> {
+    try {
+      // Detectar tipo de conexión
+      const connectionType = await this.detectConnectionType();
+      const isWifi = connectionType === 'wifi';
+      
+      // Configurar parámetros de codificación según conexión
+      peerConnection.getTransceivers().forEach(transceiver => {
+        if (transceiver.sender && transceiver.sender.track?.kind === 'video') {
+          const params = transceiver.sender.getParameters();
+          if (!params.encodings) {
+            params.encodings = [{}];
+          }
+          
+          if (isMobile) {
+            // Móvil: ajustar según tipo de conexión
+            if (isWifi) {
+              // Móvil en WiFi: calidad media (400kbps, 25fps)
+              params.encodings[0].maxBitrate = 400000; // 400 kbps
+              params.encodings[0].maxFramerate = 25;
+              console.log('📡 Configurando bitrate para móvil en WiFi: 400kbps');
+            } else {
+              // Móvil en datos: calidad baja (250kbps, 20fps)
+              params.encodings[0].maxBitrate = 250000; // 250 kbps
+              params.encodings[0].maxFramerate = 20;
+              console.log('📡 Configurando bitrate para móvil en datos: 250kbps');
+            }
+          } else {
+            // PC: calidad alta (sin límite estricto, usar default ~1Mbps)
+            params.encodings[0].maxBitrate = 1000000; // 1 Mbps
+            params.encodings[0].maxFramerate = 30;
+            console.log('📡 Configurando bitrate para PC: 1Mbps');
+          }
+          
+          transceiver.sender.setParameters(params).catch(err => {
+            console.warn('⚠️ No se pudo configurar bitrate:', err);
+          });
+        }
+      });
+    } catch (error) {
+      console.warn('⚠️ Error configurando bitrate:', error);
     }
   }
 

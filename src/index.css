@@ -4,6 +4,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Opción 2 y 6: Mejora de renderizado para video remoto en PC */
+@layer components {
+  .video-enhancement {
+    /* Upscaling inteligente y mejora de calidad visual */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

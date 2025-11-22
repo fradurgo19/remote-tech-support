@@ -145,6 +145,12 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
     }
   }, [stream, hasActiveVideo, isLocal]);
 
+  // Detectar si es PC para aplicar mejoras de renderizado (opción 2 y 6)
+  const isPC = typeof window !== 'undefined' && 
+    !/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+
   return (
     <div className='relative overflow-hidden rounded-lg bg-gray-900 w-full h-full'>
       {hasActiveVideo ? (
@@ -155,7 +161,23 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
           muted={isMuted}
           className={`w-full h-full ${
             isScreenShare ? 'object-contain bg-black' : 'object-cover'
+          } ${
+            // Opción 2 y 6: Mejora de renderizado para video remoto en PC
+            !isLocal && isPC 
+              ? 'video-enhancement' 
+              : ''
           }`}
+          style={
+            // Opción 6: Upscaling inteligente con filtros CSS
+            !isLocal && isPC
+              ? {
+                  imageRendering: 'crisp-edges' as const,
+                  filter: 'contrast(1.1) brightness(1.05) saturate(1.1)',
+                  transform: 'scale(1)',
+                  willChange: 'filter',
+                }
+              : undefined
+          }
         />
       ) : (
         <div className='w-full h-full flex items-center justify-center bg-gray-800'>
