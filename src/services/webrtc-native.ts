@@ -542,16 +542,19 @@ class WebRTCNativeService {
           
           if (isMobile) {
             // Móvil: ajustar según tipo de conexión
+            // Aumentar bitrate para mejor calidad y reducir pixelación
             if (isWifi) {
-              // Móvil en WiFi: calidad media (400kbps, 25fps)
-              params.encodings[0].maxBitrate = 400000; // 400 kbps
+              // Móvil en WiFi: calidad mejorada (600kbps, 25fps) para mejor detalle en pantallas
+              params.encodings[0].maxBitrate = 600000; // 600 kbps (aumentado de 400)
               params.encodings[0].maxFramerate = 25;
-              console.log('📡 Configurando bitrate para móvil en WiFi: 400kbps');
+              // Mejorar calidad de codificación para reducir pixelación
+              params.encodings[0].scaleResolutionDownBy = 1; // No reducir resolución
+              console.log('📡 Configurando bitrate para móvil en WiFi: 600kbps (mejorado para pantallas)');
             } else {
-              // Móvil en datos: calidad baja (250kbps, 20fps)
-              params.encodings[0].maxBitrate = 250000; // 250 kbps
+              // Móvil en datos: calidad media (350kbps, 20fps) - mejor que antes para pantallas
+              params.encodings[0].maxBitrate = 350000; // 350 kbps (aumentado de 250)
               params.encodings[0].maxFramerate = 20;
-              console.log('📡 Configurando bitrate para móvil en datos: 250kbps');
+              console.log('📡 Configurando bitrate para móvil en datos: 350kbps (mejorado)');
             }
           } else {
             // PC: calidad alta (sin límite estricto, usar default ~1Mbps)

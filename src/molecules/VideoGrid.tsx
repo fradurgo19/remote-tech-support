@@ -164,15 +164,17 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
           } ${
             // Opción 2 y 6: Mejora de renderizado para video remoto en PC
             !isLocal && isPC 
-              ? 'video-enhancement' 
+              ? 'video-enhancement video-remote-brightness-fix' 
               : ''
           }`}
           style={
-            // Opción 6: Upscaling inteligente con filtros CSS
+            // Opción 6: Upscaling inteligente con filtros CSS + Reducción de brillo para remotos
             !isLocal && isPC
               ? {
                   imageRendering: 'crisp-edges' as const,
-                  filter: 'contrast(1.1) brightness(1.05) saturate(1.1)',
+                  // Reducir brillo significativamente para pantallas brillantes (0.65 = 35% menos brillo)
+                  // Aumentar contraste para compensar y mejorar definición
+                  filter: 'brightness(0.65) contrast(1.3) saturate(1.1)',
                   transform: 'scale(1)',
                   willChange: 'filter',
                 }
