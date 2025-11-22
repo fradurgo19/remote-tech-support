@@ -19,6 +19,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
   isLocal = false,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasHighContrastContent, setHasHighContrastContent] = React.useState(false);
 
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -128,21 +129,66 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
         (track.readyState === 'live' || track.readyState === 'starting')
     );
 
-  // Debug logging for video track status
+  // Detectar contenido de alto contraste (pantallas con texto) para optimizar filtros
   useEffect(() => {
-    if (stream) {
-      const videoTracks = stream.getVideoTracks();
-      videoTracks.forEach((track, index) => {
-        console.log(`🎥 VideoContainer - Track ${index}:`, {
-          enabled: track.enabled,
-          readyState: track.readyState,
-          muted: track.muted,
-          label: track.label,
-          isLocal,
-        });
-      });
-      console.log(`🎥 VideoContainer - hasActiveVideo: ${hasActiveVideo}`);
-    }
+    if (!videoRef.current || isLocal || !hasActiveVideo) return;
+
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    
+    if (!ctx) return;
+
+    const checkContrast = () => {
+      try {
+        canvas.width = video.videoWidth || 320;
+        canvas.height = video.videoHeight || 240;
+        
+        if (canvas.width === 0 || canvas.height === 0) return;
+        
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        // Analizar contraste: buscar áreas con alto contraste (típico de texto en pantallas)
+        let highContrastPixels = 0;
+        const sampleSize = Math.min(10000, data.length / 4); // Muestrear hasta 10k píxeles
+        
+        for (let i = 0; i < sampleSize; i++) {
+          const idx = Math.floor(Math.random() * (data.length / 4)) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          const brightness = (r + g + b) / 3;
+          
+          // Verificar contraste con píxeles vecinos
+          if (idx + 4 < data.length) {
+            const nextR = data[idx + 4];
+            const nextG = data[idx + 5];
+            const nextB = data[idx + 6];
+            const nextBrightness = (nextR + nextG + nextB) / 3;
+            const contrast = Math.abs(brightness - nextBrightness);
+            
+            if (contrast > 100) { // Alto contraste (texto típicamente tiene >100)
+              highContrastPixels++;
+            }
+          }
+        }
+        
+        // Si más del 5% de los píxeles muestran alto contraste, probablemente hay texto/pantalla
+        const highContrastRatio = highContrastPixels / sampleSize;
+        setHasHighContrastContent(highContrastRatio > 0.05);
+      } catch (error) {
+        // Silenciar errores de canvas (puede fallar por CORS)
+        console.debug('Canvas analysis skipped:', error);
+      }
+    };
+
+    // Verificar cada 2 segundos para no sobrecargar
+    const interval = setInterval(checkContrast, 2000);
+    checkContrast(); // Primera verificación inmediata
+
+    return () => clearInterval(interval);
   }, [stream, hasActiveVideo, isLocal]);
 
   // Detectar si es PC para aplicar mejoras de renderizado (opción 2 y 6)
@@ -159,6 +205,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
           autoPlay
           playsInline
           muted={isMuted}
+          data-high-contrast={hasHighContrastContent ? 'true' : 'false'}
           className={`w-full h-full ${
             isScreenShare ? 'object-contain bg-black' : 'object-cover'
           } ${
@@ -168,15 +215,18 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
               : ''
           }`}
           style={
-            // Opción 6: Upscaling inteligente con filtros CSS + Reducción de brillo para remotos
+            // Opción 6: Upscaling inteligente con filtros CSS + Ajuste de brillo optimizado para remotos
             !isLocal && isPC
               ? {
                   imageRendering: 'crisp-edges' as const,
-                  // Reducir brillo significativamente para pantallas brillantes (0.65 = 35% menos brillo)
-                  // Aumentar contraste para compensar y mejorar definición
-                  filter: 'brightness(0.65) contrast(1.3) saturate(1.1)',
+                  // Ajuste dinámico según contenido: más brillo si hay texto/pantalla
+                  filter: hasHighContrastContent
+                    ? 'brightness(0.9) contrast(1.5) saturate(1.1)' // Más brillo y contraste para texto
+                    : 'brightness(0.85) contrast(1.4) saturate(1.1)', // Brillo intermedio para video normal
                   transform: 'scale(1)',
                   willChange: 'filter',
+                  // Mejorar renderizado de texto y bordes
+                  textRendering: 'optimizeLegibility' as const,
                 }
               : undefined
           }

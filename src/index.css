@@ -16,28 +16,43 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Corrección de brillo excesivo para videos remotos desde móvil */
+  /* Corrección de brillo y optimización para videos remotos desde móvil */
   .video-remote-brightness-fix {
-    /* Reducción de brillo significativa (35% menos) para pantallas brillantes */
-    /* Aumentar contraste para compensar pérdida de detalle */
-    filter: brightness(0.65) contrast(1.3) saturate(1.1) !important;
+    /* Brillo intermedio (15% menos) para balance entre oscuridad y brillo excesivo */
+    /* Contraste alto (1.4-1.5) para mejorar legibilidad de texto en pantallas */
+    filter: brightness(0.85) contrast(1.4) saturate(1.1) !important;
     /* Mejorar calidad de renderizado y reducir pixelación */
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
-    /* Mejor interpolación para reducir pixelación */
+    /* Mejor interpolación para reducir pixelación y mejorar texto */
     image-rendering: auto;
     /* Aceleración GPU para mejor rendimiento */
     will-change: filter, transform;
     transform: translateZ(0);
-    /* Mejorar suavizado y nitidez */
+    /* Mejorar suavizado y nitidez, especialmente para texto */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Optimizar renderizado de texto */
+    text-rendering: optimizeLegibility;
   }
 
   /* Ajuste adicional para cuando el video remoto muestra pantallas brillantes */
   .video-remote-brightness-fix video {
     /* Asegurar que el filtro se aplique correctamente con valores optimizados */
-    filter: brightness(0.65) contrast(1.3) saturate(1.1);
+    /* Contraste alto para mejorar legibilidad de texto en pantallas de PC */
+    filter: brightness(0.85) contrast(1.4) saturate(1.1);
+    /* Mejorar nitidez de bordes y texto */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  /* Optimización específica para contenido con texto/pantallas */
+  .video-remote-brightness-fix video[data-high-contrast="true"] {
+    /* Más brillo y contraste cuando se detecta texto/pantalla */
+    filter: brightness(0.9) contrast(1.5) saturate(1.1);
+    /* Mejorar nitidez de texto */
+    image-rendering: crisp-edges;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
