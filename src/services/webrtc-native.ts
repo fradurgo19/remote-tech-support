@@ -56,14 +56,19 @@ class WebRTCNativeService {
           navigator.userAgent
         );
 
+      // Optimización para móviles: reducir resolución para ahorrar ancho de banda
+      // PC: 1280x720 (HD), Móvil: 640x480 (VGA) para mejor rendimiento en datos móviles
+      const videoConstraints = video
+        ? {
+            width: isMobile ? { ideal: 640, max: 640 } : { ideal: 1280 },
+            height: isMobile ? { ideal: 480, max: 480 } : { ideal: 720 },
+            frameRate: isMobile ? { ideal: 15, max: 20 } : { ideal: 30 },
+            facingMode: isMobile ? preferredFacingMode : undefined, // Solo aplicar facingMode en móviles
+          }
+        : false;
+
       const constraints: MediaStreamConstraints = {
-        video: video
-          ? {
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-              facingMode: isMobile ? preferredFacingMode : undefined, // Solo aplicar facingMode en móviles
-            }
-          : false,
+        video: videoConstraints,
         audio: audio
           ? {
               echoCancellation: true,
@@ -137,6 +142,12 @@ class WebRTCNativeService {
   }
 
   createPeerConnection(peerId: string, initiator: boolean): RTCPeerConnection {
+    // Detectar si es móvil para optimizar configuración
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+
     const configuration: RTCConfiguration = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -145,6 +156,25 @@ class WebRTCNativeService {
     };
 
     const peerConnection = new RTCPeerConnection(configuration);
+
+    // Optimización para móviles: configurar bitrate reducido para video
+    if (isMobile) {
+      // Configurar parámetros de codificación para reducir ancho de banda
+      peerConnection.getTransceivers().forEach(transceiver => {
+        if (transceiver.sender && transceiver.sender.track?.kind === 'video') {
+          const params = transceiver.sender.getParameters();
+          if (!params.encodings) {
+            params.encodings = [{}];
+          }
+          // Reducir bitrate máximo para móviles (250kbps en lugar de ~1Mbps)
+          params.encodings[0].maxBitrate = 250000; // 250 kbps
+          params.encodings[0].maxFramerate = 20; // Máximo 20 fps
+          transceiver.sender.setParameters(params).catch(err => {
+            console.warn('⚠️ No se pudo configurar bitrate reducido:', err);
+          });
+        }
+      });
+    }
 
     // Add local stream tracks
     if (this.localStream) {
@@ -328,6 +358,30 @@ class WebRTCNativeService {
             sdp: signal.sdp,
           })
         );
+
+        // Optimización para móviles: configurar bitrate antes de crear answer
+        const isMobile =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          );
+        
+        if (isMobile) {
+          // Configurar parámetros de codificación para reducir ancho de banda
+          peerConnection.getTransceivers().forEach(transceiver => {
+            if (transceiver.sender && transceiver.sender.track?.kind === 'video') {
+              const params = transceiver.sender.getParameters();
+              if (!params.encodings) {
+                params.encodings = [{}];
+              }
+              // Reducir bitrate máximo para móviles (250kbps en lugar de ~1Mbps)
+              params.encodings[0].maxBitrate = 250000; // 250 kbps
+              params.encodings[0].maxFramerate = 20; // Máximo 20 fps
+              transceiver.sender.setParameters(params).catch(err => {
+                console.warn('⚠️ No se pudo configurar bitrate reducido:', err);
+              });
+            }
+          });
+        }
 
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
