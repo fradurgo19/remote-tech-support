@@ -12,6 +12,14 @@ class SocketService {
   private maxConnectionAttempts: number = 3;
   private messageQueue: Message[] = [];
   private isReconnecting: boolean = false;
+  private callRequestCallbacks: Array<(data: {
+    from: string;
+    fromName: string;
+    fromEmail: string;
+    fromAvatar?: string;
+    ticketId: string;
+    callSessionId: string;
+  }) => void> = [];
 
   connect(user: User): void {
     this.user = user;
@@ -48,6 +56,18 @@ class SocketService {
       // Expose socket to global context for debugging
       (window as any).socketService = this;
       (window as any).socket = this.socket;
+
+      // Re-register call-request listeners when socket reconnects
+      // This ensures listeners are active even if they were registered before connection
+      if (this.callRequestCallbacks.length > 0) {
+        console.log('📞 Re-registering call-request listeners after connect:', this.callRequestCallbacks.length);
+        // Remove all existing listeners first to avoid duplicates
+        this.socket.removeAllListeners('call-request');
+        // Re-register all callbacks
+        this.callRequestCallbacks.forEach(callback => {
+          this.socket?.on('call-request', callback);
+        });
+      }
 
       // Resend any queued messages
       if (this.messageQueue.length > 0) {
@@ -90,6 +110,17 @@ class SocketService {
       console.log('Reconnected after', attemptNumber, 'attempts');
       this.isReconnecting = false;
       this.isServerAvailable = true;
+      
+      // Re-register call-request listeners after reconnection
+      if (this.callRequestCallbacks.length > 0) {
+        console.log('📞 Re-registering call-request listeners after reconnect:', this.callRequestCallbacks.length);
+        // Remove all existing listeners first to avoid duplicates
+        this.socket.removeAllListeners('call-request');
+        // Re-register all callbacks
+        this.callRequestCallbacks.forEach(callback => {
+          this.socket?.on('call-request', callback);
+        });
+      }
     });
 
     this.socket.on('reconnect_error', error => {
@@ -206,18 +237,32 @@ class SocketService {
       serverAvailable: this.isServerAvailable,
     });
 
-    if (this.socket && this.isServerAvailable) {
-      const handleCallRequest = (data: any) => {
-        console.log('📞 SocketService: Received call-request event:', data);
-        callback(data);
-      };
+    const handleCallRequest = (data: any) => {
+      console.log('📞 SocketService: Received call-request event:', data);
+      callback(data);
+    };
 
+    // Store callback for re-registration on reconnect
+    this.callRequestCallbacks.push(handleCallRequest);
+
+    // Register listener if socket is already connected
+    if (this.socket && this.socket.connected) {
       this.socket.on('call-request', handleCallRequest);
-      return () => {
-        this.socket?.off('call-request', handleCallRequest);
-      };
+      console.log('📞 SocketService: Call-request listener registered (socket connected)');
+    } else {
+      console.log('📞 SocketService: Call-request listener queued (socket not connected yet)');
     }
-    return () => {};
+
+    // Return cleanup function
+    return () => {
+      // Remove from callbacks array
+      const index = this.callRequestCallbacks.indexOf(handleCallRequest);
+      if (index > -1) {
+        this.callRequestCallbacks.splice(index, 1);
+      }
+      // Remove listener from socket
+      this.socket?.off('call-request', handleCallRequest);
+    };
   }
 
   // WebRTC signaling
