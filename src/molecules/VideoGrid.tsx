@@ -243,16 +243,16 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
       {hasSomeone ? (
         // Layout adaptativo según cantidad de cámaras
         remoteStreams.length === 1 ? (
-          // 1 cámara remota: layout principal grande y cuadrado + local pequeño en esquina
+          // 1 cámara remota: layout principal grande y cuadrado + local pequeño
           <div className='relative h-full w-full'>
-            {/* Video remoto - Grande y cuadrado, centrado, ocupa la mayor parte de la pantalla */}
+            {/* Video remoto - Grande y cuadrado */}
             {remoteStreams.map(peerStream => (
               <div
                 key={peerStream.peerId}
-                className='absolute inset-0 flex items-center justify-center p-2 md:p-6'
+                className='absolute inset-0 flex items-center justify-center md:justify-start p-0 md:pl-0 md:pr-4'
               >
-                {/* Contenedor cuadrado que se adapta al tamaño disponible - mínimo 70% del viewport */}
-                <div className='w-[85vw] h-[85vw] md:w-[75vh] md:h-[75vh] max-w-[90vh] max-h-[90vh] mx-auto aspect-square'>
+                {/* En móvil: cuadrado centrado, en PC: cuadrado grande desde la izquierda */}
+                <div className='w-full h-full md:w-[75vh] md:h-[75vh] md:max-w-[85vh] md:max-h-[85vh] aspect-square'>
                   <VideoContainer
                     stream={peerStream.stream}
                     user={remoteUsers[peerStream.peerId]}
@@ -263,17 +263,30 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
               </div>
             ))}
 
-            {/* Video local - Pequeño en esquina inferior derecha */}
+            {/* Video local - Abajo en móvil, esquina en PC */}
             {localStream && (
-              <div className='absolute bottom-4 right-4 w-40 h-30 md:w-56 md:h-42 z-10 shadow-2xl border-2 border-white/30 rounded-lg overflow-hidden bg-gray-900'>
-                <VideoContainer
-                  stream={localStream}
-                  isMuted={true}
-                  user={localUser}
-                  isScreenShare={isScreenSharing}
-                  isLocal={true}
-                />
-              </div>
+              <>
+                {/* Móvil: Abajo, ocupa todo el ancho */}
+                <div className='md:hidden absolute bottom-0 left-0 right-0 w-full h-32 border-t-2 border-white/20 z-10'>
+                  <VideoContainer
+                    stream={localStream}
+                    isMuted={true}
+                    user={localUser}
+                    isScreenShare={isScreenSharing}
+                    isLocal={true}
+                  />
+                </div>
+                {/* Desktop: Esquina inferior derecha */}
+                <div className='hidden md:block absolute bottom-4 right-4 w-56 h-42 z-10 shadow-2xl border-2 border-white/30 rounded-lg overflow-hidden bg-gray-900'>
+                  <VideoContainer
+                    stream={localStream}
+                    isMuted={true}
+                    user={localUser}
+                    isScreenShare={isScreenSharing}
+                    isLocal={true}
+                  />
+                </div>
+              </>
             )}
           </div>
         ) : (
