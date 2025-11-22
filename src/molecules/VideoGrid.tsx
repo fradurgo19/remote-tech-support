@@ -245,14 +245,16 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
         remoteStreams.length === 1 ? (
           // 1 cámara remota: layout principal grande y cuadrado + local pequeño
           <div className='relative h-full w-full'>
-            {/* Video remoto - Grande y cuadrado */}
+            {/* Video remoto - Ocupa desde izquierda hasta donde empieza el local (240px desde la derecha) */}
             {remoteStreams.map(peerStream => (
               <div
                 key={peerStream.peerId}
-                className='absolute inset-0 flex items-center justify-center md:justify-start p-0 md:pl-0 md:pr-4'
+                className={`absolute inset-0 flex items-center justify-center md:justify-start p-0 ${
+                  localStream ? 'md:right-[240px]' : ''
+                }`}
               >
-                {/* En móvil: cuadrado centrado, en PC: cuadrado grande desde la izquierda */}
-                <div className='w-full h-full md:w-[75vh] md:h-[75vh] md:max-w-[85vh] md:max-h-[85vh] aspect-square'>
+                {/* En móvil: cuadrado centrado, en PC: ocupa todo el ancho disponible */}
+                <div className='w-full h-full aspect-square md:aspect-auto md:h-full'>
                   <VideoContainer
                     stream={peerStream.stream}
                     user={remoteUsers[peerStream.peerId]}
@@ -276,7 +278,7 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
                     isLocal={true}
                   />
                 </div>
-                {/* Desktop: Esquina inferior derecha */}
+                {/* Desktop: Esquina inferior derecha - w-56 (224px) + right-4 (16px) = 240px */}
                 <div className='hidden md:block absolute bottom-4 right-4 w-56 h-42 z-10 shadow-2xl border-2 border-white/30 rounded-lg overflow-hidden bg-gray-900'>
                   <VideoContainer
                     stream={localStream}
