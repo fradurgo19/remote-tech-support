@@ -5,6 +5,7 @@ import { useCall } from '../context/CallContext';
 import { CallControls } from '../molecules/CallControls';
 import { DeviceSelector } from '../molecules/DeviceSelector';
 import { VideoGrid } from '../molecules/VideoGrid';
+import { socketService } from '../services/socket';
 import { User } from '../types';
 
 interface VideoCallPanelProps {
@@ -44,6 +45,7 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
   const [callError, setCallError] = useState<string | null>(null);
   const [showDeviceSelector, setShowDeviceSelector] = useState(false);
   const [isInitializingCall, setIsInitializingCall] = useState(false);
+  const [isSocketReady, setIsSocketReady] = useState(false);
   const [currentFacingMode, setCurrentFacingMode] = useState<
     'user' | 'environment'
   >('environment'); // Inicia con trasera
@@ -109,6 +111,49 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
     }
   };
 
+  // Verificar estado del socket
+  useEffect(() => {
+    const checkSocketStatus = () => {
+      const socket = socketService.getSocket();
+      const connected = socket?.connected || false;
+      setIsSocketReady(connected);
+      
+      if (!connected) {
+        console.log('⚠️ Socket not connected, waiting for connection...');
+      }
+    };
+
+    // Verificar inmediatamente
+    checkSocketStatus();
+
+    // Verificar periódicamente hasta que esté conectado
+    const interval = setInterval(() => {
+      checkSocketStatus();
+      const socket = socketService.getSocket();
+      if (socket?.connected) {
+        clearInterval(interval);
+      }
+    }, 500);
+
+    // También escuchar eventos de conexión
+    const unsubscribe = socketService.onConnectionChange(
+      () => {
+        console.log('✅ Socket connected in VideoCallPanel');
+        setIsSocketReady(true);
+        clearInterval(interval);
+      },
+      () => {
+        console.log('⚠️ Socket disconnected in VideoCallPanel');
+        setIsSocketReady(false);
+      }
+    );
+
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
+  }, []);
+
   // Debug: Log stream status
   useEffect(() => {
     console.log('VideoCallPanel - Stream status:', {
@@ -119,8 +164,9 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
       isInCall,
       videoEnabled,
       audioEnabled,
+      isSocketReady,
     });
-  }, [localStream, isInCall, videoEnabled, audioEnabled]);
+  }, [localStream, isInCall, videoEnabled, audioEnabled, isSocketReady]);
 
   return (
     <div className='flex flex-col h-full bg-gray-950 rounded-lg overflow-hidden'>
@@ -168,6 +214,13 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
               )}
 
               <div className='space-y-3 w-full'>
+                {!isSocketReady && (
+                  <div className='bg-yellow-500/20 border border-yellow-500/30 p-3 rounded-lg mb-3'>
+                    <p className='text-yellow-200 text-sm text-center'>
+                      ⏳ Conectando al servidor...
+                    </p>
+                  </div>
+                )}
                 <Button
                   onClick={handleInitiateCall}
                   disabled={
@@ -175,6 +228,7 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
                     isInitializingCall ||
                     !recipientId ||
                     !ticketId ||
+                    !isSocketReady ||
                     (localUser && recipientId === localUser.id)
                   }
                   isLoading={isLoading || isInitializingCall}
@@ -182,7 +236,11 @@ export const VideoCallPanel: React.FC<VideoCallPanelProps> = ({
                   className='w-full'
                   leftIcon={<PhoneCall size={18} />}
                 >
-                  {isInitializingCall ? 'Iniciando...' : 'Iniciar Llamada'}
+                  {isInitializingCall 
+                    ? 'Iniciando...' 
+                    : !isSocketReady 
+                    ? 'Conectando...' 
+                    : 'Iniciar Llamada'}
                 </Button>
 
                 <Button

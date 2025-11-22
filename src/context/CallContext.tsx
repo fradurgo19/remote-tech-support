@@ -160,6 +160,23 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       console.log('📞 Initiating call to:', recipientId);
 
+      // Verificar que el socket esté conectado antes de continuar
+      const socket = socketService.getSocket();
+      if (!socket || !socket.connected) {
+        console.log('⏳ Socket not connected, waiting for connection...');
+        // Esperar hasta 5 segundos por la conexión
+        let attempts = 0;
+        while (attempts < 10 && (!socket || !socket.connected)) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          attempts++;
+        }
+        
+        if (!socket || !socket.connected) {
+          throw new Error('No se pudo conectar al servidor. Por favor, recarga la página e intenta nuevamente.');
+        }
+      }
+      console.log('✅ Socket connected, proceeding with call');
+
       // Get local stream first
       console.log('📹 Requesting camera and microphone permissions...');
       const stream = await webRTCNativeService.getLocalStream(true, true);

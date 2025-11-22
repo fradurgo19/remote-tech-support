@@ -197,7 +197,7 @@ class SocketService {
   }
 
   // Handle call signaling
-  initiateCall(recipientId: string, ticketId: string): void {
+  async initiateCall(recipientId: string, ticketId: string): Promise<void> {
     console.log('📞 SocketService: initiateCall called', {
       recipientId,
       ticketId,
@@ -207,7 +207,13 @@ class SocketService {
       serverAvailable: this.isServerAvailable,
     });
 
-    if (this.socket && this.user && this.isServerAvailable) {
+    // Esperar a que el socket esté conectado si no lo está
+    if (!this.socket?.connected) {
+      console.log('⏳ Socket not connected, waiting for connection...');
+      await this.waitForConnection();
+    }
+
+    if (this.socket && this.user && this.isServerAvailable && this.socket.connected) {
       this.socket.emit('call-initiate', {
         from: this.user.id,
         to: recipientId,
@@ -215,10 +221,57 @@ class SocketService {
       });
       console.log('✅ SocketService: call-initiate event emitted');
     } else {
-      console.error(
-        '❌ SocketService: Cannot initiate call - missing requirements'
-      );
+      const error = 'No se puede iniciar la llamada. Verifica tu conexión.';
+      console.error('❌ SocketService: Cannot initiate call - missing requirements', {
+        socket: !!this.socket,
+        connected: this.socket?.connected,
+        user: !!this.user,
+        serverAvailable: this.isServerAvailable,
+      });
+      throw new Error(error);
     }
+  }
+
+  // Wait for socket connection with timeout
+  private waitForConnection(timeout: number = 10000): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.socket?.connected) {
+        resolve();
+        return;
+      }
+
+      // Si no hay socket pero hay usuario, intentar reconectar
+      if (!this.socket && this.user) {
+        console.log('🔄 Socket no inicializado, reconectando...');
+        this.connect(this.user);
+      }
+
+      const timeoutId = setTimeout(() => {
+        this.socket?.off('connect', onConnect);
+        reject(new Error('Timeout esperando conexión del socket. Por favor, recarga la página.'));
+      }, timeout);
+
+      const onConnect = () => {
+        clearTimeout(timeoutId);
+        this.socket?.off('connect', onConnect);
+        console.log('✅ Socket connected, proceeding with call');
+        resolve();
+      };
+
+      if (this.socket) {
+        this.socket.on('connect', onConnect);
+      } else {
+        // Esperar un poco más si el socket se está inicializando
+        setTimeout(() => {
+          if (this.socket) {
+            this.socket.on('connect', onConnect);
+          } else {
+            clearTimeout(timeoutId);
+            reject(new Error('No se pudo inicializar el socket. Por favor, recarga la página.'));
+          }
+        }, 500);
+      }
+    });
   }
 
   onCallRequest(

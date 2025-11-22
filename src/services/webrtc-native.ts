@@ -233,7 +233,8 @@ class WebRTCNativeService {
       this.localStream = await this.getLocalStream();
     }
 
-    socketService.initiateCall(recipientId, ticketId);
+    // Asegurar que el socket esté conectado antes de iniciar la llamada
+    await socketService.initiateCall(recipientId, ticketId);
 
     const peerConnection = this.createPeerConnection(recipientId, true);
 
