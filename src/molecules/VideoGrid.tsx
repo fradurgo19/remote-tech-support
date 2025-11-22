@@ -243,14 +243,16 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
       {hasSomeone ? (
         // Layout adaptativo según cantidad de cámaras
         remoteStreams.length === 1 ? (
-          // 1 cámara remota: layout principal grande + local pequeño abajo
-          <div className='flex flex-col h-full w-full'>
-            <div className='flex-1 relative'>
-              {remoteStreams.map(peerStream => (
-                <div
-                  key={peerStream.peerId}
-                  className='absolute inset-0 h-full w-full'
-                >
+          // 1 cámara remota: layout principal grande y cuadrado + local pequeño en esquina
+          <div className='relative h-full w-full'>
+            {/* Video remoto - Grande y cuadrado, centrado, ocupa la mayor parte de la pantalla */}
+            {remoteStreams.map(peerStream => (
+              <div
+                key={peerStream.peerId}
+                className='absolute inset-0 flex items-center justify-center p-2 md:p-6'
+              >
+                {/* Contenedor cuadrado que se adapta al tamaño disponible - mínimo 70% del viewport */}
+                <div className='w-[85vw] h-[85vw] md:w-[75vh] md:h-[75vh] max-w-[90vh] max-h-[90vh] mx-auto aspect-square'>
                   <VideoContainer
                     stream={peerStream.stream}
                     user={remoteUsers[peerStream.peerId]}
@@ -258,11 +260,12 @@ export const VideoGrid: React.FC<VideoGridProps> = ({
                     isLocal={false}
                   />
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
 
+            {/* Video local - Pequeño en esquina inferior derecha */}
             {localStream && (
-              <div className='h-40 w-full border-t-2 border-white/20'>
+              <div className='absolute bottom-4 right-4 w-40 h-30 md:w-56 md:h-42 z-10 shadow-2xl border-2 border-white/30 rounded-lg overflow-hidden bg-gray-900'>
                 <VideoContainer
                   stream={localStream}
                   isMuted={true}
