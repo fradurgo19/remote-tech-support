@@ -151,7 +151,8 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
   const handleStatusChange = (newStatus: Ticket['status']) => {
     if (isChangingStatus) return; // Prevenir doble click
     
-    if (canChangeStatus && (newStatus === 'in_progress' || newStatus === 'resolved' || newStatus === 'redirected')) {
+    // Para técnicos/admin, mostrar modal de observaciones en cambios importantes
+    if (canChangeStatus && (newStatus === 'in_progress' || newStatus === 'resolved' || newStatus === 'redirected' || newStatus === 'closed')) {
       setPendingStatus(newStatus);
       setShowObservationsModal(true);
     } else {
@@ -409,7 +410,23 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
           </Button>
         )}
 
-        {status !== 'closed' && status === 'resolved' && (
+        {status !== 'closed' && status === 'resolved' && canChangeStatus && (
+          <Button
+            variant='outline'
+            leftIcon={<XCircle size={16} />}
+            onClick={() => {
+              setPendingStatus('closed');
+              setShowObservationsModal(true);
+            }}
+            disabled={isChangingStatus}
+            className='w-full sm:w-auto sm:ml-auto'
+          >
+            {isChangingStatus ? 'Procesando...' : 'Cerrar Ticket'}
+          </Button>
+        )}
+        
+        {/* Cerrar ticket para clientes (sin observaciones) */}
+        {status !== 'closed' && status === 'resolved' && !canChangeStatus && (
           <Button
             variant='outline'
             leftIcon={<XCircle size={16} />}

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
 import { authService } from '../services/api';
 import { socketService } from '../services/socket';
@@ -26,8 +26,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const currentUser = await authService.getCurrentUser();
         if (currentUser) {
-          setUser(currentUser);
-          socketService.connect(currentUser);
+          // Establecer estado como online al conectar
+          const userWithOnlineStatus = { ...currentUser, status: 'online' as const };
+          setUser(userWithOnlineStatus);
+          socketService.connect(userWithOnlineStatus);
         }
       } catch (err) {
         console.error('Auth check failed:', err);
@@ -39,15 +41,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuthStatus();
   }, []);
 
+  // Escuchar cambios de conexión del socket para actualizar estado del usuario
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubscribe = socketService.onConnectionChange(
+      // On connect - establecer como online
+      () => {
+        console.log('🟢 Socket conectado - Usuario online');
+        setUser(prev => prev ? { ...prev, status: 'online' } : null);
+      },
+      // On disconnect - establecer como offline
+      () => {
+        console.log('🔴 Socket desconectado - Usuario offline');
+        setUser(prev => prev ? { ...prev, status: 'offline' } : null);
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [user?.id]);
+
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     
     try {
       const loggedInUser = await authService.login(email, password);
-      setUser(loggedInUser);
+      // Establecer estado como online al iniciar sesión
+      const userWithOnlineStatus = { ...loggedInUser, status: 'online' as const };
+      setUser(userWithOnlineStatus);
       localStorage.setItem('currentUserEmail', loggedInUser.email);
-      socketService.connect(loggedInUser);
+      socketService.connect(userWithOnlineStatus);
     } catch (err) {
       setError((err as Error).message);
       throw err;
