@@ -255,7 +255,7 @@ export const testEmailConfiguration = async (req: Request, res: Response) => {
 export const updateTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, status, priority, technicianId } = req.body;
+    const { title, description, status, priority, technicianId, technicalObservations } = req.body;
     const user = req.user as { id: string; role: string };
 
     const ticket = await Ticket.findByPk(id);
@@ -277,6 +277,7 @@ export const updateTicket = async (req: Request, res: Response) => {
       status?: string;
       priority?: string;
       technicianId?: string;
+      technicalObservations?: string;
     } = {};
     if (user.role === 'customer') {
       // Los clientes solo pueden actualizar título y descripción
@@ -289,6 +290,16 @@ export const updateTicket = async (req: Request, res: Response) => {
       updateData.status = status || ticket.status;
       updateData.priority = priority || ticket.priority;
       updateData.technicianId = technicianId || ticket.technicianId;
+      
+      // Agregar observaciones técnicas si se proporcionan
+      if (technicalObservations) {
+        const timestamp = new Date().toLocaleString('es-CO');
+        const existingObs = ticket.technicalObservations || '';
+        const newObs = `[${timestamp}] ${technicalObservations}`;
+        updateData.technicalObservations = existingObs 
+          ? `${existingObs}\n\n${newObs}` 
+          : newObs;
+      }
     }
 
     // Guardar el estado anterior para detectar cambios
@@ -300,7 +311,7 @@ export const updateTicket = async (req: Request, res: Response) => {
     if (
       status &&
       status !== oldStatus &&
-      (status === 'in_progress' || status === 'resolved')
+      (status === 'in_progress' || status === 'resolved' || status === 'redirected')
     ) {
       try {
         // Obtener el ticket actualizado con información del cliente y técnico

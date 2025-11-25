@@ -6,6 +6,7 @@ import {
   Search,
   Trash2,
   User,
+  Users,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -34,6 +35,8 @@ const ReportsPage: React.FC = () => {
     'all'
   );
   const [typeFilter, setTypeFilter] = useState<Report['type'] | 'all'>('all');
+  const [customerFilter, setCustomerFilter] = useState<string>('all');
+  const [customers, setCustomers] = useState<UserType[]>([]);
 
   // Estados para creación de informes
   const [isCreating, setIsCreating] = useState(false);
@@ -65,6 +68,11 @@ const ReportsPage: React.FC = () => {
       try {
         const reportsData = await reportService.getReports();
         setReports(reportsData as unknown as Report[]);
+        
+        // Obtener lista de clientes para el filtro
+        const usersData = await userService.getUsers();
+        const customersList = usersData.filter(u => u.role === 'customer');
+        setCustomers(customersList);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Error al cargar los informes';
@@ -217,8 +225,10 @@ const ReportsPage: React.FC = () => {
     const matchesStatus =
       statusFilter === 'all' || report.status === statusFilter;
     const matchesType = typeFilter === 'all' || report.type === typeFilter;
+    const matchesCustomer =
+      customerFilter === 'all' || report.customerId === customerFilter;
 
-    return matchesSearch && matchesStatus && matchesType;
+    return matchesSearch && matchesStatus && matchesType && matchesCustomer;
   });
 
   // Verificar permisos
@@ -312,6 +322,25 @@ const ReportsPage: React.FC = () => {
               <option value='security'>Seguridad</option>
             </select>
           </div>
+
+          {customers.length > 0 && (
+            <div className='inline-flex items-center rounded-md border border-input bg-background px-3 h-10 text-sm'>
+              <Users size={16} className='mr-2 text-muted-foreground' />
+              <span className='text-muted-foreground mr-2'>Cliente:</span>
+              <select
+                className='bg-transparent border-none outline-none max-w-[200px]'
+                value={customerFilter}
+                onChange={e => setCustomerFilter(e.target.value)}
+              >
+                <option value='all'>Todos</option>
+                {customers.map(customer => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

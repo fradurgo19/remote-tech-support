@@ -31,7 +31,7 @@ export interface Ticket {
   id: string;
   title: string;
   description: string;
-  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  status: 'open' | 'in_progress' | 'resolved' | 'closed' | 'redirected';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   createdAt: string;
   updatedAt: string;
@@ -40,6 +40,7 @@ export interface Ticket {
   category: string;
   tags: string[];
   messageCount?: number;
+  technicalObservations?: string;
 }
 
 export interface Message {

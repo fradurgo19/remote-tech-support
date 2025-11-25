@@ -6,7 +6,7 @@ export interface TicketAttributes {
   id?: string;
   title: string;
   description: string;
-  status: 'open' | 'in_progress' | 'resolved' | 'closed' | 'cancelled';
+  status: 'open' | 'in_progress' | 'resolved' | 'closed' | 'cancelled' | 'redirected';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   categoryId: string;
   customerId: string;
@@ -18,6 +18,7 @@ export interface TicketAttributes {
   actualTime?: number;
   tags?: string[];
   metadata?: Record<string, unknown>;
+  technicalObservations?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -26,7 +27,7 @@ export class Ticket extends Model<TicketAttributes> implements TicketAttributes 
   public id!: string;
   public title!: string;
   public description!: string;
-  public status!: 'open' | 'in_progress' | 'resolved' | 'closed' | 'cancelled';
+  public status!: 'open' | 'in_progress' | 'resolved' | 'closed' | 'cancelled' | 'redirected';
   public priority!: 'low' | 'medium' | 'high' | 'urgent';
   public categoryId!: string;
   public customerId!: string;
@@ -38,6 +39,7 @@ export class Ticket extends Model<TicketAttributes> implements TicketAttributes 
   public actualTime!: number;
   public tags!: string[];
   public metadata!: Record<string, unknown>;
+  public technicalObservations!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -58,7 +60,7 @@ Ticket.init(
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM('open', 'in_progress', 'resolved', 'closed', 'cancelled'),
+      type: DataTypes.ENUM('open', 'in_progress', 'resolved', 'closed', 'cancelled', 'redirected'),
       defaultValue: 'open',
     },
     priority: {
@@ -116,6 +118,10 @@ Ticket.init(
     },
     metadata: {
       type: DataTypes.JSONB,
+      allowNull: true,
+    },
+    technicalObservations: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
   },

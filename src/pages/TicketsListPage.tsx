@@ -4,6 +4,7 @@ import {
   Filter,
   PlusCircle,
   Search,
+  Users,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +18,7 @@ import { Ticket, User } from '../types';
 export const TicketsListPage: React.FC = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [users, setUsers] = useState<Record<string, User>>({});
+  const [customers, setCustomers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,6 +28,7 @@ export const TicketsListPage: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState<
     Ticket['priority'] | 'all'
   >('all');
+  const [customerFilter, setCustomerFilter] = useState<string>('all');
 
   const navigate = useNavigate();
 
@@ -46,6 +49,10 @@ export const TicketsListPage: React.FC = () => {
           return acc;
         }, {});
         setUsers(usersMap);
+        
+        // Filtrar solo clientes para el filtro
+        const customersList = usersData.filter(u => u.role === 'customer');
+        setCustomers(customersList);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Error al cargar los tickets';
@@ -69,8 +76,10 @@ export const TicketsListPage: React.FC = () => {
       statusFilter === 'all' || ticket.status === statusFilter;
     const matchesPriority =
       priorityFilter === 'all' || ticket.priority === priorityFilter;
+    const matchesCustomer =
+      customerFilter === 'all' || ticket.customerId === customerFilter;
 
-    return matchesSearch && matchesStatus && matchesPriority;
+    return matchesSearch && matchesStatus && matchesPriority && matchesCustomer;
   });
 
   const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
@@ -168,6 +177,25 @@ export const TicketsListPage: React.FC = () => {
               <option value='low'>Baja</option>
             </select>
           </div>
+
+          {customers.length > 0 && (
+            <div className='inline-flex items-center rounded-md border border-input bg-background px-3 h-10 text-sm'>
+              <Users size={16} className='mr-2 text-muted-foreground' />
+              <span className='text-muted-foreground mr-2'>Cliente:</span>
+              <select
+                className='bg-transparent border-none outline-none max-w-[200px]'
+                value={customerFilter}
+                onChange={e => setCustomerFilter(e.target.value)}
+              >
+                <option value='all'>Todos</option>
+                {customers.map(customer => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -194,7 +222,7 @@ export const TicketsListPage: React.FC = () => {
             No se encontraron tickets
           </h3>
           <p className='text-muted-foreground text-sm mb-4'>
-            {searchTerm || statusFilter !== 'all' || priorityFilter !== 'all'
+            {searchTerm || statusFilter !== 'all' || priorityFilter !== 'all' || customerFilter !== 'all'
               ? 'Intenta ajustar tus filtros'
               : 'Crea tu primer ticket de soporte para comenzar'}
           </p>

@@ -2,6 +2,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  Forward,
   MessageSquare,
   Play,
   RefreshCw,
@@ -15,6 +16,7 @@ import { Avatar } from '../atoms/Avatar';
 import { Badge } from '../atoms/Badge';
 import { Button } from '../atoms/Button';
 import { Card, CardContent, CardFooter, CardHeader } from '../atoms/Card';
+import { Textarea } from '../atoms/Textarea';
 import { Ticket, User } from '../types';
 
 interface TicketDetailsProps {
@@ -25,7 +27,7 @@ interface TicketDetailsProps {
   availableTechnicians?: User[];
   onStartCall: () => void;
   onStartChat: () => void;
-  onChangeStatus: (status: Ticket['status']) => void;
+  onChangeStatus: (status: Ticket['status'], technicalObservations?: string) => void;
   onAssignTechnician?: (technicianId: string) => void;
 }
 
@@ -42,6 +44,10 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
 }) => {
   const [isAssigningTechnician, setIsAssigningTechnician] = useState(false);
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>('');
+  const [showObservationsModal, setShowObservationsModal] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<Ticket['status'] | null>(null);
+  const [technicalObservations, setTechnicalObservations] = useState('');
+  const [isChangingStatus, setIsChangingStatus] = useState(false);
 
   const {
     id,
@@ -74,6 +80,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
     in_progress: 'secondary',
     resolved: 'success',
     closed: 'default',
+    redirected: 'secondary',
   };
 
   // Mapear prioridad a variante de badge
@@ -93,6 +100,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
     in_progress: 'en progreso',
     resolved: 'resuelto',
     closed: 'cerrado',
+    redirected: 'redireccionado',
   };
 
   // Traducir prioridades
@@ -133,6 +141,44 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
 
   // Variable local para el técnico actual
   const currentTechnician = technician;
+
+  // Verificar si el usuario puede cambiar estados (admin o técnico)
+  const canChangeStatus =
+    currentUser &&
+    (currentUser.role === 'admin' || currentUser.role === 'technician');
+
+  // Función para manejar cambio de estado con modal de observaciones
+  const handleStatusChange = (newStatus: Ticket['status']) => {
+    if (isChangingStatus) return; // Prevenir doble click
+    
+    if (canChangeStatus && (newStatus === 'in_progress' || newStatus === 'resolved' || newStatus === 'redirected')) {
+      setPendingStatus(newStatus);
+      setShowObservationsModal(true);
+    } else {
+      setIsChangingStatus(true);
+      onChangeStatus(newStatus);
+      setTimeout(() => setIsChangingStatus(false), 2000);
+    }
+  };
+
+  // Función para confirmar cambio de estado con observaciones
+  const handleConfirmStatusChange = async () => {
+    if (pendingStatus && !isChangingStatus) {
+      setIsChangingStatus(true);
+      await onChangeStatus(pendingStatus, technicalObservations || undefined);
+      setShowObservationsModal(false);
+      setPendingStatus(null);
+      setTechnicalObservations('');
+      setTimeout(() => setIsChangingStatus(false), 2000);
+    }
+  };
+
+  // Función para cancelar cambio de estado
+  const handleCancelStatusChange = () => {
+    setShowObservationsModal(false);
+    setPendingStatus(null);
+    setTechnicalObservations('');
+  };
 
   return (
     <Card className='h-full flex flex-col'>
@@ -326,27 +372,40 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
         </Button>
 
         {/* Botón para cambiar a En Progreso - Solo para admin y técnicos */}
-        {currentUser &&
-          (currentUser.role === 'admin' || currentUser.role === 'technician') &&
-          status === 'open' && (
-            <Button
-              variant='secondary'
-              leftIcon={<Play size={16} />}
-              onClick={() => onChangeStatus('in_progress')}
-              className='w-full sm:w-auto'
-            >
-              En Progreso
-            </Button>
-          )}
+        {canChangeStatus && status === 'open' && (
+          <Button
+            variant='secondary'
+            leftIcon={<Play size={16} />}
+            onClick={() => handleStatusChange('in_progress')}
+            disabled={isChangingStatus}
+            className='w-full sm:w-auto'
+          >
+            {isChangingStatus ? 'Procesando...' : 'En Progreso'}
+          </Button>
+        )}
 
-        {status !== 'resolved' && (
+        {/* Botón Redireccionado - Solo para admin y técnicos */}
+        {canChangeStatus && status !== 'resolved' && status !== 'closed' && status !== 'redirected' && (
+          <Button
+            variant='secondary'
+            leftIcon={<Forward size={16} />}
+            onClick={() => handleStatusChange('redirected')}
+            disabled={isChangingStatus}
+            className='w-full sm:w-auto'
+          >
+            {isChangingStatus ? 'Procesando...' : 'Redireccionado'}
+          </Button>
+        )}
+
+        {status !== 'resolved' && status !== 'closed' && (
           <Button
             variant='success'
             leftIcon={<CheckCircle size={16} />}
-            onClick={() => onChangeStatus('resolved')}
+            onClick={() => handleStatusChange('resolved')}
+            disabled={isChangingStatus}
             className='w-full sm:w-auto sm:ml-auto'
           >
-            Marcar como Resuelto
+            {isChangingStatus ? 'Procesando...' : 'Marcar como Resuelto'}
           </Button>
         )}
 
@@ -354,13 +413,53 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
           <Button
             variant='outline'
             leftIcon={<XCircle size={16} />}
-            onClick={() => onChangeStatus('closed')}
+            onClick={() => handleStatusChange('closed')}
+            disabled={isChangingStatus}
             className='w-full sm:w-auto sm:ml-auto'
           >
-            Cerrar Ticket
+            {isChangingStatus ? 'Procesando...' : 'Cerrar Ticket'}
           </Button>
         )}
       </CardFooter>
+
+      {/* Modal de Observaciones Técnicas */}
+      {showObservationsModal && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-background rounded-lg p-6 w-full max-w-md mx-4 shadow-xl'>
+            <h3 className='text-lg font-semibold mb-4'>
+              Cambiar estado a: {pendingStatus && statusTranslations[pendingStatus]}
+            </h3>
+            <div className='mb-4'>
+              <label className='block text-sm font-medium mb-2'>
+                Observaciones Técnicas (opcional)
+              </label>
+              <Textarea
+                value={technicalObservations}
+                onChange={(e) => setTechnicalObservations(e.target.value)}
+                placeholder='Ingrese observaciones técnicas sobre este cambio de estado...'
+                rows={4}
+                className='w-full'
+              />
+            </div>
+            <div className='flex gap-2 justify-end'>
+              <Button
+                variant='outline'
+                onClick={handleCancelStatusChange}
+                disabled={isChangingStatus}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant='primary'
+                onClick={handleConfirmStatusChange}
+                disabled={isChangingStatus}
+              >
+                {isChangingStatus ? 'Procesando...' : 'Confirmar'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };

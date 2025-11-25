@@ -5,6 +5,7 @@ import { Button } from '../atoms/Button';
 import { Spinner } from '../atoms/Spinner';
 import { PermissionDenied } from '../components/PermissionDenied';
 import { useAuth } from '../context/AuthContext';
+import { useUserStatus } from '../hooks/useUserStatus';
 import { ChatPanel } from '../organisms/ChatPanel';
 import { TicketDetails } from '../organisms/TicketDetails';
 import { VideoCallPanel } from '../organisms/VideoCallPanel';
@@ -24,6 +25,9 @@ export const TicketDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'details' | 'chat' | 'call'>(
     'details'
   );
+
+  // Hook para estado de usuarios en tiempo real
+  const { getUserWithStatus } = useUserStatus(users);
 
   // Obtener técnicos disponibles (admin y technician)
   const availableTechnicians = Object.values(users).filter(
@@ -64,13 +68,24 @@ export const TicketDetailPage: React.FC = () => {
     fetchData();
   }, [ticketId]);
 
-  const handleChangeStatus = async (status: Ticket['status']) => {
+  const handleChangeStatus = async (
+    status: Ticket['status'],
+    technicalObservations?: string
+  ) => {
     if (!ticket) return;
 
     try {
-      const updatedTicket = await ticketService.updateTicket(ticket.id, {
-        status,
-      });
+      const updateData: {
+        status: Ticket['status'];
+        technicalObservations?: string;
+      } = { status };
+      if (technicalObservations) {
+        updateData.technicalObservations = technicalObservations;
+      }
+      const updatedTicket = await ticketService.updateTicket(
+        ticket.id,
+        updateData
+      );
       setTicket(updatedTicket);
     } catch (err) {
       console.error('Error al actualizar el estado del ticket:', err);
@@ -129,12 +144,16 @@ export const TicketDetailPage: React.FC = () => {
   }
 
   // Si el usuario actual es el cliente, usar currentUser como fallback
-  const customer =
+  // Aplicar estado de conexión en tiempo real
+  const customerBase =
     users[ticket.customerId] ||
     (currentUser?.id === ticket.customerId ? currentUser : undefined);
-  const technician = ticket.technicianId
+  const customer = getUserWithStatus(customerBase);
+
+  const technicianBase = ticket.technicianId
     ? users[ticket.technicianId]
     : undefined;
+  const technician = getUserWithStatus(technicianBase);
 
   return (
     <div className='h-full flex flex-col'>

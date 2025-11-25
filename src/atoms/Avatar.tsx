@@ -7,15 +7,25 @@ export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   alt?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   status?: 'online' | 'away' | 'busy' | 'offline';
+  showStatusIndicator?: boolean;
 }
 
 export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
-  ({ className, src, alt = '', size = 'md', status, ...props }, ref) => {
+  ({ className, src, alt = '', size = 'md', status, showStatusIndicator = true, ...props }, ref) => {
+    // Mapeo de colores de estado con colores más visibles
     const statusColorMap = {
-      online: 'bg-success',
-      away: 'bg-warning',
-      busy: 'bg-destructive',
-      offline: 'bg-muted-foreground',
+      online: 'bg-green-500', // Verde brillante para conectado
+      away: 'bg-yellow-500', // Amarillo para recientemente conectado/ausente
+      busy: 'bg-red-500', // Rojo para ocupado
+      offline: 'bg-gray-400', // Gris para desconectado
+    };
+
+    // Clases adicionales para animación y visibilidad
+    const statusAnimationMap = {
+      online: 'animate-pulse shadow-lg shadow-green-500/50',
+      away: 'shadow-lg shadow-yellow-500/50',
+      busy: 'shadow-lg shadow-red-500/50',
+      offline: '',
     };
 
     const sizeMap = {
@@ -26,9 +36,9 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
     };
 
     const statusSizeMap = {
-      sm: 'h-2 w-2',
-      md: 'h-2.5 w-2.5',
-      lg: 'h-3 w-3',
+      sm: 'h-2.5 w-2.5',
+      md: 'h-3 w-3',
+      lg: 'h-3.5 w-3.5',
       xl: 'h-4 w-4',
     };
 
@@ -50,13 +60,20 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
           </div>
         )}
         
-        {status && (
+        {showStatusIndicator && status && (
           <span
             className={cn(
-              'absolute bottom-0 right-0 rounded-full ring-2 ring-background',
+              'absolute bottom-0 right-0 rounded-full ring-2 ring-background border border-white/50',
               statusSizeMap[size],
-              statusColorMap[status]
+              statusColorMap[status],
+              statusAnimationMap[status]
             )}
+            title={
+              status === 'online' ? 'Conectado' :
+              status === 'away' ? 'Ausente / Recientemente conectado' :
+              status === 'busy' ? 'Ocupado' :
+              'Desconectado'
+            }
           />
         )}
       </div>

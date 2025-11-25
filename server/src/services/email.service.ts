@@ -34,6 +34,8 @@ export interface TicketStatusChangeData {
 class EmailService {
   private transporter: nodemailer.Transporter | null = null;
   private supportEmail: string = 'soportemq@partequipos.com';
+  private additionalSupportEmail: string = 'scalderon@partequipos.com';
+  private logoUrl: string = 'https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png';
   private initialized: boolean = false;
 
   constructor() {
@@ -128,6 +130,7 @@ class EmailService {
       in_progress: 'En Progreso',
       resolved: 'Resuelto',
       closed: 'Cerrado',
+      redirected: 'Redireccionado',
     };
     return translations[status] || status;
   }
@@ -166,6 +169,14 @@ class EmailService {
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+          }
+          .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .logo {
+            max-width: 200px;
+            height: auto;
           }
           .header {
             background-color: #2c3e50;
@@ -218,6 +229,9 @@ class EmailService {
       </head>
       <body>
         <div class="container">
+          <div class="logo-container">
+            <img src="${this.logoUrl}" alt="Partequipos S.A.S" class="logo" />
+          </div>
           <div class="header">
             <h1>🎫 Nuevo Ticket de Soporte Remoto</h1>
             <p>Partequipos S.A.S</p>
@@ -337,6 +351,14 @@ Este correo fue enviado automáticamente por el sistema de tickets.
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
           }
+          .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .logo {
+            max-width: 200px;
+            height: auto;
+          }
           .header {
             background-color: #2c3e50;
             color: white;
@@ -398,6 +420,9 @@ Este correo fue enviado automáticamente por el sistema de tickets.
       </head>
       <body>
         <div class="container">
+          <div class="logo-container">
+            <img src="${this.logoUrl}" alt="Partequipos S.A.S" class="logo" />
+          </div>
           <div class="header">
             <h1>🔄 Actualización de Ticket de Soporte</h1>
             <p>Partequipos S.A.S</p>
@@ -509,7 +534,7 @@ Este correo fue enviado automáticamente por el sistema de tickets.
       const mailOptions = {
         from: `"Soporte Remoto Partequipos" <${process.env.SMTP_USER}>`,
         to: data.customer.email,
-        cc: this.supportEmail, // Copia al equipo de soporte
+        cc: [this.supportEmail, this.additionalSupportEmail].join(', '), // Copia al equipo de soporte
         subject,
         html,
         text,
@@ -552,7 +577,7 @@ Este correo fue enviado automáticamente por el sistema de tickets.
       const mailOptions = {
         from: `"Soporte Remoto Partequipos" <${process.env.SMTP_USER}>`,
         to: data.customer.email,
-        cc: this.supportEmail, // Copia al equipo de soporte
+        cc: [this.supportEmail, this.additionalSupportEmail].join(', '), // Copia al equipo de soporte
         subject,
         html,
         text,

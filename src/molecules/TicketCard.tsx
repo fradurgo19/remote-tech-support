@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, MessageSquare } from 'lucide-react';
+import { ArrowRight, Clock, Hash, MessageSquare } from 'lucide-react';
 import React from 'react';
 import { Avatar } from '../atoms/Avatar';
 import { Badge } from '../atoms/Badge';
@@ -27,12 +27,18 @@ export const TicketCard: React.FC<TicketCardProps> = ({
     minute: '2-digit',
   });
 
+  // Formatear ID del ticket
+  const formatTicketId = (ticketId: string) => {
+    return ticketId.substring(0, 8).toUpperCase();
+  };
+
   // Mapear estado a variante de badge
   const statusVariantMap: Record<Ticket['status'], string> = {
     open: 'primary',
     in_progress: 'warning',
     resolved: 'success',
     closed: 'default',
+    redirected: 'secondary',
   };
 
   // Mapear prioridad a variante de badge
@@ -49,6 +55,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
     in_progress: 'en progreso',
     resolved: 'resuelto',
     closed: 'cerrado',
+    redirected: 'redireccionado',
   };
 
   // Traducir prioridades
@@ -68,6 +75,18 @@ export const TicketCard: React.FC<TicketCardProps> = ({
       <CardHeader className='pb-2'>
         <div className='flex justify-between items-start'>
           <div className='space-y-1'>
+            <div className='flex items-center gap-2 mb-1'>
+              <Badge variant='secondary' className='flex items-center gap-1 text-xs font-mono'>
+                <Hash size={10} />
+                {formatTicketId(ticket.id)}
+              </Badge>
+              {ticket.status === 'closed' && (
+                <Badge variant='default' className='text-xs'>Cerrado</Badge>
+              )}
+              {ticket.priority === 'urgent' && (
+                <Badge variant='danger' className='text-xs'>Urgente</Badge>
+              )}
+            </div>
             <h3 className='font-semibold text-base leading-tight'>
               {ticket.title}
             </h3>

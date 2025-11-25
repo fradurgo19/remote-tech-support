@@ -371,6 +371,26 @@ class SocketService {
       this.socket?.off('disconnect', onDisconnect);
     };
   }
+
+  // Escuchar cambios de estado de usuarios
+  onUserStatusChange(
+    callback: (data: { userId: string; status: 'online' | 'away' | 'busy' | 'offline' }) => void
+  ): () => void {
+    if (this.socket && this.isServerAvailable) {
+      this.socket.on('user_status_changed', callback);
+      return () => {
+        this.socket?.off('user_status_changed', callback);
+      };
+    }
+    return () => {};
+  }
+
+  // Cambiar el estado del usuario actual
+  changeStatus(status: 'online' | 'away' | 'busy' | 'offline'): void {
+    if (this.socket && this.isServerAvailable) {
+      this.socket.emit('status_change', status);
+    }
+  }
 }
 
 export const socketService = new SocketService();
