@@ -2,6 +2,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  ClipboardList,
   Forward,
   MessageSquare,
   Play,
@@ -235,6 +236,21 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
               {description}
             </div>
           </div>
+
+          {/* Observaciones Técnicas */}
+          {ticket.technicalObservations && (
+            <div>
+              <h3 className='text-base font-medium mb-2 flex items-center gap-2'>
+                <ClipboardList size={16} className='text-primary' />
+                Observaciones Técnicas
+              </h3>
+              <div className='bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-3 rounded-md text-sm'>
+                <div className='whitespace-pre-wrap text-gray-700 dark:text-gray-300'>
+                  {ticket.technicalObservations}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className='space-y-3'>
             <h3 className='text-base font-medium'>Personas</h3>
