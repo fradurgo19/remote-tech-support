@@ -201,7 +201,7 @@ export const LoginPage: React.FC = () => {
 
         <button
           onClick={() => navigate('/forgot-password')}
-          className='w-full mt-4 text-blue-500 hover:underline'
+          className='w-full mt-4 text-primary hover:underline font-medium'
         >
           ¿Olvidaste tu contraseña?
         </button>

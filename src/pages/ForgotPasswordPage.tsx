@@ -1,15 +1,23 @@
+import { AlertCircle, ArrowLeft, CheckCircle, KeyRound, Mail } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../atoms/Button';
+import { Input } from '../atoms/Input';
 import { authService } from '../services/api';
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setMessage('');
+    
     try {
       const response = await authService.forgotPassword(email);
       setMessage(response.message);
@@ -17,11 +25,13 @@ const ForgotPasswordPage: React.FC = () => {
     } catch {
       setError('Error al solicitar recuperación de contraseña');
       setMessage('');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
+    <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5'>
       {/* Logo de la compañía - Esquina superior izquierda */}
       <div className='absolute top-4 left-4 md:top-6 md:left-6'>
         <img
@@ -31,40 +41,62 @@ const ForgotPasswordPage: React.FC = () => {
         />
       </div>
 
-      <div className='p-8 bg-white rounded shadow-md w-96'>
-        <h1 className='mb-6 text-2xl font-bold text-center'>
-          Recuperar Contraseña
-        </h1>
-        <form onSubmit={handleSubmit}>
-          <div className='mb-4'>
-            <label
-              className='block mb-2 text-sm font-bold text-gray-700'
-              htmlFor='email'
-            >
-              Email
-            </label>
-            <input
-              id='email'
-              type='email'
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className='w-full px-3 py-2 border rounded'
-              required
-            />
+      <div className='w-full max-w-md p-8 space-y-8 bg-card shadow-lg rounded-xl border border-border'>
+        <div className='text-center'>
+          <div className='mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center'>
+            <KeyRound size={28} className='text-primary' />
           </div>
-          <button
-            type='submit'
-            className='w-full px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600'
+          <h1 className='mt-4 text-2xl font-bold text-foreground'>
+            Recuperar Contraseña
+          </h1>
+          <p className='mt-1 text-sm text-muted-foreground'>
+            Ingresa tu email y te enviaremos instrucciones para restablecer tu contraseña
+          </p>
+        </div>
+
+        {/* Mensaje de éxito */}
+        {message && (
+          <div className='p-3 rounded-md bg-success/10 text-success flex items-center gap-2 text-sm'>
+            <CheckCircle size={16} />
+            <span>{message}</span>
+          </div>
+        )}
+
+        {/* Mensaje de error */}
+        {error && (
+          <div className='p-3 rounded-md bg-destructive/10 text-destructive flex items-center gap-2 text-sm'>
+            <AlertCircle size={16} />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className='space-y-6'>
+          <Input
+            id='email'
+            type='email'
+            label='Email'
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder='tu@email.com'
+            leftIcon={<Mail size={18} />}
+            required
+            disabled={isLoading}
+          />
+
+          <Button 
+            type='submit' 
+            className='w-full' 
+            isLoading={isLoading}
           >
-            Enviar
-          </button>
+            Enviar Instrucciones
+          </Button>
         </form>
-        {message && <p className='mt-4 text-green-600'>{message}</p>}
-        {error && <p className='mt-4 text-red-600'>{error}</p>}
+
         <button
           onClick={() => navigate('/login')}
-          className='w-full mt-4 text-blue-500 hover:underline'
+          className='w-full mt-4 text-primary hover:underline font-medium flex items-center justify-center gap-2'
         >
+          <ArrowLeft size={16} />
           Volver al login
         </button>
       </div>
