@@ -17,7 +17,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TYPE user_role AS ENUM ('admin', 'technician', 'customer');
 
 -- Enum para estados de ticket
-CREATE TYPE ticket_status AS ENUM ('open', 'in_progress', 'resolved', 'closed');
+CREATE TYPE ticket_status AS ENUM ('open', 'in_progress', 'redirected', 'resolved', 'closed');
 
 -- Enum para prioridades de ticket
 CREATE TYPE ticket_priority AS ENUM ('low', 'medium', 'high', 'urgent');
@@ -81,6 +81,7 @@ CREATE TABLE "Tickets" (
     "customerId" UUID NOT NULL REFERENCES "Users"(id) ON DELETE CASCADE,
     "technicianId" UUID REFERENCES "Users"(id) ON DELETE SET NULL,
     "categoryId" UUID REFERENCES "Categories"(id) ON DELETE SET NULL,
+    "technicalObservations" TEXT,
     metadata JSONB,
     "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

@@ -1,10 +1,13 @@
 import {
   AlertCircle,
   Edit,
+  Filter,
   Mail,
   Phone,
+  Search,
   Trash2,
   UserCog,
+  Users,
   X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -13,6 +16,7 @@ import { Avatar } from '../atoms/Avatar';
 import { Badge } from '../atoms/Badge';
 import { Button } from '../atoms/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
+import { Input } from '../atoms/Input';
 import { Spinner } from '../atoms/Spinner';
 import { useAuth } from '../context/AuthContext';
 import { CreateUserForm } from '../molecules/CreateUserForm';
@@ -31,6 +35,8 @@ export const UsersPage: React.FC = () => {
     userName: string;
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<User['role'] | 'all'>('all');
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -113,6 +119,27 @@ export const UsersPage: React.FC = () => {
   // Verificar si el usuario actual es administrador
   const isAdmin = currentUser?.role === 'admin';
 
+  // Filtrar usuarios según búsqueda y rol
+  const filteredUsers = users.filter(user => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+
+    return matchesSearch && matchesRole;
+  });
+
+  // Ordenar usuarios: Admin primero, luego técnicos, luego clientes
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const roleOrder = { admin: 0, technician: 1, customer: 2 };
+    const roleComparison = roleOrder[a.role] - roleOrder[b.role];
+    if (roleComparison !== 0) return roleComparison;
+    
+    // Si tienen el mismo rol, ordenar alfabéticamente por nombre
+    return a.name.localeCompare(b.name);
+  });
+
   if (isLoading) {
     return (
       <div className='flex items-center justify-center h-full'>
@@ -149,7 +176,7 @@ export const UsersPage: React.FC = () => {
 
   return (
     <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
+      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
         <h1 className='text-2xl font-bold'>Usuarios</h1>
         {isAdmin && (
           <Button
@@ -159,6 +186,33 @@ export const UsersPage: React.FC = () => {
             Agregar Usuario
           </Button>
         )}
+      </div>
+
+      {/* Filtros de búsqueda */}
+      <div className='flex flex-col md:flex-row gap-4'>
+        <div className='w-full md:max-w-md'>
+          <Input
+            placeholder='Buscar por nombre o email...'
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            leftIcon={<Search size={18} />}
+          />
+        </div>
+
+        <div className='inline-flex items-center rounded-md border border-input bg-background px-3 h-10 text-sm'>
+          <Filter size={16} className='mr-2 text-muted-foreground' />
+          <span className='text-muted-foreground mr-2'>Rol:</span>
+          <select
+            className='bg-transparent border-none outline-none'
+            value={roleFilter}
+            onChange={e => setRoleFilter(e.target.value as User['role'] | 'all')}
+          >
+            <option value='all'>Todos</option>
+            <option value='admin'>Administrador</option>
+            <option value='technician'>Técnico</option>
+            <option value='customer'>Cliente</option>
+          </select>
+        </div>
       </div>
 
       {isCreatingUser && (
@@ -207,8 +261,9 @@ export const UsersPage: React.FC = () => {
         </Card>
       )}
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-        {users.map(user => (
+      {sortedUsers.length > 0 ? (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {sortedUsers.map(user => (
           <Card key={user.id}>
             <CardContent className='p-6'>
               <div className='flex items-start gap-4'>
@@ -269,8 +324,19 @@ export const UsersPage: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className='text-center py-12'>
+          <Users size={48} className='mx-auto mb-4 text-muted-foreground' />
+          <h3 className='text-lg font-semibold mb-2'>No se encontraron usuarios</h3>
+          <p className='text-muted-foreground'>
+            {searchTerm || roleFilter !== 'all'
+              ? 'Intenta con otros criterios de búsqueda'
+              : 'No hay usuarios registrados'}
+          </p>
+        </div>
+      )}
 
       {/* Modal de confirmación para eliminar */}
       {deleteConfirm && (
