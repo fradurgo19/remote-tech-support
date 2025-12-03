@@ -291,21 +291,112 @@ export const updateTicket = async (req: Request, res: Response) => {
       updateData.priority = priority || ticket.priority;
       updateData.technicianId = technicianId || ticket.technicianId;
       
-      // Agregar observaciones técnicas si se proporcionan
-      if (technicalObservations) {
-        const timestamp = new Date().toLocaleString('es-CO');
+      // Agregar observaciones técnicas si se proporcionan O si cambia el estado
+      if (technicalObservations || status) {
+        // Usar zona horaria de Colombia (UTC-5)
+        const timestamp = new Date().toLocaleString('es-CO', {
+          timeZone: 'America/Bogota',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        });
+        
         const existingObs = ticket.technicalObservations || '';
-        const newObs = `[${timestamp}] ${technicalObservations}`;
-        updateData.technicalObservations = existingObs 
-          ? `${existingObs}\n\n${newObs}` 
-          : newObs;
+        
+        // Traducir estados
+        const statusTranslations: Record<string, string> = {
+          open: 'Abierto',
+          in_progress: 'En Progreso',
+          resolved: 'Resuelto',
+          closed: 'Cerrado',
+          redirected: 'Redireccionado',
+        };
+        
+        // Si hay observación Y cambio de estado, incluir ambos
+        if (technicalObservations && status && status !== ticket.status) {
+          const statusText = statusTranslations[status] || status;
+          const newObs = `[${timestamp}] ${statusText}\n${technicalObservations}`;
+          updateData.technicalObservations = existingObs 
+            ? `${existingObs}\n\n${newObs}` 
+            : newObs;
+        }
+        // Si solo hay observación sin cambio de estado
+        else if (technicalObservations) {
+          const newObs = `[${timestamp}] ${technicalObservations}`;
+          updateData.technicalObservations = existingObs 
+            ? `${existingObs}\n\n${newObs}` 
+            : newObs;
+        }
+        // Si solo hay cambio de estado a estados importantes sin observación adicional
+        else if (status && status !== ticket.status && ['in_progress', 'resolved', 'redirected', 'closed'].includes(status)) {
+          const statusText = statusTranslations[status] || status;
+          const newObs = `[${timestamp}] ${statusText}`;
+          updateData.technicalObservations = existingObs 
+            ? `${existingObs}\n\n${newObs}` 
+            : newObs;
+        }
       }
     }
 
-    // Guardar el estado anterior para detectar cambios
+    // Guardar el estado anterior y técnico anterior para detectar cambios
     const oldStatus = ticket.status;
+    const oldTechnicianId = ticket.technicianId;
 
     await ticket.update(updateData);
+
+    // Verificar si cambió el técnico asignado y enviar correo de asignación
+    if (technicianId && technicianId !== oldTechnicianId) {
+      try {
+        const ticketWithRelations = await Ticket.findByPk(id, {
+          include: [
+            {
+              model: User,
+              as: 'customer',
+              attributes: ['id', 'name', 'email'],
+            },
+            {
+              model: User,
+              as: 'technician',
+              attributes: ['id', 'name', 'email'],
+            },
+          ],
+        });
+
+        if (ticketWithRelations && ticketWithRelations.technician) {
+          // Obtener técnico anterior si existía
+          let previousTechnician: User | undefined;
+          if (oldTechnicianId) {
+            previousTechnician = await User.findByPk(oldTechnicianId, {
+              attributes: ['id', 'name', 'email'],
+            }) as User | undefined;
+          }
+
+          const emailSent = await emailService.sendTechnicianAssignmentNotification({
+            ticket: ticketWithRelations as Ticket,
+            customer: ticketWithRelations.customer as User,
+            technician: ticketWithRelations.technician as User,
+            isReassignment: !!oldTechnicianId,
+            previousTechnician,
+          });
+
+          if (emailSent) {
+            const actionText = oldTechnicianId ? 'reasignación' : 'asignación';
+            logger.info(
+              `Technician ${actionText} email sent for ticket ${id} to ${ticketWithRelations.technician.email}`
+            );
+          } else {
+            logger.warn(`Failed to send technician assignment email for ticket ${id}`);
+          }
+        }
+      } catch (emailError) {
+        logger.error('Error sending technician assignment email:', emailError);
+        // No fallar la actualización del ticket si el email falla
+      }
+    }
 
     // Verificar si el estado cambió y enviar correo de notificación
     if (

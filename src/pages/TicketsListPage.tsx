@@ -29,6 +29,7 @@ export const TicketsListPage: React.FC = () => {
     Ticket['priority'] | 'all'
   >('all');
   const [customerFilter, setCustomerFilter] = useState<string>('all');
+  const [technicianFilter, setTechnicianFilter] = useState<string>('all');
 
   const navigate = useNavigate();
 
@@ -66,6 +67,14 @@ export const TicketsListPage: React.FC = () => {
     fetchData();
   }, []);
 
+  // Obtener lista de técnicos únicos que tienen tickets asignados
+  const techniciansWithTickets = Array.from(
+    new Set(tickets.filter(t => t.technicianId).map(t => t.technicianId))
+  )
+    .map(techId => users[techId!])
+    .filter(Boolean)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch =
       ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -78,8 +87,14 @@ export const TicketsListPage: React.FC = () => {
       priorityFilter === 'all' || ticket.priority === priorityFilter;
     const matchesCustomer =
       customerFilter === 'all' || ticket.customerId === customerFilter;
+    const matchesTechnician =
+      technicianFilter === 'all' 
+        ? true 
+        : technicianFilter === 'unassigned' 
+        ? !ticket.technicianId 
+        : ticket.technicianId === technicianFilter;
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesCustomer;
+    return matchesSearch && matchesStatus && matchesPriority && matchesCustomer && matchesTechnician;
   });
 
   const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
@@ -155,6 +170,7 @@ export const TicketsListPage: React.FC = () => {
               <option value='all'>Todos</option>
               <option value='open'>Abierto</option>
               <option value='in_progress'>En Progreso</option>
+              <option value='redirected'>Redireccionado</option>
               <option value='resolved'>Resuelto</option>
               <option value='closed'>Cerrado</option>
             </select>
@@ -196,6 +212,24 @@ export const TicketsListPage: React.FC = () => {
               </select>
             </div>
           )}
+
+          <div className='inline-flex items-center rounded-md border border-input bg-background px-3 h-10 text-sm'>
+            <Users size={16} className='mr-2 text-muted-foreground' />
+            <span className='text-muted-foreground mr-2'>Técnico:</span>
+            <select
+              className='bg-transparent border-none outline-none max-w-[200px]'
+              value={technicianFilter}
+              onChange={e => setTechnicianFilter(e.target.value)}
+            >
+              <option value='all'>Todos</option>
+              <option value='unassigned'>Sin Asignar</option>
+              {techniciansWithTickets.map(tech => (
+                <option key={tech.id} value={tech.id}>
+                  {tech.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
