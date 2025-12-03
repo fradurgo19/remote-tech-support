@@ -8,6 +8,10 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
       colors: {
+        // Colores institucionales Partequipos
+        'partequipos-red': '#cf1b22',
+        'partequipos-gray': '#50504f',
+        'partequipos-white': '#FFFFFF',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
