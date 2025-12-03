@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manual de Usuario - Cliente | Partequipos SAS</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        line-height: 1.7;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+      header {
+        text-align: center;
+        padding: 40px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 40px;
+      }
+      .logo {
+        max-width: 280px;
+        margin-bottom: 20px;
+      }
+      h1 {
+        color: #4fc3f7;
+        font-size: 2.2em;
+        font-weight: 300;
+      }
+      .subtitle {
+        color: #90a4ae;
+        font-size: 1.1em;
+        margin-top: 10px;
+      }
+      .app-link {
+        display: inline-block;
+        background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+        color: #1a1a2e;
+        padding: 12px 30px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        margin-top: 20px;
+        transition: transform 0.2s;
+      }
+      .app-link:hover {
+        transform: scale(1.05);
+      }
+      section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      h2 {
+        color: #4fc3f7;
+        font-size: 1.4em;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      h2::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: #4fc3f7;
+        border-radius: 2px;
+      }
+      ol,
+      ul {
+        padding-left: 25px;
+      }
+      li {
+        margin-bottom: 12px;
+      }
+      .highlight {
+        background: rgba(79, 195, 247, 0.15);
+        padding: 3px 8px;
+        border-radius: 4px;
+        color: #4fc3f7;
+      }
+      .tip {
+        background: rgba(76, 175, 80, 0.15);
+        border-left: 3px solid #4caf50;
+        padding: 15px 20px;
+        border-radius: 0 8px 8px 0;
+        margin: 15px 0;
+      }
+      .tip strong {
+        color: #81c784;
+      }
+      footer {
+        text-align: center;
+        padding: 30px;
+        color: #78909c;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <img
+          src="https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png"
+          alt="Partequipos SAS"
+          class="logo"
+        />
+        <h1>Manual de Usuario</h1>
+        <p class="subtitle">
+          Plataforma de Soporte Técnico Remoto - Guía para Clientes
+        </p>
+        <a
+          href="https://remote-tech-support.vercel.app/"
+          class="app-link"
+          target="_blank"
+          >Acceder a la Plataforma</a
+        >
+      </header>
+
+      <section>
+        <h2>Iniciar Sesión</h2>
+        <ol>
+          <li>
+            Ingrese a
+            <a
+              href="https://remote-tech-support.vercel.app/"
+              style="color: #4fc3f7"
+              >remote-tech-support.vercel.app</a
+            >
+          </li>
+          <li>
+            Puede ingresar de dos formas:
+            <ul>
+              <li>
+                <strong>Opción 1:</strong> Escriba su
+                <span class="highlight">correo electrónico</span> en el campo de
+                texto
+              </li>
+              <li>
+                <strong>Opción 2:</strong> Seleccione su
+                <span class="highlight">usuario de la lista desplegable</span>
+              </li>
+            </ul>
+          </li>
+          <li>Ingrese su <span class="highlight">contraseña</span></li>
+          <li>Haga clic en <strong>Iniciar Sesión</strong></li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Crear un Ticket de Soporte</h2>
+        <ol>
+          <li>
+            En el menú lateral, seleccione
+            <span class="highlight">Tickets</span>
+          </li>
+          <li>Haga clic en el botón <strong>+ Nuevo Ticket</strong></li>
+          <li>
+            Complete el formulario:
+            <ul>
+              <li><strong>Título:</strong> Resumen breve del problema</li>
+              <li><strong>Descripción:</strong> Detalle el problema</li>
+              <li><strong>Prioridad:</strong> Baja, Media, Alta o Urgente</li>
+            </ul>
+          </li>
+          <li>Haga clic en <strong>Crear Ticket</strong></li>
+        </ol>
+        <div class="tip">
+          <strong>💡 Tip:</strong> Recibirá un correo de confirmación cuando se
+          cree el ticket.
+        </div>
+      </section>
+
+      <section>
+        <h2>Ver Estado de sus Tickets</h2>
+        <ol>
+          <li>Vaya a <span class="highlight">Tickets</span> en el menú</li>
+          <li>
+            Verá la lista de todos sus tickets con su estado actual:
+            <ul>
+              <li><strong>Abierto:</strong> Pendiente de atención</li>
+              <li>
+                <strong>En Progreso:</strong> Un técnico lo está atendiendo
+              </li>
+              <li><strong>Resuelto:</strong> El problema fue solucionado</li>
+              <li><strong>Cerrado:</strong> Ticket finalizado</li>
+            </ul>
+          </li>
+          <li>Haga clic en un ticket para ver los detalles</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Chat con Soporte Técnico</h2>
+        <ol>
+          <li>Abra el ticket que desea consultar</li>
+          <li>
+            Use el <span class="highlight">chat</span> en la parte inferior para
+            enviar mensajes
+          </li>
+          <li>Puede adjuntar archivos o imágenes si es necesario</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Videollamada con Soporte</h2>
+        <ol>
+          <li>
+            Dentro del ticket, haga clic en
+            <span class="highlight">Videollamada</span>
+          </li>
+          <li>Permita el acceso a cámara y micrófono</li>
+          <li>Espere a que el técnico se conecte</li>
+        </ol>
+        <div class="tip">
+          <strong>💡 Tip:</strong> Asegúrese de tener buena conexión a internet
+          para mejor calidad de video.
+        </div>
+      </section>
+
+      <footer>
+        <p>© 2025 Partequipos SAS - Todos los derechos reservados</p>
+        <p>Soporte: soporte@partequipos.com</p>
+      </footer>
+    </div>
+  </body>
+</html>

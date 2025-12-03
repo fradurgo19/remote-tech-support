@@ -12,6 +12,15 @@ export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, src, alt = '', size = 'md', status, showStatusIndicator = true, ...props }, ref) => {
+    const [imageError, setImageError] = React.useState(false);
+    const [imageSrc, setImageSrc] = React.useState(src);
+    
+    // Resetear error cuando cambia la src
+    React.useEffect(() => {
+      setImageError(false);
+      setImageSrc(src);
+    }, [src]);
+
     // Mapeo de colores de estado con colores más visibles
     const statusColorMap = {
       online: 'bg-green-500', // Verde brillante para conectado
@@ -42,17 +51,24 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       xl: 'h-4 w-4',
     };
 
+    const handleImageError = () => {
+      setImageError(true);
+    };
+
     return (
       <div
         ref={ref}
         className={cn('relative rounded-full', sizeMap[size], className)}
         {...props}
       >
-        {src ? (
+        {imageSrc && !imageError ? (
           <img
-            src={src}
+            src={imageSrc}
             alt={alt}
             className="h-full w-full rounded-full object-cover"
+            onError={handleImageError}
+            loading="lazy"
+            key={imageSrc}
           />
         ) : (
           <div className="h-full w-full rounded-full bg-muted flex items-center justify-center">

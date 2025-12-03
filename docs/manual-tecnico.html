@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - Técnico | Partequipos SAS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 40px;
+        }
+        .logo { max-width: 280px; margin-bottom: 20px; }
+        h1 { color: #ff7043; font-size: 2.2em; font-weight: 300; }
+        .subtitle { color: #90a4ae; font-size: 1.1em; margin-top: 10px; }
+        .badge {
+            display: inline-block;
+            background: rgba(255, 112, 67, 0.2);
+            color: #ff7043;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+        .app-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff7043, #ff5722);
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        .app-link:hover { transform: scale(1.05); }
+        section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        h2 {
+            color: #ff7043;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: #ff7043;
+            border-radius: 2px;
+        }
+        ol, ul { padding-left: 25px; }
+        li { margin-bottom: 12px; }
+        .highlight {
+            background: rgba(255, 112, 67, 0.15);
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #ff7043;
+        }
+        .tip {
+            background: rgba(76, 175, 80, 0.15);
+            border-left: 3px solid #4caf50;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+        }
+        .tip strong { color: #81c784; }
+        .warning {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 3px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+        }
+        .warning strong { color: #ffd54f; }
+        .status-list { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        .status {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .status-open { background: rgba(33, 150, 243, 0.2); color: #64b5f6; }
+        .status-progress { background: rgba(255, 193, 7, 0.2); color: #ffd54f; }
+        .status-resolved { background: rgba(76, 175, 80, 0.2); color: #81c784; }
+        .status-redirected { background: rgba(156, 39, 176, 0.2); color: #ce93d8; }
+        .status-closed { background: rgba(158, 158, 158, 0.2); color: #bdbdbd; }
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #78909c;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png" alt="Partequipos SAS" class="logo">
+            <h1>Manual de Usuario</h1>
+            <p class="subtitle">Plataforma de Soporte Técnico Remoto</p>
+            <span class="badge">Guía para Técnicos y Administradores</span>
+            <br>
+            <a href="https://remote-tech-support.vercel.app/" class="app-link" target="_blank">Acceder a la Plataforma</a>
+        </header>
+
+        <section>
+            <h2>Gestión de Tickets</h2>
+            <ol>
+                <li>Ingrese a <span class="highlight">Tickets</span> en el menú lateral</li>
+                <li>Use los filtros para buscar por:
+                    <ul>
+                        <li>Estado (Abierto, En Progreso, Resuelto, etc.)</li>
+                        <li>Prioridad</li>
+                        <li>Cliente</li>
+                    </ul>
+                </li>
+                <li>Haga clic en un ticket para ver los detalles completos</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Estados de Tickets</h2>
+            <div class="status-list">
+                <span class="status status-open">Abierto</span>
+                <span class="status status-progress">En Progreso</span>
+                <span class="status status-resolved">Resuelto</span>
+                <span class="status status-redirected">Redireccionado</span>
+                <span class="status status-closed">Cerrado</span>
+            </div>
+            <p>Para cambiar el estado de un ticket:</p>
+            <ol>
+                <li>Abra el ticket</li>
+                <li>Seleccione el nuevo estado en los botones de acción</li>
+                <li>Opcionalmente, agregue una <span class="highlight">observación técnica</span></li>
+                <li>Confirme el cambio</li>
+            </ol>
+            <div class="tip">
+                <strong>💡 Tip:</strong> Las observaciones técnicas quedan registradas en el historial del ticket.
+            </div>
+        </section>
+
+        <section>
+            <h2>Videollamada con Cliente</h2>
+            <ol>
+                <li>Dentro del ticket, haga clic en <span class="highlight">Videollamada</span></li>
+                <li>Seleccione <strong>Iniciar Videollamada</strong></li>
+                <li>El cliente recibirá una notificación para unirse</li>
+                <li>Permita acceso a cámara y micrófono</li>
+            </ol>
+            <div class="warning">
+                <strong>⚠️ Importante:</strong> El cliente debe estar dentro del ticket y en la opción <span style="color:#ffd54f">Videollamada</span> para recibir la notificación. De lo contrario, la notificación no llegará.
+            </div>
+        </section>
+
+        <section>
+            <h2>Gestión de Usuarios</h2>
+            <p><em>(Solo Administradores)</em></p>
+            <ol>
+                <li>Vaya a <span class="highlight">Usuarios</span> en el menú</li>
+                <li>Para crear un usuario, haga clic en <strong>+ Nuevo Usuario</strong></li>
+                <li>Complete: Nombre, Email, Contraseña y Rol</li>
+                <li>Haga clic en <strong>Crear Usuario</strong></li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Informes</h2>
+            <ol>
+                <li>Acceda a <span class="highlight">Informes</span> en el menú</li>
+                <li>Filtre por fecha, cliente o estado</li>
+                <li>Visualice estadísticas de tickets atendidos</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Indicadores de Conexión</h2>
+            <p>El estado de conexión de los usuarios se muestra con colores:</p>
+            <ul>
+                <li><span style="color:#4caf50">●</span> <strong>Verde:</strong> Usuario conectado</li>
+                <li><span style="color:#ffc107">●</span> <strong>Amarillo:</strong> Recientemente conectado</li>
+                <li><span style="color:#f44336">●</span> <strong>Rojo:</strong> Desconectado</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>© 2025 Partequipos SAS - Todos los derechos reservados</p>
+            <p>Soporte: soporte@partequipos.com</p>
+        </footer>
+    </div>
+</body>
+</html>
+

@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models';
 import { logger } from '../utils/logger';
+import { addCacheBusting } from '../utils/avatar';
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -45,6 +46,7 @@ export const login = async (req: Request, res: Response) => {
         email: user.email,
         role: user.role,
         status: user.status,
+        avatar: addCacheBusting(user.avatar),
       },
     });
   } catch (error) {
@@ -192,7 +194,13 @@ export const me = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Usuario no encontrado' });
     }
 
-    res.json({ user: fullUser });
+    // Agregar cache-busting al avatar
+    const userWithAvatar = {
+      ...fullUser.toJSON(),
+      avatar: addCacheBusting(fullUser.avatar),
+    };
+
+    res.json({ user: userWithAvatar });
   } catch (error) {
     logger.error('Error en me:', error);
     res.status(500).json({ message: 'Error interno del servidor' });

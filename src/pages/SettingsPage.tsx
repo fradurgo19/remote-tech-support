@@ -158,8 +158,11 @@ export const SettingsPage: React.FC = () => {
       // Subir avatar a Supabase Storage usando FormData
       const result = await userService.uploadAvatar(selectedFile);
 
+      // Agregar timestamp para evitar caché del navegador
+      const avatarUrlWithTimestamp = `${result.avatarUrl}?t=${Date.now()}`;
+
       // Actualizar el usuario en el contexto con la nueva URL
-      const updatedUser = { ...user, avatar: result.avatarUrl };
+      const updatedUser = { ...user, avatar: avatarUrlWithTimestamp };
       updateUser(updatedUser);
 
       // Limpiar el estado local

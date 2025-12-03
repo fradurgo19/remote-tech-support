@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Avatar } from '../atoms/Avatar';
 import { Button } from '../atoms/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import { Spinner } from '../atoms/Spinner';
@@ -160,25 +161,13 @@ export const DashboardPage: React.FC = () => {
                   key={tech.id}
                   className='flex flex-col items-center space-y-2 min-w-[80px]'
                 >
-                  <div className='relative'>
-                    <img
-                      src={tech.avatar}
-                      alt={tech.name}
-                      className='h-12 w-12 rounded-full object-cover'
-                    />
-                    <span
-                      className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-2 ring-white
-                        ${
-                          tech.status === 'online'
-                            ? 'bg-success'
-                            : tech.status === 'away'
-                            ? 'bg-warning'
-                            : tech.status === 'busy'
-                            ? 'bg-destructive'
-                            : 'bg-muted-foreground'
-                        }`}
-                    />
-                  </div>
+                  <Avatar 
+                    src={tech.avatar} 
+                    alt={tech.name}
+                    size='lg'
+                    status={tech.status}
+                    showStatusIndicator={true}
+                  />
                   <span className='text-sm font-medium truncate max-w-full'>
                     {tech.name}
                   </span>

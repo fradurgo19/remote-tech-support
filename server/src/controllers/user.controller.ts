@@ -3,11 +3,20 @@ import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import { User } from '../models';
 import { storageService } from '../services/storage.service';
+import { addCacheBusting, processUsersAvatars } from '../utils/avatar';
 import { logger } from '../utils/logger';
 
 export const createUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password, role, phone } = req.body;
+
+    // Log para depuración
+    logger.info('Creando usuario:', {
+      name,
+      email,
+      passwordLength: password?.length,
+      role,
+    });
 
     // Validar que todos los campos requeridos estén presentes
     if (!name || !email || !password) {
@@ -22,12 +31,11 @@ export const createUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'El email ya está registrado' });
     }
 
-    // Hashear contraseña antes de guardar
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // El modelo User tiene un hook beforeCreate que hashea automáticamente
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password, // Se hashea automáticamente en el hook beforeCreate
       role: role || 'customer',
       phone: phone || null,
       isActive: true,
@@ -75,7 +83,10 @@ export const getUsers = async (req: Request, res: Response) => {
       ],
       order: [['name', 'ASC']],
     });
-    res.json(users);
+
+    // Procesar avatares con cache-busting
+    const usersWithAvatars = processUsersAvatars(users.map(u => u.toJSON()));
+    res.json(usersWithAvatars);
   } catch (error) {
     logger.error('Error al obtener usuarios:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -98,7 +109,10 @@ export const getUsersPublic = async (req: Request, res: Response) => {
       ],
       order: [['name', 'ASC']],
     });
-    res.json(users);
+
+    // Procesar avatares con cache-busting
+    const usersWithAvatars = processUsersAvatars(users.map(u => u.toJSON()));
+    res.json(usersWithAvatars);
   } catch (error) {
     logger.error('Error al obtener usuarios públicos:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -125,7 +139,13 @@ export const getUserById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    res.json(user);
+    // Procesar avatar con cache-busting
+    const userWithAvatar = {
+      ...user.toJSON(),
+      avatar: addCacheBusting(user.avatar),
+    };
+
+    res.json(userWithAvatar);
   } catch (error) {
     logger.error('Error al obtener usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
