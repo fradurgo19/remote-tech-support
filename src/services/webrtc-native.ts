@@ -529,6 +529,23 @@ class WebRTCNativeService {
 
         await peerConnection.setLocalDescription(answer);
 
+        // Procesar candidatos ICE almacenados después de establecer las descripciones
+        const storedCandidates = this.pendingSignals.get(peerId) || [];
+        const iceCandidates = storedCandidates.filter(s => s.type === 'candidate');
+        if (iceCandidates.length > 0) {
+          console.log(`📦 Processing ${iceCandidates.length} stored ICE candidates after setting descriptions`);
+          for (const candidateSignal of iceCandidates) {
+            try {
+              await peerConnection.addIceCandidate(candidateSignal.candidate);
+              console.log('✅ Stored ICE candidate added for:', peerId);
+            } catch (error) {
+              console.warn('⚠️ Error adding stored ICE candidate:', error);
+            }
+          }
+          // Remover candidatos procesados del buffer
+          this.pendingSignals.set(peerId, storedCandidates.filter(s => s.type !== 'candidate'));
+        }
+
         console.log('✅ Answer created and sent to:', peerId);
         socketService.sendSignal(peerId, {
           type: 'answer',
@@ -578,15 +595,35 @@ class WebRTCNativeService {
             sdp: signal.sdp,
           })
         );
+        
+        // Procesar candidatos ICE almacenados después de establecer la descripción remota
+        const storedCandidates = this.pendingSignals.get(peerId) || [];
+        const iceCandidates = storedCandidates.filter(s => s.type === 'candidate');
+        if (iceCandidates.length > 0) {
+          console.log(`📦 Processing ${iceCandidates.length} stored ICE candidates after setting remote description`);
+          for (const candidateSignal of iceCandidates) {
+            try {
+              await peerConnection.addIceCandidate(candidateSignal.candidate);
+              console.log('✅ Stored ICE candidate added for:', peerId);
+            } catch (error) {
+              console.warn('⚠️ Error adding stored ICE candidate:', error);
+            }
+          }
+          // Remover candidatos procesados del buffer
+          this.pendingSignals.set(peerId, storedCandidates.filter(s => s.type !== 'candidate'));
+        }
+        
         console.log('✅ Answer received and set for:', peerId);
       } else if (signal.type === 'candidate') {
-        // Solo añadir candidatos si la conexión está en estado válido
-        if (peerConnection.remoteDescription) {
+        // Intentar agregar candidato directamente
+        try {
+          // Los candidatos se pueden agregar en cualquier momento después de crear la peer connection
+          // No es necesario esperar a que haya remoteDescription
           await peerConnection.addIceCandidate(signal.candidate);
           console.log('✅ ICE candidate added for:', peerId);
-        } else {
-          console.log('⏳ Storing ICE candidate for later:', peerId);
-          // Almacenar candidatos pendientes si no hay remoteDescription aún
+        } catch (error) {
+          // Si falla, almacenar para procesar después
+          console.log('⏳ Storing ICE candidate for later (error adding):', peerId, error);
           if (!this.pendingSignals.has(peerId)) {
             this.pendingSignals.set(peerId, []);
           }
