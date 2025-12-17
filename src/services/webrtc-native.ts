@@ -502,10 +502,7 @@ class WebRTCNativeService {
         // Si no hay descripciones, podemos procesar la oferta incluso si el estado es "stable"
         const hasDescriptions =
           peerConnection.remoteDescription || peerConnection.localDescription;
-        if (
-          peerConnection.signalingState === 'stable' &&
-          hasDescriptions
-        ) {
+        if (peerConnection.signalingState === 'stable' && hasDescriptions) {
           console.log(
             '⚠️ Peer connection already in stable state with descriptions, ignoring duplicate offer'
           );
@@ -598,20 +595,25 @@ class WebRTCNativeService {
           connectionState: peerConnection.connectionState,
         });
 
-        // Verificar el estado de señalización - no podemos establecer remote description si ya está en "stable"
-        if (peerConnection.signalingState === 'stable') {
-          console.log(
-            '⚠️ Peer connection already in stable state, ignoring duplicate answer'
-          );
-          return;
-        }
-
         // Verificar que no se haya procesado ya este answer
+        // Primero verificar si ya tenemos una remoteDescription de tipo answer
         if (
           peerConnection.remoteDescription &&
           peerConnection.remoteDescription.type === 'answer'
         ) {
           console.log('⚠️ Answer already processed, ignoring duplicate');
+          return;
+        }
+
+        // Verificar el estado de señalización - no podemos establecer remote description si ya está en "stable"
+        // PERO solo si ya tenemos descripciones establecidas
+        if (
+          peerConnection.signalingState === 'stable' &&
+          (peerConnection.remoteDescription || peerConnection.localDescription)
+        ) {
+          console.log(
+            '⚠️ Peer connection already in stable state with descriptions, ignoring duplicate answer'
+          );
           return;
         }
 
