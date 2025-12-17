@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ErrorFallback } from './components/ErrorFallback';
 import { IncomingCallHandler } from './components/IncomingCallHandler';
+import { NavigationHelper } from './components/NavigationHelper';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { CallProvider } from './context/CallContext';
@@ -40,6 +41,7 @@ const App: React.FC = () => {
         <BrowserRouter>
           <AuthProvider>
             <CallProvider>
+              <NavigationHelper />
               <IncomingCallHandler />
               <Toaster position='top-right' />
               <Routes>

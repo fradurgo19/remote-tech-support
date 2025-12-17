@@ -17,7 +17,7 @@ export const SupportPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  
+
   // Detectar si se debe activar el tab de videollamada desde query params
   const tabFromQuery = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState<'services' | 'call'>(
@@ -81,7 +81,11 @@ export const SupportPage: React.FC = () => {
     <div className='space-y-6'>
       <h1 className='text-2xl font-bold'>Servicios de Soporte</h1>
 
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'services' | 'call')} className='w-full'>
+      <Tabs
+        value={activeTab}
+        onValueChange={value => setActiveTab(value as 'services' | 'call')}
+        className='w-full'
+      >
         <TabsList className='grid w-full grid-cols-2'>
           <TabsTrigger value='services'>
             <PhoneCall className='w-4 h-4 mr-2' />

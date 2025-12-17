@@ -170,9 +170,11 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
           await new Promise(resolve => setTimeout(resolve, 500));
           attempts++;
         }
-        
+
         if (!socket || !socket.connected) {
-          throw new Error('No se pudo conectar al servidor. Por favor, recarga la página e intenta nuevamente.');
+          throw new Error(
+            'No se pudo conectar al servidor. Por favor, recarga la página e intenta nuevamente.'
+          );
         }
       }
       console.log('✅ Socket connected, proceeding with call');
@@ -202,16 +204,20 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsInCall(true);
 
       console.log('✅ Call initiated and signal sent successfully');
+
+      // Navegar automáticamente a la página de videollamada sin recargar
+      // Solo navegar si no estamos ya en la página correcta
+      const targetPath = ticketId && ticketId !== 'direct-support'
+        ? `/tickets/${ticketId}?tab=call`
+        : '/support?tab=call';
       
-      // Navegar automáticamente a la página de videollamada
-      // Si hay un ticketId válido, ir a la página del ticket con tab de llamada
-      // Si no, ir a la página de soporte
-      if (ticketId && ticketId !== 'direct-support') {
-        // Navegar a la página del ticket y activar el tab de videollamada
-        window.location.href = `/tickets/${ticketId}?tab=call`;
+      const currentPath = window.location.pathname + window.location.search;
+      if (currentPath !== targetPath) {
+        console.log('🧭 Navigating to video call page:', targetPath);
+        // Usar evento personalizado para navegar sin recargar
+        window.dispatchEvent(new CustomEvent('navigate-to', { detail: targetPath }));
       } else {
-        // Navegar a la página de soporte y activar el tab de videollamada
-        window.location.href = '/support?tab=call';
+        console.log('🧭 Already on video call page, skipping navigation');
       }
     } catch (err) {
       console.error('❌ Error initiating call:', err);
@@ -403,19 +409,23 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
     try {
       await acceptCall(incomingCall.caller.id);
-      
-      // Navegar automáticamente a la página de videollamada
-      // Si hay un ticketId válido, ir a la página del ticket con tab de llamada
-      // Si no, ir a la página de soporte
+
+      // Navegar automáticamente a la página de videollamada sin recargar
+      // Solo navegar si no estamos ya en la página correcta
       const ticketId = incomingCall.ticketId;
-      if (ticketId && ticketId !== 'direct-support') {
-        // Navegar a la página del ticket y activar el tab de videollamada
-        window.location.href = `/tickets/${ticketId}?tab=call`;
-      } else {
-        // Navegar a la página de soporte y activar el tab de videollamada
-        window.location.href = '/support?tab=call';
-      }
+      const targetPath = ticketId && ticketId !== 'direct-support'
+        ? `/tickets/${ticketId}?tab=call`
+        : '/support?tab=call';
       
+      const currentPath = window.location.pathname + window.location.search;
+      if (currentPath !== targetPath) {
+        console.log('🧭 Navigating to video call page:', targetPath);
+        // Usar evento personalizado para navegar sin recargar
+        window.dispatchEvent(new CustomEvent('navigate-to', { detail: targetPath }));
+      } else {
+        console.log('🧭 Already on video call page, skipping navigation');
+      }
+
       setIncomingCall(null);
     } catch (err) {
       console.error('Error accepting call:', err);

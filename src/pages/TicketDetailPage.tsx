@@ -24,7 +24,11 @@ export const TicketDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Detectar si se debe activar el tab de videollamada desde query params
-  const tabFromQuery = searchParams.get('tab') as 'details' | 'chat' | 'call' | null;
+  const tabFromQuery = searchParams.get('tab') as
+    | 'details'
+    | 'chat'
+    | 'call'
+    | null;
   const [activeTab, setActiveTab] = useState<'details' | 'chat' | 'call'>(
     tabFromQuery || 'details'
   );
