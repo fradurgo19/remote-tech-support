@@ -497,17 +497,23 @@ class WebRTCNativeService {
           return;
         }
 
-        // Verificar el estado de señalización - no podemos establecer remote description si ya está en "stable"
-        // PERO si no tenemos remoteDescription ni localDescription, podemos procesar la oferta
+        // IMPORTANTE: Una nueva RTCPeerConnection comienza en estado "stable"
+        // Solo rechazar si el estado es "stable" Y ya tenemos descripciones establecidas
+        // Si no hay descripciones, podemos procesar la oferta incluso si el estado es "stable"
+        const hasDescriptions =
+          peerConnection.remoteDescription || peerConnection.localDescription;
         if (
           peerConnection.signalingState === 'stable' &&
-          (peerConnection.remoteDescription || peerConnection.localDescription)
+          hasDescriptions
         ) {
           console.log(
             '⚠️ Peer connection already in stable state with descriptions, ignoring duplicate offer'
           );
           return;
         }
+
+        // Si llegamos aquí, podemos procesar la oferta
+        console.log('✅ Processing offer - state allows it');
 
         console.log('📥 Setting remote description with offer');
         await peerConnection.setRemoteDescription(
