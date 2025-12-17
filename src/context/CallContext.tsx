@@ -202,6 +202,17 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsInCall(true);
 
       console.log('✅ Call initiated and signal sent successfully');
+      
+      // Navegar automáticamente a la página de videollamada
+      // Si hay un ticketId válido, ir a la página del ticket con tab de llamada
+      // Si no, ir a la página de soporte
+      if (ticketId && ticketId !== 'direct-support') {
+        // Navegar a la página del ticket y activar el tab de videollamada
+        window.location.href = `/tickets/${ticketId}?tab=call`;
+      } else {
+        // Navegar a la página de soporte y activar el tab de videollamada
+        window.location.href = '/support?tab=call';
+      }
     } catch (err) {
       console.error('❌ Error initiating call:', err);
       setError((err as Error).message);
@@ -216,7 +227,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const acceptCall = async (callerId: string) => {
+  const acceptCall = useCallback(async (callerId: string) => {
     setError(null);
     setIsLoading(true);
 
@@ -244,7 +255,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const toggleVideo = async () => {
     try {
@@ -392,6 +403,19 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
     try {
       await acceptCall(incomingCall.caller.id);
+      
+      // Navegar automáticamente a la página de videollamada
+      // Si hay un ticketId válido, ir a la página del ticket con tab de llamada
+      // Si no, ir a la página de soporte
+      const ticketId = incomingCall.ticketId;
+      if (ticketId && ticketId !== 'direct-support') {
+        // Navegar a la página del ticket y activar el tab de videollamada
+        window.location.href = `/tickets/${ticketId}?tab=call`;
+      } else {
+        // Navegar a la página de soporte y activar el tab de videollamada
+        window.location.href = '/support?tab=call';
+      }
+      
       setIncomingCall(null);
     } catch (err) {
       console.error('Error accepting call:', err);
@@ -399,7 +423,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [incomingCall]);
+  }, [incomingCall, acceptCall]);
 
   const declineIncomingCall = useCallback(() => {
     setIncomingCall(null);

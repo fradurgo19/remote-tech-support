@@ -1,6 +1,6 @@
 import { AlertCircle, ChevronLeft } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../atoms/Button';
 import { Spinner } from '../atoms/Spinner';
 import { PermissionDenied } from '../components/PermissionDenied';
@@ -16,15 +16,25 @@ export const TicketDetailPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [users, setUsers] = useState<Record<string, User>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Detectar si se debe activar el tab de videollamada desde query params
+  const tabFromQuery = searchParams.get('tab') as 'details' | 'chat' | 'call' | null;
   const [activeTab, setActiveTab] = useState<'details' | 'chat' | 'call'>(
-    'details'
+    tabFromQuery || 'details'
   );
+
+  // Actualizar tab cuando cambie el query param
+  useEffect(() => {
+    if (tabFromQuery && ['details', 'chat', 'call'].includes(tabFromQuery)) {
+      setActiveTab(tabFromQuery);
+    }
+  }, [tabFromQuery]);
 
   // Hook para estado de usuarios en tiempo real
   const { getUserWithStatus } = useUserStatus(users);

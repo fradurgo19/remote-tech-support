@@ -1,5 +1,6 @@
 import { AlertCircle, PhoneCall } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '../atoms/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import { Spinner } from '../atoms/Spinner';
@@ -15,6 +16,22 @@ export const SupportPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  
+  // Detectar si se debe activar el tab de videollamada desde query params
+  const tabFromQuery = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<'services' | 'call'>(
+    tabFromQuery === 'call' ? 'call' : 'services'
+  );
+
+  // Actualizar tab cuando cambie el query param
+  useEffect(() => {
+    if (tabFromQuery === 'call') {
+      setActiveTab('call');
+    } else if (tabFromQuery === 'services') {
+      setActiveTab('services');
+    }
+  }, [tabFromQuery]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -64,7 +81,7 @@ export const SupportPage: React.FC = () => {
     <div className='space-y-6'>
       <h1 className='text-2xl font-bold'>Servicios de Soporte</h1>
 
-      <Tabs defaultValue='services' className='w-full'>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'services' | 'call')} className='w-full'>
         <TabsList className='grid w-full grid-cols-2'>
           <TabsTrigger value='services'>
             <PhoneCall className='w-4 h-4 mr-2' />
