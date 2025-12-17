@@ -470,6 +470,14 @@ class WebRTCNativeService {
       console.log(`📡 Processing ${signal.type} signal from:`, peerId);
 
       if (signal.type === 'offer') {
+        console.log('📋 Offer processing - Current state:', {
+          signalingState: peerConnection.signalingState,
+          hasRemoteDescription: !!peerConnection.remoteDescription,
+          remoteDescriptionType: peerConnection.remoteDescription?.type,
+          hasLocalDescription: !!peerConnection.localDescription,
+          localDescriptionType: peerConnection.localDescription?.type,
+        });
+
         // Verificar que no se haya procesado ya este offer
         // Primero verificar si ya tenemos una remoteDescription de tipo offer
         if (
@@ -490,19 +498,28 @@ class WebRTCNativeService {
         }
 
         // Verificar el estado de señalización - no podemos establecer remote description si ya está en "stable"
-        if (peerConnection.signalingState === 'stable') {
+        // PERO si no tenemos remoteDescription ni localDescription, podemos procesar la oferta
+        if (
+          peerConnection.signalingState === 'stable' &&
+          (peerConnection.remoteDescription || peerConnection.localDescription)
+        ) {
           console.log(
-            '⚠️ Peer connection already in stable state, ignoring duplicate offer'
+            '⚠️ Peer connection already in stable state with descriptions, ignoring duplicate offer'
           );
           return;
         }
 
+        console.log('📥 Setting remote description with offer');
         await peerConnection.setRemoteDescription(
           new RTCSessionDescription({
             type: 'offer',
             sdp: signal.sdp,
           })
         );
+        console.log('✅ Remote description set, new state:', {
+          signalingState: peerConnection.signalingState,
+          hasRemoteDescription: !!peerConnection.remoteDescription,
+        });
 
         // Configurar bitrate antes de crear answer (opción 5: Ajuste SDP)
         const isMobile =
@@ -512,7 +529,9 @@ class WebRTCNativeService {
 
         await this.configureVideoBitrate(peerConnection, isMobile);
 
+        console.log('📥 Creating answer');
         const answer = await peerConnection.createAnswer();
+        console.log('✅ Answer created');
 
         // Mejorar SDP en answer también (opción 5: Ajuste SDP avanzado)
         if (answer.sdp && !isMobile) {
@@ -527,13 +546,22 @@ class WebRTCNativeService {
           );
         }
 
+        console.log('📥 Setting local description with answer');
         await peerConnection.setLocalDescription(answer);
+        console.log('✅ Local description set, new state:', {
+          signalingState: peerConnection.signalingState,
+          hasLocalDescription: !!peerConnection.localDescription,
+        });
 
         // Procesar candidatos ICE almacenados después de establecer las descripciones
         const storedCandidates = this.pendingSignals.get(peerId) || [];
-        const iceCandidates = storedCandidates.filter(s => s.type === 'candidate');
+        const iceCandidates = storedCandidates.filter(
+          s => s.type === 'candidate'
+        );
         if (iceCandidates.length > 0) {
-          console.log(`📦 Processing ${iceCandidates.length} stored ICE candidates after setting descriptions`);
+          console.log(
+            `📦 Processing ${iceCandidates.length} stored ICE candidates after setting descriptions`
+          );
           for (const candidateSignal of iceCandidates) {
             try {
               await peerConnection.addIceCandidate(candidateSignal.candidate);
@@ -543,7 +571,10 @@ class WebRTCNativeService {
             }
           }
           // Remover candidatos procesados del buffer
-          this.pendingSignals.set(peerId, storedCandidates.filter(s => s.type !== 'candidate'));
+          this.pendingSignals.set(
+            peerId,
+            storedCandidates.filter(s => s.type !== 'candidate')
+          );
         }
 
         console.log('✅ Answer created and sent to:', peerId);
@@ -595,12 +626,16 @@ class WebRTCNativeService {
             sdp: signal.sdp,
           })
         );
-        
+
         // Procesar candidatos ICE almacenados después de establecer la descripción remota
         const storedCandidates = this.pendingSignals.get(peerId) || [];
-        const iceCandidates = storedCandidates.filter(s => s.type === 'candidate');
+        const iceCandidates = storedCandidates.filter(
+          s => s.type === 'candidate'
+        );
         if (iceCandidates.length > 0) {
-          console.log(`📦 Processing ${iceCandidates.length} stored ICE candidates after setting remote description`);
+          console.log(
+            `📦 Processing ${iceCandidates.length} stored ICE candidates after setting remote description`
+          );
           for (const candidateSignal of iceCandidates) {
             try {
               await peerConnection.addIceCandidate(candidateSignal.candidate);
@@ -610,9 +645,12 @@ class WebRTCNativeService {
             }
           }
           // Remover candidatos procesados del buffer
-          this.pendingSignals.set(peerId, storedCandidates.filter(s => s.type !== 'candidate'));
+          this.pendingSignals.set(
+            peerId,
+            storedCandidates.filter(s => s.type !== 'candidate')
+          );
         }
-        
+
         console.log('✅ Answer received and set for:', peerId);
       } else if (signal.type === 'candidate') {
         // Intentar agregar candidato directamente
@@ -623,7 +661,11 @@ class WebRTCNativeService {
           console.log('✅ ICE candidate added for:', peerId);
         } catch (error) {
           // Si falla, almacenar para procesar después
-          console.log('⏳ Storing ICE candidate for later (error adding):', peerId, error);
+          console.log(
+            '⏳ Storing ICE candidate for later (error adding):',
+            peerId,
+            error
+          );
           if (!this.pendingSignals.has(peerId)) {
             this.pendingSignals.set(peerId, []);
           }
