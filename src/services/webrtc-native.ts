@@ -393,14 +393,19 @@ class WebRTCNativeService {
       } catch (error: any) {
         // Si el error es "Device in use", puede que el dispositivo ya esté en uso
         // Intentar verificar si hay algún stream activo en el sistema
-        if (error.name === 'NotReadableError' || error.message?.includes('Device in use')) {
-          console.warn('⚠️ Device in use error, checking for existing tracks...');
+        if (
+          error.name === 'NotReadableError' ||
+          error.message?.includes('Device in use')
+        ) {
+          console.warn(
+            '⚠️ Device in use error, checking for existing tracks...'
+          );
           // Intentar obtener los dispositivos activos
           try {
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videoDevices = devices.filter(d => d.kind === 'videoinput');
             console.log(`📹 Found ${videoDevices.length} video devices`);
-            
+
             // Si hay dispositivos, intentar con un delay pequeño
             if (videoDevices.length > 0) {
               console.log('⏳ Waiting 500ms before retry...');
@@ -410,7 +415,10 @@ class WebRTCNativeService {
               throw error;
             }
           } catch (retryError) {
-            console.error('❌ Could not get local stream after retry:', retryError);
+            console.error(
+              '❌ Could not get local stream after retry:',
+              retryError
+            );
             throw error; // Lanzar el error original
           }
         } else {

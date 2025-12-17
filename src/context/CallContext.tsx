@@ -236,58 +236,67 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const acceptCall = useCallback(async (callerId: string) => {
-    setError(null);
-    setIsLoading(true);
+  const acceptCall = useCallback(
+    async (callerId: string) => {
+      setError(null);
+      setIsLoading(true);
 
-    try {
-      console.log('🎯 Accepting call from:', callerId);
+      try {
+        console.log('🎯 Accepting call from:', callerId);
 
-      // Dejar que el servicio webrtc-native maneje la obtención del stream
-      // El servicio ya tiene lógica para reutilizar streams existentes
-      console.log('🔗 Creating peer connection as receiver...');
-      await webRTCNativeService.acceptCall(callerId);
-      
-      // Después de acceptCall, obtener el stream del servicio
-      // El servicio puede haber reutilizado un stream existente o creado uno nuevo
-      const serviceStream = (webRTCNativeService as any).localStream;
-      if (serviceStream) {
-        console.log('📹 Local stream from service:', {
-          id: serviceStream.id,
-          videoTracks: serviceStream.getVideoTracks().length,
-          audioTracks: serviceStream.getAudioTracks().length,
-        });
-        setLocalStream(serviceStream);
-        setVideoEnabled(true);
-        setAudioEnabled(true);
-      } else if (localStream) {
-        // Si ya tenemos un stream en el estado, mantenerlo
-        console.log('✅ Using existing local stream from state');
-        setVideoEnabled(true);
-        setAudioEnabled(true);
-      } else {
-        // Si no hay stream, intentar obtenerlo (último recurso)
-        console.log('⚠️ No stream found, attempting to get one...');
-        try {
-          const newStream = await webRTCNativeService.getLocalStream(true, true);
-          setLocalStream(newStream);
+        // Dejar que el servicio webrtc-native maneje la obtención del stream
+        // El servicio ya tiene lógica para reutilizar streams existentes
+        console.log('🔗 Creating peer connection as receiver...');
+        await webRTCNativeService.acceptCall(callerId);
+
+        // Después de acceptCall, obtener el stream del servicio
+        // El servicio puede haber reutilizado un stream existente o creado uno nuevo
+        const serviceStream = (webRTCNativeService as any).localStream;
+        if (serviceStream) {
+          console.log('📹 Local stream from service:', {
+            id: serviceStream.id,
+            videoTracks: serviceStream.getVideoTracks().length,
+            audioTracks: serviceStream.getAudioTracks().length,
+          });
+          setLocalStream(serviceStream);
           setVideoEnabled(true);
           setAudioEnabled(true);
-        } catch (streamError: any) {
-          console.warn('⚠️ Could not get new stream, but call may still work:', streamError);
-          // Continuar de todas formas, el servicio puede tener el stream
+        } else if (localStream) {
+          // Si ya tenemos un stream en el estado, mantenerlo
+          console.log('✅ Using existing local stream from state');
+          setVideoEnabled(true);
+          setAudioEnabled(true);
+        } else {
+          // Si no hay stream, intentar obtenerlo (último recurso)
+          console.log('⚠️ No stream found, attempting to get one...');
+          try {
+            const newStream = await webRTCNativeService.getLocalStream(
+              true,
+              true
+            );
+            setLocalStream(newStream);
+            setVideoEnabled(true);
+            setAudioEnabled(true);
+          } catch (streamError: any) {
+            console.warn(
+              '⚠️ Could not get new stream, but call may still work:',
+              streamError
+            );
+            // Continuar de todas formas, el servicio puede tener el stream
+          }
         }
+
+        setIsInCall(true);
+        console.log('✅ Call accepted successfully');
+      } catch (err) {
+        console.error('❌ Error accepting call:', err);
+        setError((err as Error).message);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsInCall(true);
-      console.log('✅ Call accepted successfully');
-    } catch (err) {
-      console.error('❌ Error accepting call:', err);
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [localStream]);
+    },
+    [localStream]
+  );
 
   const toggleVideo = async () => {
     try {
