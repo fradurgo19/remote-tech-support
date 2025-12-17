@@ -207,15 +207,18 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Navegar automáticamente a la página de videollamada sin recargar
       // Solo navegar si no estamos ya en la página correcta
-      const targetPath = ticketId && ticketId !== 'direct-support'
-        ? `/tickets/${ticketId}?tab=call`
-        : '/support?tab=call';
-      
+      const targetPath =
+        ticketId && ticketId !== 'direct-support'
+          ? `/tickets/${ticketId}?tab=call`
+          : '/support?tab=call';
+
       const currentPath = window.location.pathname + window.location.search;
       if (currentPath !== targetPath) {
         console.log('🧭 Navigating to video call page:', targetPath);
         // Usar evento personalizado para navegar sin recargar
-        window.dispatchEvent(new CustomEvent('navigate-to', { detail: targetPath }));
+        window.dispatchEvent(
+          new CustomEvent('navigate-to', { detail: targetPath })
+        );
       } else {
         console.log('🧭 Already on video call page, skipping navigation');
       }
@@ -240,19 +243,42 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       console.log('🎯 Accepting call from:', callerId);
 
-      const stream = await webRTCNativeService.getLocalStream(true, true);
-      console.log('📹 Local stream obtained for accepting call:', {
-        id: stream.id,
-        videoTracks: stream.getVideoTracks().length,
-        audioTracks: stream.getAudioTracks().length,
-      });
-
-      setLocalStream(stream);
-      setVideoEnabled(true);
-      setAudioEnabled(true);
-
+      // Dejar que el servicio webrtc-native maneje la obtención del stream
+      // El servicio ya tiene lógica para reutilizar streams existentes
       console.log('🔗 Creating peer connection as receiver...');
       await webRTCNativeService.acceptCall(callerId);
+      
+      // Después de acceptCall, obtener el stream del servicio
+      // El servicio puede haber reutilizado un stream existente o creado uno nuevo
+      const serviceStream = (webRTCNativeService as any).localStream;
+      if (serviceStream) {
+        console.log('📹 Local stream from service:', {
+          id: serviceStream.id,
+          videoTracks: serviceStream.getVideoTracks().length,
+          audioTracks: serviceStream.getAudioTracks().length,
+        });
+        setLocalStream(serviceStream);
+        setVideoEnabled(true);
+        setAudioEnabled(true);
+      } else if (localStream) {
+        // Si ya tenemos un stream en el estado, mantenerlo
+        console.log('✅ Using existing local stream from state');
+        setVideoEnabled(true);
+        setAudioEnabled(true);
+      } else {
+        // Si no hay stream, intentar obtenerlo (último recurso)
+        console.log('⚠️ No stream found, attempting to get one...');
+        try {
+          const newStream = await webRTCNativeService.getLocalStream(true, true);
+          setLocalStream(newStream);
+          setVideoEnabled(true);
+          setAudioEnabled(true);
+        } catch (streamError: any) {
+          console.warn('⚠️ Could not get new stream, but call may still work:', streamError);
+          // Continuar de todas formas, el servicio puede tener el stream
+        }
+      }
+      
       setIsInCall(true);
       console.log('✅ Call accepted successfully');
     } catch (err) {
@@ -261,7 +287,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [localStream]);
 
   const toggleVideo = async () => {
     try {
@@ -413,15 +439,18 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
       // Navegar automáticamente a la página de videollamada sin recargar
       // Solo navegar si no estamos ya en la página correcta
       const ticketId = incomingCall.ticketId;
-      const targetPath = ticketId && ticketId !== 'direct-support'
-        ? `/tickets/${ticketId}?tab=call`
-        : '/support?tab=call';
-      
+      const targetPath =
+        ticketId && ticketId !== 'direct-support'
+          ? `/tickets/${ticketId}?tab=call`
+          : '/support?tab=call';
+
       const currentPath = window.location.pathname + window.location.search;
       if (currentPath !== targetPath) {
         console.log('🧭 Navigating to video call page:', targetPath);
         // Usar evento personalizado para navegar sin recargar
-        window.dispatchEvent(new CustomEvent('navigate-to', { detail: targetPath }));
+        window.dispatchEvent(
+          new CustomEvent('navigate-to', { detail: targetPath })
+        );
       } else {
         console.log('🧭 Already on video call page, skipping navigation');
       }

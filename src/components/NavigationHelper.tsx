@@ -16,10 +16,16 @@ export const NavigationHelper: React.FC = () => {
     };
 
     // Escuchar eventos personalizados de navegación
-    window.addEventListener('navigate-to' as any, handleNavigate as EventListener);
+    window.addEventListener(
+      'navigate-to' as any,
+      handleNavigate as EventListener
+    );
 
     return () => {
-      window.removeEventListener('navigate-to' as any, handleNavigate as EventListener);
+      window.removeEventListener(
+        'navigate-to' as any,
+        handleNavigate as EventListener
+      );
     };
   }, [navigate]);
 
