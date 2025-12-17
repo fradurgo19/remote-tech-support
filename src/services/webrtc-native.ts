@@ -45,40 +45,47 @@ class WebRTCNativeService {
   }
 
   // Detectar tipo de conexión (WiFi vs datos móviles)
-  private async detectConnectionType(): Promise<'wifi' | 'cellular' | 'unknown'> {
+  private async detectConnectionType(): Promise<
+    'wifi' | 'cellular' | 'unknown'
+  > {
     try {
       // Network Information API (soporte limitado pero creciente)
-      const connection = (navigator as any).connection || 
-                        (navigator as any).mozConnection || 
-                        (navigator as any).webkitConnection;
-      
+      const connection =
+        (navigator as any).connection ||
+        (navigator as any).mozConnection ||
+        (navigator as any).webkitConnection;
+
       if (connection) {
         const effectiveType = connection.effectiveType;
         const type = connection.type;
-        
+
         // Si es WiFi o ethernet, usar mejor calidad
         if (type === 'wifi' || type === 'ethernet') {
           return 'wifi';
         }
-        
+
         // Si es cellular pero tiene buena velocidad (4G/5G), considerar WiFi
-        if (type === 'cellular' && (effectiveType === '4g' || effectiveType === '5g')) {
+        if (
+          type === 'cellular' &&
+          (effectiveType === '4g' || effectiveType === '5g')
+        ) {
           // Verificar velocidad real si está disponible
           const downlink = connection.downlink;
-          if (downlink && downlink > 2) { // Más de 2 Mbps
+          if (downlink && downlink > 2) {
+            // Más de 2 Mbps
             return 'wifi'; // Tratar como WiFi para mejor calidad
           }
         }
-        
+
         return 'cellular';
       }
-      
+
       // Fallback: detectar por User Agent y asumir datos móviles en móviles
       const isMobile =
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent
         );
-      
+
       return isMobile ? 'cellular' : 'wifi';
     } catch (error) {
       console.warn('⚠️ No se pudo detectar tipo de conexión:', error);
@@ -101,7 +108,7 @@ class WebRTCNativeService {
       // Detectar tipo de conexión para optimizar calidad
       const connectionType = await this.detectConnectionType();
       const isWifi = connectionType === 'wifi';
-      
+
       console.log('📡 Tipo de conexión detectado:', {
         connectionType,
         isMobile,
@@ -114,14 +121,20 @@ class WebRTCNativeService {
       // - PC: Calidad alta (1280x720, 30fps, ~1Mbps) - sin cambios
       const videoConstraints = video
         ? {
-            width: isMobile 
-              ? (isWifi ? { ideal: 960, max: 960 } : { ideal: 640, max: 640 })
+            width: isMobile
+              ? isWifi
+                ? { ideal: 960, max: 960 }
+                : { ideal: 640, max: 640 }
               : { ideal: 1280 },
-            height: isMobile 
-              ? (isWifi ? { ideal: 540, max: 540 } : { ideal: 480, max: 480 })
+            height: isMobile
+              ? isWifi
+                ? { ideal: 540, max: 540 }
+                : { ideal: 480, max: 480 }
               : { ideal: 720 },
-            frameRate: isMobile 
-              ? (isWifi ? { ideal: 25, max: 25 } : { ideal: 15, max: 20 })
+            frameRate: isMobile
+              ? isWifi
+                ? { ideal: 25, max: 25 }
+                : { ideal: 15, max: 20 }
               : { ideal: 30 },
             facingMode: isMobile ? preferredFacingMode : undefined, // Solo aplicar facingMode en móviles
           }
@@ -228,7 +241,7 @@ class WebRTCNativeService {
           `WebRTC: Track agregado - Tipo: ${track.kind}, Enabled: ${track.enabled}, Estado: ${track.readyState}`
         );
       });
-      
+
       // Configurar bitrate después de agregar tracks (opción 5: Ajuste SDP)
       this.configureVideoBitrate(peerConnection, isMobile);
     }
@@ -318,36 +331,33 @@ class WebRTCNativeService {
     // Create offer
     try {
       console.log('📤 Creating offer for:', recipientId);
-      
+
       // Configurar bitrate antes de crear offer (opción 5: Ajuste SDP)
       const isMobile =
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent
         );
-      
+
       await this.configureVideoBitrate(peerConnection, isMobile);
-      
+
       // Crear offer con opciones mejoradas
       const offer = await peerConnection.createOffer({
         offerToReceiveAudio: true,
         offerToReceiveVideo: true,
       });
-      
+
       // Mejorar SDP para priorizar calidad cuando el receptor es PC (opción 5: Ajuste SDP avanzado)
       if (offer.sdp && !isMobile) {
         // Aumentar bitrate en SDP para PC
-        offer.sdp = offer.sdp.replace(
-          /a=fmtp:\d+ (.+)/g,
-          (match, params) => {
-            // Asegurar bitrate alto en SDP
-            if (!params.includes('x-google-max-bitrate')) {
-              return match + ';x-google-max-bitrate=1000000';
-            }
-            return match;
+        offer.sdp = offer.sdp.replace(/a=fmtp:\d+ (.+)/g, (match, params) => {
+          // Asegurar bitrate alto en SDP
+          if (!params.includes('x-google-max-bitrate')) {
+            return match + ';x-google-max-bitrate=1000000';
           }
-        );
+          return match;
+        });
       }
-      
+
       console.log('📤 Offer created:', {
         type: offer.type,
         sdpLength: offer.sdp?.length,
@@ -394,8 +404,39 @@ class WebRTCNativeService {
         `📦 Processing ${pendingSignals.length} pending signals for:`,
         callerId
       );
-      // Procesar cada señal en orden
+
+      // Filtrar señales duplicadas: solo procesar la primera oferta, primera respuesta, y todos los candidatos
+      let hasProcessedOffer = false;
+      let hasProcessedAnswer = false;
+      const signalsToProcess: any[] = [];
+
       for (const signal of pendingSignals) {
+        if (signal.type === 'offer') {
+          if (!hasProcessedOffer) {
+            signalsToProcess.push(signal);
+            hasProcessedOffer = true;
+          } else {
+            console.log('⚠️ Skipping duplicate offer in pending signals');
+          }
+        } else if (signal.type === 'answer') {
+          if (!hasProcessedAnswer) {
+            signalsToProcess.push(signal);
+            hasProcessedAnswer = true;
+          } else {
+            console.log('⚠️ Skipping duplicate answer in pending signals');
+          }
+        } else {
+          // Procesar todos los candidatos
+          signalsToProcess.push(signal);
+        }
+      }
+
+      console.log(
+        `📦 Filtered ${pendingSignals.length} signals to ${signalsToProcess.length} unique signals`
+      );
+
+      // Procesar cada señal en orden
+      for (const signal of signalsToProcess) {
         await this.handleSignal(callerId, signal);
       }
 
@@ -429,6 +470,33 @@ class WebRTCNativeService {
       console.log(`📡 Processing ${signal.type} signal from:`, peerId);
 
       if (signal.type === 'offer') {
+        // Verificar que no se haya procesado ya este offer
+        // Primero verificar si ya tenemos una remoteDescription de tipo offer
+        if (
+          peerConnection.remoteDescription &&
+          peerConnection.remoteDescription.type === 'offer'
+        ) {
+          console.log('⚠️ Offer already processed, ignoring duplicate offer');
+          return;
+        }
+
+        // Verificar si ya tenemos una localDescription (answer), lo que significa que ya procesamos un offer
+        if (
+          peerConnection.localDescription &&
+          peerConnection.localDescription.type === 'answer'
+        ) {
+          console.log('⚠️ Answer already created, ignoring duplicate offer');
+          return;
+        }
+
+        // Verificar el estado de señalización - no podemos establecer remote description si ya está en "stable"
+        if (peerConnection.signalingState === 'stable') {
+          console.log(
+            '⚠️ Peer connection already in stable state, ignoring duplicate offer'
+          );
+          return;
+        }
+
         await peerConnection.setRemoteDescription(
           new RTCSessionDescription({
             type: 'offer',
@@ -441,11 +509,11 @@ class WebRTCNativeService {
           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
             navigator.userAgent
           );
-        
+
         await this.configureVideoBitrate(peerConnection, isMobile);
 
         const answer = await peerConnection.createAnswer();
-        
+
         // Mejorar SDP en answer también (opción 5: Ajuste SDP avanzado)
         if (answer.sdp && !isMobile) {
           answer.sdp = answer.sdp.replace(
@@ -458,7 +526,7 @@ class WebRTCNativeService {
             }
           );
         }
-        
+
         await peerConnection.setLocalDescription(answer);
 
         console.log('✅ Answer created and sent to:', peerId);
@@ -472,7 +540,17 @@ class WebRTCNativeService {
           hasRemoteDescription: !!peerConnection.remoteDescription,
           remoteDescriptionType: peerConnection.remoteDescription?.type,
           hasLocalDescription: !!peerConnection.localDescription,
+          signalingState: peerConnection.signalingState,
+          connectionState: peerConnection.connectionState,
         });
+
+        // Verificar el estado de señalización - no podemos establecer remote description si ya está en "stable"
+        if (peerConnection.signalingState === 'stable') {
+          console.log(
+            '⚠️ Peer connection already in stable state, ignoring duplicate answer'
+          );
+          return;
+        }
 
         // Verificar que no se haya procesado ya este answer
         if (
@@ -519,6 +597,15 @@ class WebRTCNativeService {
       console.error('❌ Error al procesar señal WebRTC:', error);
       console.error('Signal type:', signal.type);
       console.error('Peer ID:', peerId);
+      if (peerConnection) {
+        console.error('Peer connection state:', {
+          signalingState: peerConnection.signalingState,
+          connectionState: peerConnection.connectionState,
+          hasRemoteDescription: !!peerConnection.remoteDescription,
+          remoteDescriptionType: peerConnection.remoteDescription?.type,
+          hasLocalDescription: !!peerConnection.localDescription,
+        });
+      }
     }
   }
 
@@ -531,7 +618,7 @@ class WebRTCNativeService {
       // Detectar tipo de conexión
       const connectionType = await this.detectConnectionType();
       const isWifi = connectionType === 'wifi';
-      
+
       // Configurar parámetros de codificación según conexión
       peerConnection.getTransceivers().forEach(transceiver => {
         if (transceiver.sender && transceiver.sender.track?.kind === 'video') {
@@ -539,7 +626,7 @@ class WebRTCNativeService {
           if (!params.encodings) {
             params.encodings = [{}];
           }
-          
+
           if (isMobile) {
             // Móvil: ajustar según tipo de conexión
             // Aumentar bitrate para mejor calidad y reducir pixelación
@@ -549,12 +636,16 @@ class WebRTCNativeService {
               params.encodings[0].maxFramerate = 25;
               // Mejorar calidad de codificación para reducir pixelación
               params.encodings[0].scaleResolutionDownBy = 1; // No reducir resolución
-              console.log('📡 Configurando bitrate para móvil en WiFi: 600kbps (mejorado para pantallas)');
+              console.log(
+                '📡 Configurando bitrate para móvil en WiFi: 600kbps (mejorado para pantallas)'
+              );
             } else {
               // Móvil en datos: calidad media (350kbps, 20fps) - mejor que antes para pantallas
               params.encodings[0].maxBitrate = 350000; // 350 kbps (aumentado de 250)
               params.encodings[0].maxFramerate = 20;
-              console.log('📡 Configurando bitrate para móvil en datos: 350kbps (mejorado)');
+              console.log(
+                '📡 Configurando bitrate para móvil en datos: 350kbps (mejorado)'
+              );
             }
           } else {
             // PC: calidad alta (sin límite estricto, usar default ~1Mbps)
@@ -562,7 +653,7 @@ class WebRTCNativeService {
             params.encodings[0].maxFramerate = 30;
             console.log('📡 Configurando bitrate para PC: 1Mbps');
           }
-          
+
           transceiver.sender.setParameters(params).catch(err => {
             console.warn('⚠️ No se pudo configurar bitrate:', err);
           });
