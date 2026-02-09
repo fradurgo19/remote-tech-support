@@ -21,9 +21,6 @@ const TIPOS_MAQUINA = [
 
 const MARCAS = ['Dynapac', 'Hitachi', 'Liugong', 'Yanmar'];
 
-const LOGO_URL =
-  'https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png';
-
 const BACKGROUND_IMAGE_URL =
   'https://res.cloudinary.com/dbufrzoda/image/upload/v1770665311/Captura_de_pantalla_2026-02-09_142724_hxmo1i.png';
 
@@ -154,13 +151,6 @@ export const PublicCreateTicketPage: React.FC = () => {
             className="max-w-full max-h-full w-auto h-auto object-contain opacity-20"
           />
         </div>
-        <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
-          <img
-            src={LOGO_URL}
-            alt="Partequipos Logo"
-            className="max-h-16 w-auto object-contain"
-          />
-        </div>
         <Card className="max-w-md w-full bg-card shadow-lg border border-border relative z-10">
           <CardHeader>
             <CardTitle className="text-center text-primary">
@@ -197,24 +187,16 @@ export const PublicCreateTicketPage: React.FC = () => {
           className="max-w-full max-h-full w-auto h-auto object-contain opacity-20"
         />
       </div>
-      <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
-        <img
-          src={LOGO_URL}
-          alt="Partequipos Logo"
-          className="max-h-16 w-auto object-contain"
-        />
-      </div>
-
-      <div className="container max-w-2xl mx-auto py-8 px-4 pt-20 md:pt-24 relative z-10">
+      <div className="container max-w-2xl mx-auto py-8 px-4 pt-12 md:pt-16 relative z-10">
         <div className="space-y-6">
           <div className="text-center">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
               Solicitar Soporte Técnico
             </h1>
-            <p className="text-muted-foreground mt-1 font-medium">
+            <p className="text-white mt-1 font-medium">
               Para Maquinaria Nueva o Usada
             </p>
-            <p className="text-muted-foreground mt-1 text-sm">
+            <p className="text-white mt-1 text-sm">
               Complete cada campo en orden. Todos los campos son obligatorios.
             </p>
           </div>
