@@ -35,9 +35,9 @@ const ForgotPasswordPage: React.FC = () => {
       {/* Logo de la compañía - Esquina superior izquierda */}
       <div className='absolute top-4 left-4 md:top-6 md:left-6'>
         <img
-          src='https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png'
+          src='https://res.cloudinary.com/dbufrzoda/image/upload/v1762897590/Logo2_eedoer.jpg'
           alt='Partequipos Logo'
-          className='h-12 md:h-16 w-auto object-contain'
+          className='h-12 w-12 md:h-16 md:w-16 rounded-full object-cover'
         />
       </div>
 

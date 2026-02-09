@@ -17,6 +17,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Avatar } from '../atoms/Avatar';
 import { Button } from '../atoms/Button';
 import { useAuth } from '../context/AuthContext';
+import { cn } from '../utils/cn';
 
 export const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -36,6 +37,12 @@ export const MainLayout: React.FC = () => {
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+
+  const getRoleLabel = (role: string) => {
+    if (role === 'admin') return 'Administrador';
+    if (role === 'technician') return 'Técnico';
+    return 'Cliente';
   };
 
   const menuItems = [
@@ -69,9 +76,9 @@ export const MainLayout: React.FC = () => {
 
             {/* Logo de la compañía */}
             <img
-              src='https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png'
+              src='https://res.cloudinary.com/dbufrzoda/image/upload/v1762897590/Logo2_eedoer.jpg'
               alt='Partequipos Logo'
-              className='h-10 w-auto object-contain'
+              className='h-10 w-10 rounded-full object-cover'
             />
 
             <NavLink to='/' className='flex items-center space-x-2'>
@@ -100,11 +107,7 @@ export const MainLayout: React.FC = () => {
                 <div className='hidden md:block text-right mr-2'>
                   <p className='text-sm font-medium'>{user.name}</p>
                   <p className='text-xs text-muted-foreground'>
-                    {user.role === 'admin'
-                      ? 'Administrador'
-                      : user.role === 'technician'
-                      ? 'Técnico'
-                      : 'Cliente'}
+                    {getRoleLabel(user.role)}
                   </p>
                 </div>
                 <Avatar src={user.avatar} status={user.status} />
@@ -222,8 +225,3 @@ export const MainLayout: React.FC = () => {
     </div>
   );
 };
-
-// Función auxiliar para nombres de clase condicionales
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
-}

@@ -22,7 +22,7 @@ const TIPOS_MAQUINA = [
 const MARCAS = ['Dynapac', 'Hitachi', 'Liugong', 'Yanmar'];
 
 const LOGO_URL =
-  'https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png';
+  'https://res.cloudinary.com/dbufrzoda/image/upload/v1762897590/Logo2_eedoer.jpg';
 
 type FormState = {
   customerName: string;
@@ -145,7 +145,7 @@ export const PublicCreateTicketPage: React.FC = () => {
           <img
             src={LOGO_URL}
             alt="Partequipos Logo"
-            className="h-10 w-auto object-contain"
+            className="h-10 w-10 rounded-full object-cover"
           />
         </div>
         <Card className="max-w-md w-full bg-card shadow-lg border border-border">
@@ -178,7 +178,7 @@ export const PublicCreateTicketPage: React.FC = () => {
         <img
           src={LOGO_URL}
           alt="Partequipos Logo"
-          className="h-10 w-auto object-contain"
+          className="h-10 w-10 rounded-full object-cover"
         />
       </div>
 
