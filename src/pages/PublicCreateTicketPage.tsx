@@ -190,13 +190,13 @@ export const PublicCreateTicketPage: React.FC = () => {
       <div className="container max-w-2xl mx-auto py-8 px-4 pt-12 md:pt-16 relative z-10">
         <div className="space-y-6">
           <div className="text-center">
-            <h1 className="text-2xl md:text-3xl font-bold text-white">
+            <h1 className="text-2xl md:text-3xl font-bold text-red-800">
               Solicitar Soporte Técnico
             </h1>
-            <p className="text-white mt-1 font-medium">
+            <p className="text-gray-600 mt-1 font-medium">
               Para Maquinaria Nueva o Usada
             </p>
-            <p className="text-white mt-1 text-sm">
+            <p className="text-gray-600 mt-1 text-sm">
               Complete cada campo en orden. Todos los campos son obligatorios.
             </p>
           </div>
