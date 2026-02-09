@@ -178,9 +178,9 @@ class SocketService {
     callback: (data: { userId: string; status: User['status'] }) => void
   ): () => void {
     if (this.socket && this.isServerAvailable) {
-      this.socket.on('user-status-change', callback);
+      this.socket.on('user_status_changed', callback);
       return () => {
-        this.socket?.off('user-status-change', callback);
+        this.socket?.off('user_status_changed', callback);
       };
     }
     return () => {};
@@ -370,19 +370,6 @@ class SocketService {
       this.socket?.off('connect', onConnect);
       this.socket?.off('disconnect', onDisconnect);
     };
-  }
-
-  // Escuchar cambios de estado de usuarios
-  onUserStatusChange(
-    callback: (data: { userId: string; status: 'online' | 'away' | 'busy' | 'offline' }) => void
-  ): () => void {
-    if (this.socket && this.isServerAvailable) {
-      this.socket.on('user_status_changed', callback);
-      return () => {
-        this.socket?.off('user_status_changed', callback);
-      };
-    }
-    return () => {};
   }
 
   // Cambiar el estado del usuario actual
