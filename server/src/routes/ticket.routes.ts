@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   createTicket,
+  createTicketPublic,
   deleteTicket,
   getTicketById,
   getTickets,
@@ -14,6 +15,9 @@ import {
 } from '../middleware/auth';
 
 const router = Router();
+
+// Ruta pública: crear ticket sin autenticación (formulario público)
+router.post('/public', createTicketPublic);
 
 router.use(authenticate);
 router.get('/', getTickets);

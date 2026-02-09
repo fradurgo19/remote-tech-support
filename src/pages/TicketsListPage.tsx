@@ -87,12 +87,15 @@ export const TicketsListPage: React.FC = () => {
       priorityFilter === 'all' || ticket.priority === priorityFilter;
     const matchesCustomer =
       customerFilter === 'all' || ticket.customerId === customerFilter;
-    const matchesTechnician =
-      technicianFilter === 'all' 
-        ? true 
-        : technicianFilter === 'unassigned' 
-        ? !ticket.technicianId 
-        : ticket.technicianId === technicianFilter;
+
+    let matchesTechnician: boolean;
+    if (technicianFilter === 'all') {
+      matchesTechnician = true;
+    } else if (technicianFilter === 'unassigned') {
+      matchesTechnician = !ticket.technicianId;
+    } else {
+      matchesTechnician = ticket.technicianId === technicianFilter;
+    }
 
     return matchesSearch && matchesStatus && matchesPriority && matchesCustomer && matchesTechnician;
   });
@@ -126,7 +129,7 @@ export const TicketsListPage: React.FC = () => {
             Error al Cargar los Tickets
           </h2>
           <p className='text-muted-foreground mb-4'>{error}</p>
-          <Button onClick={() => window.location.reload()}>
+          <Button onClick={() => globalThis.location.reload()}>
             Intentar de Nuevo
           </Button>
         </div>

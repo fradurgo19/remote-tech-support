@@ -12,6 +12,7 @@ import { CallProvider } from './context/CallContext';
 import { MainLayout } from './organisms/MainLayout';
 import { CreateTicketPage } from './pages/CreateTicketPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { PublicCreateTicketPage } from './pages/PublicCreateTicketPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -46,6 +47,10 @@ const App: React.FC = () => {
               <Toaster position='top-right' />
               <Routes>
                 <Route path='/login' element={<LoginPage />} />
+                <Route
+                  path='/solicitar-soporte'
+                  element={<PublicCreateTicketPage />}
+                />
                 <Route
                   path='/forgot-password'
                   element={<ForgotPasswordPage />}

@@ -1,8 +1,18 @@
 import { Request, Response } from 'express';
 import { sequelize } from '../config/database';
 import { Category, Message, Ticket, User } from '../models';
-import { emailService } from '../services/email.service';
+import type { TicketAttributes } from '../models/Ticket';
+import {
+  emailService,
+  type TicketEmailData,
+} from '../services/email.service';
 import { logger } from '../utils/logger';
+
+/** Ticket con asociaciones customer/technician cargadas por include */
+type TicketWithRelations = Ticket & {
+  customer?: User;
+  technician?: User;
+};
 
 export const getTickets = async (req: Request, res: Response) => {
   try {
@@ -79,6 +89,156 @@ export const getTicketById = async (req: Request, res: Response) => {
   }
 };
 
+/** Crear ticket desde formulario público (sin autenticación) */
+export const createTicketPublic = async (req: Request, res: Response) => {
+  try {
+    const {
+      title,
+      description,
+      category,
+      priority,
+      customerName,
+      customerEmail,
+      phone,
+      nit,
+      asesorRepuestos,
+      tipoMaquina,
+      marca,
+      modeloEquipo,
+    } = req.body;
+
+    if (!customerEmail || !customerName || !title || !description) {
+      return res.status(400).json({
+        message:
+          'Nombre del cliente, email, título y descripción son obligatorios',
+      });
+    }
+
+    logger.info('Creando ticket público:', {
+      title,
+      customerEmail,
+      customerName,
+    });
+
+    const categoryRecord = await Category.findOne({
+      where: { name: category || 'Soporte Remoto' },
+    });
+    if (!categoryRecord) {
+      return res
+        .status(400)
+        .json({ message: 'Categoría no encontrada. Use "Soporte Remoto".' });
+    }
+
+    let customer = await User.findOne({
+      where: { email: customerEmail, role: 'customer' },
+    });
+    if (!customer) {
+      customer = await User.create({
+        name: customerName,
+        email: customerEmail,
+        password:
+          'temp-password-' + Math.random().toString(36).substring(7),
+        role: 'customer',
+        emailVerified: false,
+        phone: phone ?? undefined,
+      });
+    } else if (phone) {
+      await customer.update({ name: customerName, phone });
+    } else {
+      await customer.update({ name: customerName });
+    }
+
+    const ticket = await Ticket.create({
+      title,
+      description,
+      categoryId: categoryRecord.id,
+      priority: priority || 'medium',
+      customerId: customer.id,
+      status: 'open',
+      nit: nit || null,
+      asesorRepuestos: asesorRepuestos || null,
+      tipoMaquina: tipoMaquina || null,
+      marca: marca || null,
+      modeloEquipo: modeloEquipo || null,
+    });
+
+    const ticketWithCustomer = (await Ticket.findByPk(ticket.id, {
+      include: [
+        { model: User, as: 'customer', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'technician', attributes: ['id', 'name', 'email'] },
+      ],
+    })) as TicketWithRelations | null;
+
+    if (ticketWithCustomer?.customer) {
+      try {
+        const payload: TicketEmailData = {
+          ticket: ticketWithCustomer,
+          customer: ticketWithCustomer.customer,
+          technician: ticketWithCustomer.technician,
+        };
+        const emailSent =
+          await emailService.sendTicketCreatedNotification(payload);
+        if (emailSent) {
+          logger.info(`Email notification sent for public ticket ${ticket.id}`);
+        }
+      } catch (emailError) {
+        logger.error('Error sending email for public ticket:', emailError);
+      }
+    }
+
+    res.status(201).json({
+      message: 'Ticket creado exitosamente',
+      ticket: ticketWithCustomer,
+    });
+  } catch (error) {
+    logger.error('Error al crear ticket público:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+type ResolveCustomerResult =
+  | { ok: true; customerId: string }
+  | { ok: false; status: number; message: string };
+
+async function resolveCustomerIdForTicket(
+  user: { id: string; role: string },
+  body: {
+    customerId?: string;
+    customerEmail?: string;
+    customerName?: string;
+  }
+): Promise<ResolveCustomerResult> {
+  if (user.role === 'customer') {
+    return { ok: true, customerId: user.id };
+  }
+  if (user.role !== 'admin' && user.role !== 'technician') {
+    return { ok: false, status: 403, message: 'No tienes permisos para crear tickets' };
+  }
+  if (body.customerId) {
+    return { ok: true, customerId: body.customerId };
+  }
+  if (!body.customerEmail) {
+    return {
+      ok: false,
+      status: 400,
+      message: 'Email del cliente es requerido para asignar el ticket',
+    };
+  }
+  let customer = await User.findOne({
+    where: { email: body.customerEmail, role: 'customer' },
+  });
+  if (!customer) {
+    customer = await User.create({
+      name: body.customerName ?? body.customerEmail.split('@')[0],
+      email: body.customerEmail,
+      password: 'temp-password-' + Math.random().toString(36).substring(7),
+      role: 'customer',
+      emailVerified: false,
+    });
+  }
+  return { ok: true, customerId: customer.id };
+}
+
 export const createTicket = async (req: Request, res: Response) => {
   try {
     const {
@@ -91,9 +251,8 @@ export const createTicket = async (req: Request, res: Response) => {
       customerId: providedCustomerId,
     } = req.body;
     const user = req.user as { id: string; role: string; email: string };
-    let customerId: string;
 
-    logger.info(`🎫 Creando ticket - Datos recibidos:`, {
+    logger.info('🎫 Creando ticket - Datos recibidos:', {
       title,
       category,
       priority,
@@ -104,64 +263,23 @@ export const createTicket = async (req: Request, res: Response) => {
       userId: user.id,
     });
 
-    // Buscar la categoría por nombre para obtener su ID
-    logger.info(`Buscando categoría: "${category}"`);
     const categoryRecord = await Category.findOne({
       where: { name: category },
     });
     if (!categoryRecord) {
       logger.error(`❌ Categoría no encontrada: "${category}"`);
-      logger.info(
-        'Categorías disponibles:',
-        await Category.findAll({ attributes: ['name'] })
-      );
       return res.status(400).json({ message: 'Categoría no encontrada' });
     }
-    logger.info(`✅ Categoría encontrada: ${categoryRecord.id}`);
 
-    // Determinar el customerId según el rol del usuario
-    if (user.role === 'customer') {
-      // Los clientes solo pueden crear tickets para sí mismos
-      customerId = user.id;
-      logger.info(`✅ Cliente (self): ${customerId}`);
-    } else if (user.role === 'admin' || user.role === 'technician') {
-      // El personal de soporte puede asignar tickets a clientes
-      if (providedCustomerId) {
-        // Si se proporciona customerId directamente, usarlo
-        customerId = providedCustomerId;
-        logger.info(`✅ Cliente (por ID): ${customerId}`);
-      } else if (customerEmail) {
-        // Buscar cliente existente por email
-        let customer = await User.findOne({
-          where: { email: customerEmail, role: 'customer' },
-        });
-
-        if (!customer) {
-          // Si no existe, crear un cliente temporal
-          logger.info(`Creando nuevo cliente: ${customerEmail}`);
-          customer = await User.create({
-            name: customerName || customerEmail.split('@')[0],
-            email: customerEmail,
-            password:
-              'temp-password-' + Math.random().toString(36).substring(7), // Contraseña temporal
-            role: 'customer',
-            isActive: true,
-            emailVerified: false,
-          });
-        }
-        customerId = customer.id;
-        logger.info(`✅ Cliente (por email): ${customerId}`);
-      } else {
-        logger.error('❌ No se proporcionó customerId ni customerEmail');
-        return res.status(400).json({
-          message: 'Email del cliente es requerido para asignar el ticket',
-        });
-      }
-    } else {
-      return res
-        .status(403)
-        .json({ message: 'No tienes permisos para crear tickets' });
+    const resolved = await resolveCustomerIdForTicket(user, {
+      customerId: providedCustomerId,
+      customerEmail,
+      customerName,
+    });
+    if (resolved.ok === false) {
+      return res.status(resolved.status).json({ message: resolved.message });
     }
+    const { customerId } = resolved;
 
     const ticket = await Ticket.create({
       title,
@@ -173,41 +291,34 @@ export const createTicket = async (req: Request, res: Response) => {
     });
 
     // Obtener el ticket con la información del cliente
-    const ticketWithCustomer = await Ticket.findByPk(ticket.id, {
+    const ticketWithCustomer = (await Ticket.findByPk(ticket.id, {
       include: [
         { model: User, as: 'customer', attributes: ['id', 'name', 'email'] },
         { model: User, as: 'technician', attributes: ['id', 'name', 'email'] },
       ],
-    });
+    })) as TicketWithRelations | null;
 
     // Enviar notificación por correo electrónico
-    try {
-      const emailSent = await emailService.sendTicketCreatedNotification({
-        ticket: ticketWithCustomer as {
-          id: string;
-          title: string;
-          description: string;
-          priority: string;
-          status: string;
-        },
-        customer: ticketWithCustomer?.customer as
-          | { id: string; name: string; email: string }
-          | undefined,
-        technician: ticketWithCustomer?.technician as
-          | { id: string; name: string; email: string }
-          | undefined,
-      });
-
-      if (emailSent) {
-        logger.info(`Email notification sent for ticket ${ticket.id}`);
-      } else {
-        logger.warn(
-          `Failed to send email notification for ticket ${ticket.id}`
-        );
+    if (ticketWithCustomer?.customer) {
+      try {
+        const payload: TicketEmailData = {
+          ticket: ticketWithCustomer,
+          customer: ticketWithCustomer.customer,
+          technician: ticketWithCustomer.technician,
+        };
+        const emailSent =
+          await emailService.sendTicketCreatedNotification(payload);
+        if (emailSent) {
+          logger.info(`Email notification sent for ticket ${ticket.id}`);
+        } else {
+          logger.warn(
+            `Failed to send email notification for ticket ${ticket.id}`
+          );
+        }
+      } catch (emailError) {
+        logger.error('Error sending email notification:', emailError);
+        // No fallar la creación del ticket si el email falla
       }
-    } catch (emailError) {
-      logger.error('Error sending email notification:', emailError);
-      // No fallar la creación del ticket si el email falla
     }
 
     res.status(201).json({
@@ -252,206 +363,211 @@ export const testEmailConfiguration = async (req: Request, res: Response) => {
   }
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  open: 'Abierto',
+  in_progress: 'En Progreso',
+  resolved: 'Resuelto',
+  closed: 'Cerrado',
+  redirected: 'Redireccionado',
+};
+
+const IMPORTANT_STATUSES = new Set([
+  'in_progress',
+  'resolved',
+  'redirected',
+  'closed',
+]);
+
+function appendObservation(existing: string, newPart: string): string {
+  return existing ? `${existing}\n\n${newPart}` : newPart;
+}
+
+function formatTimestamp(): string {
+  return new Date().toLocaleString('es-CO', {
+    timeZone: 'America/Bogota',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+}
+
+function buildNewObservationLine(
+  timestamp: string,
+  newStatus: string | undefined,
+  technicalObservations: string | undefined
+): string | null {
+  const statusText = newStatus ? STATUS_LABELS[newStatus] ?? newStatus : null;
+  if (technicalObservations && statusText) {
+    return `[${timestamp}] ${statusText}\n${technicalObservations}`;
+  }
+  if (technicalObservations) {
+    return `[${timestamp}] ${technicalObservations}`;
+  }
+  if (newStatus && IMPORTANT_STATUSES.has(newStatus) && statusText) {
+    return `[${timestamp}] ${statusText}`;
+  }
+  return null;
+}
+
+function buildTechnicalObservations(
+  ticket: Ticket,
+  newStatus: string | undefined,
+  technicalObservations: string | undefined
+): string | undefined {
+  const newLine = buildNewObservationLine(
+    formatTimestamp(),
+    newStatus,
+    technicalObservations
+  );
+  if (!newLine) return undefined;
+  const existingObs = ticket.technicalObservations ?? '';
+  return appendObservation(existingObs, newLine);
+}
+
+async function sendTechnicianAssignmentEmail(
+  ticketId: string,
+  oldTechnicianId: string | undefined
+): Promise<void> {
+  const ticketWithRelations = (await Ticket.findByPk(ticketId, {
+    include: [
+      { model: User, as: 'customer', attributes: ['id', 'name', 'email'] },
+      { model: User, as: 'technician', attributes: ['id', 'name', 'email'] },
+    ],
+  })) as TicketWithRelations | null;
+
+  const technician = ticketWithRelations?.technician;
+  if (!ticketWithRelations?.customer || !technician) return;
+
+  const previousTechnician = oldTechnicianId
+    ? await User.findByPk(oldTechnicianId, {
+        attributes: ['id', 'name', 'email'],
+      })
+    : undefined;
+
+  const emailSent = await emailService.sendTechnicianAssignmentNotification({
+    ticket: ticketWithRelations,
+    customer: ticketWithRelations.customer,
+    technician,
+    isReassignment: Boolean(oldTechnicianId),
+    previousTechnician: previousTechnician ?? undefined,
+  });
+
+  if (emailSent) {
+    const actionText = oldTechnicianId ? 'reasignación' : 'asignación';
+    logger.info(`Technician ${actionText} email sent for ticket ${ticketId} to ${technician.email}`);
+  } else {
+    logger.warn(`Failed to send technician assignment email for ticket ${ticketId}`);
+  }
+}
+
+async function sendStatusChangeEmail(
+  ticketId: string,
+  oldStatus: string,
+  newStatus: string
+): Promise<void> {
+  const updatedTicket = (await Ticket.findByPk(ticketId, {
+    include: [
+      { model: User, as: 'customer', attributes: ['id', 'name', 'email'] },
+      { model: User, as: 'technician', attributes: ['id', 'name', 'email'] },
+    ],
+  })) as TicketWithRelations | null;
+
+  if (!updatedTicket?.customer) return;
+
+  const emailSent = await emailService.sendTicketStatusChangeNotification({
+    ticket: updatedTicket,
+    customer: updatedTicket.customer,
+    technician: updatedTicket.technician,
+    oldStatus,
+    newStatus,
+  });
+
+  if (emailSent) {
+    logger.info(`Status change email sent for ticket ${ticketId}: ${oldStatus} → ${newStatus}`);
+  } else {
+    logger.warn(`Failed to send status change email for ticket ${ticketId}`);
+  }
+}
+
+type TicketStatus = TicketAttributes['status'];
+type TicketPriority = TicketAttributes['priority'];
+
+function buildTicketUpdateData(
+  user: { role: string },
+  ticket: Ticket,
+  body: {
+    title?: string;
+    description?: string;
+    status?: string;
+    priority?: string;
+    technicianId?: string;
+    technicalObservations?: string;
+  }
+): Partial<TicketAttributes> {
+  const updateData: Partial<TicketAttributes> = {};
+  if (user.role === 'customer') {
+    if (body.title) updateData.title = body.title;
+    if (body.description) updateData.description = body.description;
+    return updateData;
+  }
+  updateData.title = body.title ?? ticket.title;
+  updateData.description = body.description ?? ticket.description;
+  updateData.status = (body.status ?? ticket.status) as TicketStatus;
+  updateData.priority = (body.priority ?? ticket.priority) as TicketPriority;
+  updateData.technicianId = body.technicianId ?? ticket.technicianId ?? undefined;
+  const newObservations = buildTechnicalObservations(
+    ticket,
+    body.status,
+    body.technicalObservations
+  );
+  if (newObservations !== undefined) {
+    updateData.technicalObservations = newObservations;
+  }
+  return updateData;
+}
+
 export const updateTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, status, priority, technicianId, technicalObservations } = req.body;
+    const body = req.body;
     const user = req.user as { id: string; role: string };
 
     const ticket = await Ticket.findByPk(id);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket no encontrado' });
     }
-
-    // Verificar permisos de actualización
     if (user.role === 'customer' && ticket.customerId !== user.id) {
       return res
         .status(403)
         .json({ message: 'No tienes permisos para actualizar este ticket' });
     }
 
-    // Los clientes solo pueden actualizar ciertos campos
-    const updateData: {
-      title?: string;
-      description?: string;
-      status?: string;
-      priority?: string;
-      technicianId?: string;
-      technicalObservations?: string;
-    } = {};
-    if (user.role === 'customer') {
-      // Los clientes solo pueden actualizar título y descripción
-      if (title) updateData.title = title;
-      if (description) updateData.description = description;
-    } else {
-      // Los administradores y técnicos pueden actualizar todos los campos
-      updateData.title = title || ticket.title;
-      updateData.description = description || ticket.description;
-      updateData.status = status || ticket.status;
-      updateData.priority = priority || ticket.priority;
-      updateData.technicianId = technicianId || ticket.technicianId;
-      
-      // Agregar observaciones técnicas si se proporcionan O si cambia el estado
-      if (technicalObservations || status) {
-        // Usar zona horaria de Colombia (UTC-5)
-        const timestamp = new Date().toLocaleString('es-CO', {
-          timeZone: 'America/Bogota',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: true
-        });
-        
-        const existingObs = ticket.technicalObservations || '';
-        
-        // Traducir estados
-        const statusTranslations: Record<string, string> = {
-          open: 'Abierto',
-          in_progress: 'En Progreso',
-          resolved: 'Resuelto',
-          closed: 'Cerrado',
-          redirected: 'Redireccionado',
-        };
-        
-        // Si hay observación Y cambio de estado, incluir ambos
-        if (technicalObservations && status && status !== ticket.status) {
-          const statusText = statusTranslations[status] || status;
-          const newObs = `[${timestamp}] ${statusText}\n${technicalObservations}`;
-          updateData.technicalObservations = existingObs 
-            ? `${existingObs}\n\n${newObs}` 
-            : newObs;
-        }
-        // Si solo hay observación sin cambio de estado
-        else if (technicalObservations) {
-          const newObs = `[${timestamp}] ${technicalObservations}`;
-          updateData.technicalObservations = existingObs 
-            ? `${existingObs}\n\n${newObs}` 
-            : newObs;
-        }
-        // Si solo hay cambio de estado a estados importantes sin observación adicional
-        else if (status && status !== ticket.status && ['in_progress', 'resolved', 'redirected', 'closed'].includes(status)) {
-          const statusText = statusTranslations[status] || status;
-          const newObs = `[${timestamp}] ${statusText}`;
-          updateData.technicalObservations = existingObs 
-            ? `${existingObs}\n\n${newObs}` 
-            : newObs;
-        }
-      }
-    }
-
-    // Guardar el estado anterior y técnico anterior para detectar cambios
     const oldStatus = ticket.status;
     const oldTechnicianId = ticket.technicianId;
-
+    const updateData = buildTicketUpdateData(user, ticket, body);
     await ticket.update(updateData);
 
-    // Verificar si cambió el técnico asignado y enviar correo de asignación
-    if (technicianId && technicianId !== oldTechnicianId) {
+    if (body.technicianId && body.technicianId !== oldTechnicianId) {
       try {
-        const ticketWithRelations = await Ticket.findByPk(id, {
-          include: [
-            {
-              model: User,
-              as: 'customer',
-              attributes: ['id', 'name', 'email'],
-            },
-            {
-              model: User,
-              as: 'technician',
-              attributes: ['id', 'name', 'email'],
-            },
-          ],
-        });
-
-        if (ticketWithRelations && ticketWithRelations.technician) {
-          // Obtener técnico anterior si existía
-          let previousTechnician: User | undefined;
-          if (oldTechnicianId) {
-            previousTechnician = await User.findByPk(oldTechnicianId, {
-              attributes: ['id', 'name', 'email'],
-            }) as User | undefined;
-          }
-
-          const emailSent = await emailService.sendTechnicianAssignmentNotification({
-            ticket: ticketWithRelations as Ticket,
-            customer: ticketWithRelations.customer as User,
-            technician: ticketWithRelations.technician as User,
-            isReassignment: !!oldTechnicianId,
-            previousTechnician,
-          });
-
-          if (emailSent) {
-            const actionText = oldTechnicianId ? 'reasignación' : 'asignación';
-            logger.info(
-              `Technician ${actionText} email sent for ticket ${id} to ${ticketWithRelations.technician.email}`
-            );
-          } else {
-            logger.warn(`Failed to send technician assignment email for ticket ${id}`);
-          }
-        }
+        await sendTechnicianAssignmentEmail(id, oldTechnicianId ?? undefined);
       } catch (emailError) {
         logger.error('Error sending technician assignment email:', emailError);
-        // No fallar la actualización del ticket si el email falla
       }
     }
 
-    // Verificar si el estado cambió y enviar correo de notificación
-    if (
-      status &&
-      status !== oldStatus &&
-      (status === 'in_progress' || status === 'resolved' || status === 'redirected')
-    ) {
+    const statusChanged =
+      body.status &&
+      body.status !== oldStatus &&
+      ['in_progress', 'resolved', 'redirected'].includes(body.status);
+    if (statusChanged) {
       try {
-        // Obtener el ticket actualizado con información del cliente y técnico
-        const updatedTicket = await Ticket.findByPk(id, {
-          include: [
-            {
-              model: User,
-              as: 'customer',
-              attributes: ['id', 'name', 'email'],
-            },
-            {
-              model: User,
-              as: 'technician',
-              attributes: ['id', 'name', 'email'],
-            },
-          ],
-        });
-
-        if (updatedTicket) {
-          const emailSent =
-            await emailService.sendTicketStatusChangeNotification({
-              ticket: updatedTicket as {
-                id: string;
-                title: string;
-                description: string;
-                priority: string;
-                status: string;
-              },
-              customer: updatedTicket.customer as
-                | { id: string; name: string; email: string }
-                | undefined,
-              technician: updatedTicket.technician as
-                | { id: string; name: string; email: string }
-                | undefined,
-              oldStatus,
-              newStatus: status,
-            });
-
-          if (emailSent) {
-            logger.info(
-              `Status change email sent for ticket ${id}: ${oldStatus} → ${status}`
-            );
-          } else {
-            logger.warn(`Failed to send status change email for ticket ${id}`);
-          }
-        }
+        await sendStatusChangeEmail(id, oldStatus, body.status);
       } catch (emailError) {
         logger.error('Error sending status change email:', emailError);
-        // No fallar la actualización del ticket si el email falla
       }
     }
 

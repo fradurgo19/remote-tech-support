@@ -405,6 +405,37 @@ export const ticketService = {
     });
     return data.ticket;
   },
+  /** Crear ticket desde formulario público (sin login). No requiere auth. */
+  createTicketPublic: async (payload: {
+    customerName: string;
+    customerEmail: string;
+    phone?: string;
+    nit?: string;
+    asesorRepuestos?: string;
+    tipoMaquina?: string;
+    marca?: string;
+    modeloEquipo?: string;
+    title: string;
+    description: string;
+    category?: string;
+    priority?: 'low' | 'medium' | 'high' | 'urgent';
+  }): Promise<Ticket> => {
+    const response = await fetch(`${API_BASE_URL}/api/tickets/public`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...payload,
+        category: payload.category || 'Soporte Remoto',
+        priority: payload.priority || 'medium',
+      }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Error al crear el ticket');
+    }
+    const data = await response.json();
+    return data.ticket;
+  },
   updateTicket: async (
     id: string,
     updates: Partial<Ticket>

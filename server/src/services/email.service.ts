@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
-import path from 'path';
+import path from 'node:path';
 import { Ticket, User } from '../models';
 import { logger } from '../utils/logger';
 
@@ -41,11 +41,12 @@ export interface TechnicianAssignmentData {
 
 class EmailService {
   private transporter: nodemailer.Transporter | null = null;
-  private supportEmail: string = 'soportemq@partequipos.com';
-  private additionalSupportEmail: string = 'scalderon@partequipos.com';
-  private managementEmail: string = 'jestrada@partequipos.com';
-  private logoUrl: string = 'https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png';
-  private initialized: boolean = false;
+  private readonly supportEmail = 'soportemq@partequipos.com';
+  private readonly additionalSupportEmail = 'scalderon@partequipos.com';
+  private readonly managementEmail = 'jestrada@partequipos.com';
+  private readonly logoUrl =
+    'https://res.cloudinary.com/dbufrzoda/image/upload/v1750457354/Captura_de_pantalla_2025-06-20_170819_wzmyli.png';
+  private initialized = false;
 
   constructor() {
     // Inicializar de forma diferida para asegurar que las variables de entorno estén cargadas
@@ -58,7 +59,7 @@ class EmailService {
     try {
       const emailConfig: EmailConfig = {
         host: process.env.SMTP_HOST || 'smtp-mail.outlook.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
+        port: Number.parseInt(process.env.SMTP_PORT || '587', 10),
         secure: process.env.SMTP_SECURE === 'true',
         auth: {
           user: process.env.SMTP_USER || '',
@@ -144,15 +145,83 @@ class EmailService {
     return translations[status] || status;
   }
 
+  private buildTechnicianRowHtml(technician: User | undefined): string {
+    if (!technician) return '';
+    return `
+            <div class="info-row">
+              <span class="label">Técnico Asignado:</span>
+              <span class="value">${technician.name}</span>
+            </div>
+            `;
+  }
+
+  private buildExtraDataRowsHtml(extra: {
+    nit?: string;
+    asesorRepuestos?: string;
+    tipoMaquina?: string;
+    marca?: string;
+    modeloEquipo?: string;
+  }): string {
+    if (!extra.nit && !extra.asesorRepuestos && !extra.tipoMaquina && !extra.marca && !extra.modeloEquipo) {
+      return '';
+    }
+    const rows: string[] = [
+      '<div class="info-row"><span class="label">--- Datos adicionales ---</span><span class="value"></span></div>',
+    ];
+    if (extra.nit) rows.push(`<div class="info-row"><span class="label">NIT:</span><span class="value">${extra.nit}</span></div>`);
+    if (extra.asesorRepuestos) rows.push(`<div class="info-row"><span class="label">Asesor Repuestos:</span><span class="value">${extra.asesorRepuestos}</span></div>`);
+    if (extra.tipoMaquina) rows.push(`<div class="info-row"><span class="label">Tipo Máquina:</span><span class="value">${extra.tipoMaquina}</span></div>`);
+    if (extra.marca) rows.push(`<div class="info-row"><span class="label">Marca:</span><span class="value">${extra.marca}</span></div>`);
+    if (extra.modeloEquipo) rows.push(`<div class="info-row"><span class="label">Modelo Equipo:</span><span class="value">${extra.modeloEquipo}</span></div>`);
+    return `
+            ${rows.join('\n            ')}
+            `;
+  }
+
+  private buildTechnicianTextLine(technician: User | undefined): string {
+    return technician ? `Técnico Asignado: ${technician.name}` : '';
+  }
+
+  private buildExtraDataTextLines(extra: {
+    nit?: string;
+    asesorRepuestos?: string;
+    tipoMaquina?: string;
+    marca?: string;
+    modeloEquipo?: string;
+  }): string {
+    if (!extra.nit && !extra.asesorRepuestos && !extra.tipoMaquina && !extra.marca && !extra.modeloEquipo) {
+      return '';
+    }
+    const lines: string[] = ['Datos adicionales:'];
+    if (extra.nit) lines.push(`NIT: ${extra.nit}`);
+    if (extra.asesorRepuestos) lines.push(`Asesor Repuestos: ${extra.asesorRepuestos}`);
+    if (extra.tipoMaquina) lines.push(`Tipo Máquina: ${extra.tipoMaquina}`);
+    if (extra.marca) lines.push(`Marca: ${extra.marca}`);
+    if (extra.modeloEquipo) lines.push(`Modelo Equipo: ${extra.modeloEquipo}`);
+    return `\n${lines.join('\n')}\n`;
+  }
+
   private generateTicketCreatedEmail(data: TicketEmailData): {
     subject: string;
     html: string;
     text: string;
   } {
     const { ticket, customer, technician } = data;
+    const t = ticket as Ticket & {
+      nit?: string;
+      asesorRepuestos?: string;
+      tipoMaquina?: string;
+      marca?: string;
+      modeloEquipo?: string;
+    };
     const ticketId = this.formatTicketId(ticket.id);
     const priority = this.getPriorityTranslation(ticket.priority);
     const status = this.getStatusTranslation(ticket.status);
+    const technicianRowHtml = this.buildTechnicianRowHtml(technician);
+    const extraDataHtml = this.buildExtraDataRowsHtml(t);
+    const technicianTextLine = this.buildTechnicianTextLine(technician);
+    const extraDataText = this.buildExtraDataTextLines(t);
+    const createdAtFormatted = new Date(ticket.createdAt).toLocaleString('es-CO');
 
     const subject = `SE CREO TICKET DE SOPORTE REMOTO PARTEQUIPOS CON ID No.${ticketId}, Estado: ${status}, Prioridad: ${priority}`;
 
@@ -263,22 +332,12 @@ class EmailService {
               <span class="label">Cliente:</span>
               <span class="value">${customer.name} (${customer.email})</span>
             </div>
-            ${
-              technician
-                ? `
-            <div class="info-row">
-              <span class="label">Técnico Asignado:</span>
-              <span class="value">${technician.name}</span>
-            </div>
-            `
-                : ''
-            }
+            ${technicianRowHtml}
             <div class="info-row">
               <span class="label">Fecha de Creación:</span>
-              <span class="value">${new Date(ticket.createdAt).toLocaleString(
-                'es-CO'
-              )}</span>
+              <span class="value">${createdAtFormatted}</span>
             </div>
+            ${extraDataHtml}
           </div>
 
           <div class="content">
@@ -307,8 +366,9 @@ ID del Ticket: ${ticketId}
 Estado: ${status}
 Prioridad: ${priority}
 Cliente: ${customer.name} (${customer.email})
-${technician ? `Técnico Asignado: ${technician.name}` : ''}
-Fecha de Creación: ${new Date(ticket.createdAt).toLocaleString('es-CO')}
+${technicianTextLine}
+Fecha de Creación: ${createdAtFormatted}
+${extraDataText}
 
 TÍTULO: ${ticket.title}
 

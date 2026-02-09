@@ -37,8 +37,7 @@ export const createUser = async (req: Request, res: Response) => {
       email,
       password, // Se hashea automáticamente en el hook beforeCreate
       role: role || 'customer',
-      phone: phone || null,
-      isActive: true,
+      phone: phone || undefined,
       emailVerified: false,
     });
 
@@ -176,7 +175,7 @@ export const updateUser = async (req: Request, res: Response) => {
       role: role || user.role,
       status: status || user.status,
       avatar: avatar || user.avatar,
-      phone: phone !== undefined ? phone : user.phone,
+      phone: phone === undefined ? user.phone : phone,
     };
 
     // Si se proporciona una nueva contraseña, hashearla antes de guardar
@@ -222,11 +221,21 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+function queryParamAsString(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'string') {
+    return value[0];
+  }
+  return '';
+}
+
 export const searchCustomers = async (req: Request, res: Response) => {
   try {
     const { email, name } = req.query;
+    const emailStr = queryParamAsString(email);
+    const nameStr = queryParamAsString(name);
 
-    if (!email && !name) {
+    if (!emailStr && !nameStr) {
       return res
         .status(400)
         .json({ message: 'Email o nombre es requerido para buscar clientes' });
@@ -244,15 +253,15 @@ export const searchCustomers = async (req: Request, res: Response) => {
       [Op.or]: [],
     };
 
-    if (email) {
+    if (emailStr) {
       whereClause[Op.or].push({
-        email: { [Op.iLike]: `%${email}%` },
+        email: { [Op.iLike]: `%${emailStr}%` },
       });
     }
 
-    if (name) {
+    if (nameStr) {
       whereClause[Op.or].push({
-        name: { [Op.iLike]: `%${name}%` },
+        name: { [Op.iLike]: `%${nameStr}%` },
       });
     }
 

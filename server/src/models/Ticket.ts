@@ -19,6 +19,12 @@ export interface TicketAttributes {
   tags?: string[];
   metadata?: Record<string, unknown>;
   technicalObservations?: string;
+  /** Campos formulario público (sin login) */
+  nit?: string;
+  asesorRepuestos?: string;
+  tipoMaquina?: string;
+  marca?: string;
+  modeloEquipo?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -40,6 +46,11 @@ export class Ticket extends Model<TicketAttributes> implements TicketAttributes 
   public tags!: string[];
   public metadata!: Record<string, unknown>;
   public technicalObservations!: string;
+  public nit!: string;
+  public asesorRepuestos!: string;
+  public tipoMaquina!: string;
+  public marca!: string;
+  public modeloEquipo!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -122,6 +133,26 @@ Ticket.init(
     },
     technicalObservations: {
       type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    nit: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    asesorRepuestos: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    tipoMaquina: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    marca: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    modeloEquipo: {
+      type: DataTypes.STRING(255),
       allowNull: true,
     },
   },
