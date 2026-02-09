@@ -61,6 +61,13 @@ export const LoginPage: React.FC = () => {
     setError(null);
   };
 
+  const getSelectPlaceholder = (): string => {
+    if (usersLoading) return 'Cargando usuarios...';
+    if (usersError) return 'Error al cargar usuarios';
+    if (users.length === 0) return 'No hay usuarios disponibles';
+    return 'Selecciona un usuario...';
+  };
+
   return (
     <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5'>
       {/* Logo de la compañía - Esquina superior izquierda */}
@@ -70,6 +77,18 @@ export const LoginPage: React.FC = () => {
           alt='Partequipos Logo'
           className='h-12 w-12 md:h-16 md:w-16 rounded-full object-cover'
         />
+      </div>
+
+      {/* Botón Ticket Soporte Remoto - Esquina superior derecha */}
+      <div className='absolute top-4 right-4 md:top-6 md:right-6'>
+        <Button
+          type='button'
+          variant='outline'
+          onClick={() => navigate('/solicitar-soporte')}
+          className='text-sm font-medium'
+        >
+          Ticket Soporte Remoto
+        </Button>
       </div>
 
       <div className='w-full max-w-md p-8 space-y-8 bg-card shadow-lg rounded-xl border border-border'>
@@ -134,23 +153,21 @@ export const LoginPage: React.FC = () => {
           <div className='space-y-4'>
             {loginMode === 'select' ? (
               <div className='space-y-1'>
-                <label className='block text-sm font-medium text-foreground'>
+                <label
+                  htmlFor='user-select'
+                  className='block text-sm font-medium text-foreground'
+                >
                   Seleccionar Usuario
                 </label>
                 <Select
+                  id='user-select'
                   value={email}
                   onChange={handleUserChange}
                   leftIcon={<User size={18} />}
                   disabled={usersLoading || !!usersError}
                 >
                   <option value=''>
-                    {usersLoading
-                      ? 'Cargando usuarios...'
-                      : usersError
-                      ? 'Error al cargar usuarios'
-                      : users.length === 0
-                      ? 'No hay usuarios disponibles'
-                      : 'Selecciona un usuario...'}
+                    {getSelectPlaceholder()}
                   </option>
                   {users.map(user => (
                     <option key={user.id} value={user.email}>
