@@ -1,10 +1,11 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import { createServer } from 'http';
-import path from 'path';
+import { createServer } from 'node:http';
+import path from 'node:path';
 import { Server } from 'socket.io';
 import { sequelize } from './config/database';
+import { createTicketPublic } from './controllers/ticket.controller';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import categoryRoutes from './routes/category.routes';
@@ -50,7 +51,9 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Rutas
+// Rutas (la ruta pública de tickets debe ir ANTES del router con auth)
+app.post('/api/tickets/public', createTicketPublic);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tickets', ticketRoutes);
@@ -64,7 +67,7 @@ app.use(errorHandler);
 // Configurar Socket.IO
 setupSocketHandlers(io);
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Iniciar servidor
 const startServer = async () => {

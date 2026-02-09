@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import {
   createTicket,
-  createTicketPublic,
   deleteTicket,
   getTicketById,
   getTickets,
@@ -16,9 +15,7 @@ import {
 
 const router = Router();
 
-// Ruta pública: crear ticket sin autenticación (formulario público)
-router.post('/public', createTicketPublic);
-
+// POST /api/tickets/public está registrado en index.ts sin auth
 router.use(authenticate);
 router.get('/', getTickets);
 router.get('/:id', authorizeTicketAccess, getTicketById);
