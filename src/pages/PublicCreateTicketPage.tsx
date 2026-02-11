@@ -11,15 +11,17 @@ import { ticketService } from '../services/api';
 const TIPOS_MAQUINA = [
   'Cargador',
   'Excavadora',
+  'Martillos',
   'Minicargador',
   'Miniexcavadora',
   'Motoniveladora',
+  'Otro',
   'Retrocargador',
   'Soldador',
   'Tractor',
 ];
 
-const MARCAS = ['Dynapac', 'Hitachi', 'Liugong', 'Yanmar'];
+const MARCAS = ['Case', 'Dynapac', 'Hitachi', 'Liugong', 'Okada', 'Yanmar'];
 
 const BACKGROUND_IMAGE_URL =
   'https://res.cloudinary.com/dbufrzoda/image/upload/v1770665311/Captura_de_pantalla_2026-02-09_142724_hxmo1i.png';
