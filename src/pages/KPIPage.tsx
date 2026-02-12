@@ -83,7 +83,15 @@ export const KPIPage: React.FC = () => {
   }, [user?.role, dateFrom, dateTo, marca, modeloEquipo, status]);
 
   const handleApplyFilters = () => {
-    // Re-fetch is triggered by useEffect when state changes; this can be used for explicit "Aplicar" if we switch to button-driven fetch later.
+    // Re-fetch is triggered by useEffect when state changes
+  };
+
+  const handleClearFilters = () => {
+    setDateFrom('');
+    setDateTo('');
+    setMarca('');
+    setModeloEquipo('');
+    setStatus('all');
   };
 
   if (user?.role === 'customer') {
@@ -180,9 +188,19 @@ export const KPIPage: React.FC = () => {
               </Select>
             </div>
           </div>
-          <Button type='button' onClick={handleApplyFilters} variant='outline'>
-            Aplicar filtros
-          </Button>
+          <div className='flex flex-wrap gap-2'>
+            <Button type='button' onClick={handleApplyFilters} variant='outline'>
+              Aplicar filtros
+            </Button>
+            <Button
+              type='button'
+              onClick={handleClearFilters}
+              variant='ghost'
+              className='text-muted-foreground hover:text-foreground'
+            >
+              Borrar filtros
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
