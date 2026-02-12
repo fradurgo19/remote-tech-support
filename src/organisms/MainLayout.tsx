@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   FileText,
   Headphones,
   Headset,
@@ -45,7 +46,7 @@ export const MainLayout: React.FC = () => {
     return 'Cliente';
   };
 
-  const menuItems = [
+  const baseMenuItems = [
     {
       path: '/',
       icon: <LayoutDashboard size={20} />,
@@ -54,9 +55,19 @@ export const MainLayout: React.FC = () => {
     { path: '/tickets', icon: <MessageSquare size={20} />, label: 'Tickets' },
     { path: '/support', icon: <Headphones size={20} />, label: 'Soporte' },
     { path: '/reports', icon: <FileText size={20} />, label: 'Informes' },
+    ...(user?.role === 'admin' || user?.role === 'technician'
+      ? [
+          {
+            path: '/kpis',
+            icon: <BarChart3 size={20} />,
+            label: 'KPI',
+          },
+        ]
+      : []),
     { path: '/users', icon: <Users size={20} />, label: 'Usuarios' },
     { path: '/settings', icon: <Settings size={20} />, label: 'Configuración' },
   ];
+  const menuItems = baseMenuItems;
 
   return (
     <div className='min-h-screen bg-background flex flex-col'>

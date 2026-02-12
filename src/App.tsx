@@ -12,6 +12,7 @@ import { CallProvider } from './context/CallContext';
 import { MainLayout } from './organisms/MainLayout';
 import { CreateTicketPage } from './pages/CreateTicketPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { KPIPage } from './pages/KPIPage';
 import { PublicCreateTicketPage } from './pages/PublicCreateTicketPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import { LoginPage } from './pages/LoginPage';
@@ -81,6 +82,7 @@ const App: React.FC = () => {
                     path='reports/:reportId'
                     element={<ReportDetailPage />}
                   />
+                  <Route path='kpis' element={<KPIPage />} />
                 </Route>
 
                 <Route path='*' element={<NotFoundPage />} />

@@ -3,6 +3,7 @@ import {
   createTicket,
   deleteTicket,
   getTicketById,
+  getTicketKpis,
   getTickets,
   testEmailConfiguration,
   updateTicket,
@@ -18,6 +19,7 @@ const router = Router();
 // POST /api/tickets/public está registrado en index.ts sin auth
 router.use(authenticate);
 router.get('/', getTickets);
+router.get('/kpis', getTicketKpis);
 router.get('/:id', authorizeTicketAccess, getTicketById);
 router.post('/', createTicket);
 router.put('/:id', authorizeTicketAccess, updateTicket);

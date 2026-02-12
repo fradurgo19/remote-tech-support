@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Op } from 'sequelize';
 import { sequelize } from '../config/database';
 import { Category, Message, Ticket, User } from '../models';
 import type { TicketAttributes } from '../models/Ticket';
@@ -48,6 +49,79 @@ export const getTickets = async (req: Request, res: Response) => {
     res.json(tickets);
   } catch (error) {
     logger.error('Error al obtener tickets:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+/** KPIs de tickets: solo admin y técnico. Filtros: dateFrom, dateTo, marca, modeloEquipo, status */
+export const getTicketKpis = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as { id: string; role: string };
+    if (user.role === 'customer') {
+      return res.status(403).json({ message: 'No autorizado para ver indicadores KPI' });
+    }
+
+    const { dateFrom, dateTo, marca, modeloEquipo, status } = req.query;
+    const where: Record<string, unknown> = {};
+
+    const toStringParam = (p: unknown): string => {
+      if (p === undefined) return '';
+      if (typeof p === 'string') return p;
+      if (Array.isArray(p) && p.length > 0 && typeof p[0] === 'string')
+        return p[0];
+      return '';
+    };
+
+    if (dateFrom && dateTo) {
+      const start = new Date(toStringParam(dateFrom));
+      const end = new Date(toStringParam(dateTo));
+      end.setHours(23, 59, 59, 999);
+      where.createdAt = { [Op.between]: [start, end] };
+    }
+    const marcaStr = toStringParam(marca).trim();
+    if (marcaStr !== '') {
+      where.marca = marcaStr;
+    }
+    const modeloStr = toStringParam(modeloEquipo).trim();
+    if (modeloStr !== '') {
+      where.modeloEquipo = { [Op.iLike]: `%${modeloStr}%` };
+    }
+    const statusStr = toStringParam(status);
+    if (statusStr !== '' && statusStr !== 'all') {
+      where.status = statusStr;
+    }
+
+    const tickets = await Ticket.findAll({
+      where,
+      attributes: ['id', 'status', 'marca', 'modeloEquipo'],
+    });
+
+    const total = tickets.length;
+    const byStatus: Record<string, number> = {};
+    const byMarca: Record<string, number> = {};
+    const byModelo: Record<string, number> = {};
+
+    for (const t of tickets) {
+      const s = t.status || 'sin_estado';
+      byStatus[s] = (byStatus[s] ?? 0) + 1;
+      const m = (t.marca || '').trim();
+      if (m) {
+        byMarca[m] = (byMarca[m] ?? 0) + 1;
+      }
+      const mod = (t.modeloEquipo || '').trim();
+      if (mod) {
+        byModelo[mod] = (byModelo[mod] ?? 0) + 1;
+      }
+    }
+
+    return res.json({
+      total,
+      byStatus,
+      byMarca,
+      byModelo,
+    });
+  } catch (error) {
+    logger.error('Error al obtener KPIs de tickets:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };

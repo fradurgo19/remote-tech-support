@@ -1,6 +1,7 @@
 import {
   CreateUserData,
   Message,
+  Report,
   ServiceCategory,
   Ticket,
   UpdateUserData,
@@ -83,7 +84,8 @@ const messages: Message[] = [
     content: 'Hola, necesito ayuda con mi conexión VPN.',
     senderId: '3',
     receiverId: '1',
-    timestamp: '2025-03-15T09:35:00Z',
+    createdAt: '2025-03-15T09:35:00Z',
+    updatedAt: '2025-03-15T09:35:00Z',
     ticketId: '1',
     type: 'text',
   },
@@ -93,7 +95,8 @@ const messages: Message[] = [
       'Hola Miguel, te ayudaré a solucionar tu problema de VPN. ¿Puedes decirme qué mensaje de error estás viendo?',
     senderId: '1',
     receiverId: '3',
-    timestamp: '2025-03-15T09:37:00Z',
+    createdAt: '2025-03-15T09:37:00Z',
+    updatedAt: '2025-03-15T09:37:00Z',
     ticketId: '1',
     type: 'text',
   },
@@ -138,11 +141,6 @@ const getFromStorage = <T>(key: string): T[] => {
   return data ? JSON.parse(data) : [];
 };
 
-// Función helper para guardar datos en localStorage
-const saveToStorage = <T>(key: string, data: T[]): void => {
-  localStorage.setItem(key, JSON.stringify(data));
-};
-
 // Servicios de API actualizados
 export const authService = {
   login: async (email: string, password: string): Promise<User> => {
@@ -160,7 +158,6 @@ export const authService = {
   logout: async (): Promise<void> => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUserEmail');
-    return;
   },
   getCurrentUser: async (): Promise<User | null> => {
     const token = getAuthToken();
@@ -210,7 +207,7 @@ export const authService = {
   },
   resetPassword: async (
     token: string,
-    newPassword: string
+    _newPassword: string // eslint-disable-line @typescript-eslint/no-unused-vars -- API contract
   ): Promise<{ message: string }> => {
     await delay(500);
     const users = getFromStorage<User>(STORAGE_KEYS.USERS);
@@ -344,11 +341,11 @@ const getAuthToken = (): string | null => {
   return localStorage.getItem('authToken');
 };
 
-// Función helper para hacer llamadas HTTP
+// Función helper para hacer llamadas HTTP (respuestas heterogéneas por endpoint)
 const apiCall = async (
   url: string,
   options: RequestInit = {}
-): Promise<any> => {
+): Promise<any> => { // eslint-disable-line @typescript-eslint/no-explicit-any
   const token = getAuthToken();
 
   // Detectar si es FormData (no agregar Content-Type para que el navegador lo maneje)
@@ -384,9 +381,44 @@ const apiCall = async (
   return response.json();
 };
 
+export interface TicketKpisResponse {
+  total: number;
+  byStatus: Record<string, number>;
+  byMarca: Record<string, number>;
+  byModelo: Record<string, number>;
+}
+
+export type CreateTicketData = Omit<
+  Ticket,
+  'id' | 'createdAt' | 'updatedAt'
+> & {
+  customerEmail?: string;
+  customerName?: string;
+};
+
+export type GetTicketKpisParams = {
+  dateFrom?: string;
+  dateTo?: string;
+  marca?: string;
+  modeloEquipo?: string;
+  status?: string;
+};
+
 export const ticketService = {
   getTickets: async (): Promise<Ticket[]> => {
     const data = await apiCall('/api/tickets');
+    return data;
+  },
+  getTicketKpis: async (params: GetTicketKpisParams): Promise<TicketKpisResponse> => {
+    const search = new URLSearchParams();
+    if (params.dateFrom) search.set('dateFrom', params.dateFrom);
+    if (params.dateTo) search.set('dateTo', params.dateTo);
+    if (params.marca) search.set('marca', params.marca);
+    if (params.modeloEquipo) search.set('modeloEquipo', params.modeloEquipo);
+    if (params.status) search.set('status', params.status);
+    const query = search.toString();
+    const url = query ? `/api/tickets/kpis?${query}` : '/api/tickets/kpis';
+    const data = await apiCall(url);
     return data;
   },
   getTicketById: async (id: string): Promise<Ticket> => {
@@ -394,10 +426,7 @@ export const ticketService = {
     return data;
   },
   createTicket: async (
-    ticketData: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'> & {
-      customerEmail?: string;
-      customerName?: string;
-    }
+    ticketData: CreateTicketData
   ): Promise<Ticket> => {
     const data = await apiCall('/api/tickets', {
       method: 'POST',
@@ -456,7 +485,7 @@ export const messageService = {
     return response;
   },
   sendMessage: async (
-    messageData: Omit<Message, 'id' | 'timestamp'>
+    messageData: Omit<Message, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<Message> => {
     const response = await apiCall('/api/messages', {
       method: 'POST',
