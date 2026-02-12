@@ -1,8 +1,10 @@
+export type UserRole = 'admin' | 'technician' | 'customer';
+
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'technician' | 'customer';
+  role: UserRole;
   avatar?: string;
   status: 'online' | 'away' | 'busy' | 'offline';
   emailVerified: boolean;
@@ -14,7 +16,7 @@ export interface CreateUserData {
   name: string;
   email: string;
   password: string;
-  role: 'admin' | 'technician' | 'customer';
+  role: UserRole;
   phone?: string;
 }
 
@@ -22,7 +24,7 @@ export interface UpdateUserData {
   name: string;
   email: string;
   password: string;
-  role: 'admin' | 'technician' | 'customer';
+  role: UserRole;
   avatar?: string;
   phone?: string;
 }
@@ -41,6 +43,8 @@ export interface Ticket {
   tags: string[];
   messageCount?: number;
   technicalObservations?: string;
+  marca?: string | null;
+  modeloEquipo?: string | null;
 }
 
 export interface Message {
@@ -88,7 +92,7 @@ export interface Report {
   reviewedAt?: string;
   tags?: string[];
   attachments?: string[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
   author?: User;

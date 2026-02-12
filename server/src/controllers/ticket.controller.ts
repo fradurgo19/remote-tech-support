@@ -249,6 +249,8 @@ export const createTicket = async (req: Request, res: Response) => {
       customerEmail,
       customerName,
       customerId: providedCustomerId,
+      marca,
+      modeloEquipo,
     } = req.body;
     const user = req.user as { id: string; role: string; email: string };
 
@@ -288,6 +290,8 @@ export const createTicket = async (req: Request, res: Response) => {
       priority,
       customerId,
       status: 'open',
+      marca: marca || null,
+      modeloEquipo: modeloEquipo || null,
     });
 
     // Obtener el ticket con la información del cliente

@@ -18,6 +18,8 @@ import { useAuth } from '../context/AuthContext';
 import { ticketService, userService } from '../services/api';
 import { Ticket, User as UserType } from '../types';
 
+const MARCAS = ['Case', 'Dynapac', 'Hitachi', 'Liugong', 'Okada', 'Yanmar'];
+
 interface LocationState {
   category?: string;
   title?: string;
@@ -40,6 +42,8 @@ export const CreateTicketPage: React.FC = () => {
     customerEmail: '',
     customerName: '',
     tags: [] as string[],
+    marca: '',
+    modeloEquipo: '',
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -154,6 +158,8 @@ export const CreateTicketPage: React.FC = () => {
         status: formData.status,
         customerId: '',
         tags: formData.tags,
+        marca: formData.marca || undefined,
+        modeloEquipo: formData.modeloEquipo.trim() || undefined,
       };
 
       if (user.role === 'customer') {
@@ -211,6 +217,43 @@ export const CreateTicketPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className='space-y-4'>
+            <div className='space-y-2'>
+              <label htmlFor='marca' className='text-sm font-medium'>
+                Marca
+              </label>
+              <Select
+                id='marca'
+                value={formData.marca}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setFormData(prev => ({ ...prev, marca: e.target.value }))
+                }
+              >
+                <option value=''>Seleccione...</option>
+                {MARCAS.map(m => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            <div className='space-y-2'>
+              <label htmlFor='modeloEquipo' className='text-sm font-medium'>
+                Modelo
+              </label>
+              <Input
+                id='modeloEquipo'
+                value={formData.modeloEquipo}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData(prev => ({
+                    ...prev,
+                    modeloEquipo: e.target.value,
+                  }))
+                }
+                placeholder='Modelo del equipo'
+              />
+            </div>
+
             <div className='space-y-2'>
               <label htmlFor='title' className='text-sm font-medium'>
                 Título
@@ -319,9 +362,10 @@ export const CreateTicketPage: React.FC = () => {
                     {showCustomerSearch && searchResults.length > 0 && (
                       <div className='absolute z-10 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-y-auto'>
                         {searchResults.map(customer => (
-                          <div
+                          <button
                             key={customer.id}
-                            className='p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0'
+                            type='button'
+                            className='w-full text-left p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0 bg-transparent'
                             onClick={() => selectCustomer(customer)}
                           >
                             <div className='flex items-center gap-3'>
@@ -335,7 +379,7 @@ export const CreateTicketPage: React.FC = () => {
                                 </p>
                               </div>
                             </div>
-                          </div>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -350,12 +394,16 @@ export const CreateTicketPage: React.FC = () => {
 
                 {/* O crear cliente nuevo */}
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium'>
+                  <label
+                    htmlFor='newCustomerName'
+                    className='text-sm font-medium'
+                  >
                     O crear cliente nuevo
                   </label>
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     <div>
                       <Input
+                        id='newCustomerName'
                         value={formData.customerName}
                         onChange={e =>
                           setFormData(prev => ({
