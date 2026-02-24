@@ -159,9 +159,24 @@ Ticket.init(
       allowNull: true,
     },
     sistemas: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.TEXT,
       allowNull: true,
-      defaultValue: [],
+      get(): string[] {
+        const raw = this.getDataValue('sistemas') as string | null | undefined;
+        if (raw == null || raw === '') return [];
+        try {
+          const parsed = JSON.parse(raw) as unknown;
+          return Array.isArray(parsed)
+            ? parsed.filter((s): s is string => typeof s === 'string')
+            : [];
+        } catch {
+          return [];
+        }
+      },
+      set(value: string[] | null | undefined) {
+        const arr = Array.isArray(value) ? value : [];
+        this.setDataValue('sistemas', arr.length > 0 ? JSON.stringify(arr) : null);
+      },
     },
   },
   {

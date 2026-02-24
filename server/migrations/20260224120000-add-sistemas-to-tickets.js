@@ -4,9 +4,8 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.addColumn('Tickets', 'sistemas', {
-      type: Sequelize.ARRAY(Sequelize.STRING),
+      type: Sequelize.TEXT,
       allowNull: true,
-      defaultValue: [],
     });
   },
 

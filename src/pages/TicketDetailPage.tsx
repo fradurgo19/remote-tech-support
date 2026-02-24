@@ -12,6 +12,18 @@ import { VideoCallPanel } from '../organisms/VideoCallPanel';
 import { ticketService, userService } from '../services/api';
 import { Ticket, User } from '../types';
 
+function buildRemoteUsersForCall(
+  customerId: string,
+  technicianId: string | undefined,
+  customer: User | undefined,
+  technician: User | undefined
+): Record<string, User> {
+  const result: Record<string, User> = {};
+  if (customer) result[customerId] = customer;
+  if (technician && technicianId != null) result[technicianId] = technician;
+  return result;
+}
+
 export const TicketDetailPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
   const navigate = useNavigate();
@@ -126,7 +138,10 @@ export const TicketDetailPage: React.FC = () => {
       const updatedTicket = await ticketService.updateTicket(ticket.id, {
         sistemas,
       });
-      setTicket(updatedTicket);
+      setTicket({
+        ...updatedTicket,
+        sistemas: updatedTicket.sistemas ?? sistemas,
+      });
     } catch (err) {
       console.error('Error al actualizar sistemas:', err);
     }
@@ -222,7 +237,7 @@ export const TicketDetailPage: React.FC = () => {
             ticket={ticket}
             customer={customer}
             technician={technician}
-            currentUser={currentUser}
+            currentUser={currentUser ?? undefined}
             availableTechnicians={availableTechnicians}
             onStartCall={() => setActiveTab('call')}
             onStartChat={() => setActiveTab('chat')}
@@ -242,15 +257,17 @@ export const TicketDetailPage: React.FC = () => {
           <VideoCallPanel
             recipientId={
               currentUser?.id === ticket.customerId
-                ? ticket.technicianId || ''
+                ? ticket.technicianId ?? ''
                 : ticket.customerId
             }
             ticketId={ticket.id}
-            localUser={currentUser}
-            remoteUsers={{
-              [ticket.customerId]: customer,
-              ...(technician && { [ticket.technicianId]: technician }),
-            }}
+            localUser={currentUser ?? undefined}
+            remoteUsers={buildRemoteUsersForCall(
+              ticket.customerId,
+              ticket.technicianId,
+              customer,
+              technician
+            )}
           />
         )}
       </div>

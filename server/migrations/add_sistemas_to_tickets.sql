@@ -1,13 +1,21 @@
 -- =====================================================
 -- Campo SISTEMA en Tickets (sistemas que comprometen la falla)
--- Permite selección múltiple; se almacena como ARRAY de TEXT.
+-- Permite selección múltiple; se almacena como TEXT (JSON array).
+-- Ejemplo: '["Motor (Pistones...)","Frenos"]'
 -- =====================================================
 -- Ejecutar en PostgreSQL o Supabase SQL Editor.
 -- =====================================================
 
--- Añadir columna sistemas (array de texto, nullable, default vacío)
+-- Añadir columna sistemas como TEXT (la app serializa array a JSON)
 ALTER TABLE "Tickets"
-  ADD COLUMN IF NOT EXISTS "sistemas" TEXT[] DEFAULT '{}';
+  ADD COLUMN IF NOT EXISTS "sistemas" TEXT;
 
--- Comentario para documentación
-COMMENT ON COLUMN "Tickets"."sistemas" IS 'Sistemas del equipo que comprometen la falla (selección múltiple por el técnico)';
+-- Si la columna existe como TEXT[] y quieres pasarla a TEXT (opcional):
+-- ALTER TABLE "Tickets" ALTER COLUMN "sistemas" TYPE TEXT USING (
+--   CASE WHEN "sistemas" IS NULL THEN NULL
+--   WHEN array_length("sistemas", 1) IS NULL THEN NULL
+--   ELSE (SELECT array_to_string("sistemas", ',')) END
+-- );
+-- (Ajustar según necesidad; si ya es TEXT, no ejecutar lo anterior.)
+
+COMMENT ON COLUMN "Tickets"."sistemas" IS 'Sistemas del equipo que comprometen la falla (JSON array de strings)';

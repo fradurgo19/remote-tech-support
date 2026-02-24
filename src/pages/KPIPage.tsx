@@ -60,6 +60,45 @@ const CHART_COLORS = [
   '#64748b', /* slate */
 ];
 
+/** Etiqueta dibujada dentro del segmento de la torta para que no se corte */
+function renderPieLabelInside(entry: {
+  cx?: number;
+  cy?: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  name?: string;
+  value?: number;
+}): React.ReactElement {
+  const RADIAN = Math.PI / 180;
+  const cx = entry.cx ?? 0;
+  const cy = entry.cy ?? 0;
+  const midAngle = entry.midAngle ?? 0;
+  const innerRadius = entry.innerRadius ?? 0;
+  const outerRadius = entry.outerRadius ?? 0;
+  const r = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + r * Math.cos(-midAngle * RADIAN);
+  const y = cy + r * Math.sin(-midAngle * RADIAN);
+  const text = entry.name != null && entry.value != null
+    ? `${entry.name}: ${entry.value}`
+    : String(entry.name ?? entry.value ?? '');
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor="middle"
+      dominantBaseline="central"
+      fill="white"
+      fontSize={10}
+      fontWeight={500}
+      stroke="rgba(0,0,0,0.2)"
+      strokeWidth={1}
+    >
+      {text.length > 18 ? `${text.slice(0, 16)}…` : text}
+    </text>
+  );
+}
+
 export const KPIPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -334,7 +373,8 @@ export const KPIPage: React.FC = () => {
                           outerRadius={90}
                           paddingAngle={2}
                           dataKey='value'
-                          label={({ name, value }) => `${name}: ${value}`}
+                          label={renderPieLabelInside}
+                          labelLine={false}
                         />
                         <Tooltip formatter={(value: number | undefined) => [value ?? 0, 'Tickets']} />
                       </PieChart>
@@ -392,7 +432,8 @@ export const KPIPage: React.FC = () => {
                           outerRadius={90}
                           paddingAngle={2}
                           dataKey='value'
-                          label={({ name, value }) => `${name}: ${value}`}
+                          label={renderPieLabelInside}
+                          labelLine={false}
                         />
                         <Tooltip formatter={(value: number | undefined) => [value ?? 0, 'Tickets']} />
                       </PieChart>
@@ -450,7 +491,8 @@ export const KPIPage: React.FC = () => {
                             outerRadius={90}
                             paddingAngle={2}
                             dataKey='value'
-                            label={({ name, value }) => `${name}: ${value}`}
+                            label={renderPieLabelInside}
+                            labelLine={false}
                           />
                           <Tooltip formatter={(value: number | undefined) => [value ?? 0, 'Tickets']} />
                         </PieChart>

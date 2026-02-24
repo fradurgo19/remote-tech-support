@@ -651,9 +651,14 @@ export const updateTicket = async (req: Request, res: Response) => {
       }
     }
 
+    const plainTicket = ticket.get({ plain: true }) as TicketAttributes & {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+    };
     res.json({
       message: 'Ticket actualizado exitosamente',
-      ticket,
+      ticket: plainTicket,
     });
   } catch (error) {
     logger.error('Error al actualizar ticket:', error);
