@@ -119,6 +119,19 @@ export const TicketDetailPage: React.FC = () => {
     }
   };
 
+  const handleUpdateSistemas = async (sistemas: string[]) => {
+    if (!ticket) return;
+
+    try {
+      const updatedTicket = await ticketService.updateTicket(ticket.id, {
+        sistemas,
+      });
+      setTicket(updatedTicket);
+    } catch (err) {
+      console.error('Error al actualizar sistemas:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className='flex items-center justify-center h-full'>
@@ -215,6 +228,7 @@ export const TicketDetailPage: React.FC = () => {
             onStartChat={() => setActiveTab('chat')}
             onChangeStatus={handleChangeStatus}
             onAssignTechnician={handleAssignTechnician}
+            onUpdateSistemas={handleUpdateSistemas}
           />
         )}
 

@@ -53,7 +53,36 @@ export const getTickets = async (req: Request, res: Response) => {
   }
 };
 
-/** KPIs de tickets: solo admin y técnico. Filtros: dateFrom, dateTo, marca, modeloEquipo, status */
+function queryParamString(p: unknown): string {
+  if (p === undefined) return '';
+  if (typeof p === 'string') return p;
+  if (Array.isArray(p) && p.length > 0 && typeof p[0] === 'string') return p[0];
+  return '';
+}
+
+function buildKpiWhereClause(query: Record<string, unknown>): Record<string, unknown> {
+  const where: Record<string, unknown> = {};
+  const dateFrom = queryParamString(query.dateFrom);
+  const dateTo = queryParamString(query.dateTo);
+  if (dateFrom && dateTo) {
+    const start = new Date(dateFrom);
+    const end = new Date(dateTo);
+    end.setHours(23, 59, 59, 999);
+    where.createdAt = { [Op.between]: [start, end] };
+  }
+  const marcaStr = queryParamString(query.marca).trim();
+  if (marcaStr !== '') where.marca = marcaStr;
+  const modeloStr = queryParamString(query.modeloEquipo).trim();
+  if (modeloStr !== '') where.modeloEquipo = { [Op.iLike]: `%${modeloStr}%` };
+  const statusStr = queryParamString(query.status);
+  if (statusStr !== '' && statusStr !== 'all') where.status = statusStr;
+  const technicianIdStr = queryParamString(query.technicianId);
+  if (technicianIdStr === 'unassigned') where.technicianId = null;
+  else if (technicianIdStr !== '' && technicianIdStr !== 'all') where.technicianId = technicianIdStr;
+  return where;
+}
+
+/** KPIs de tickets: solo admin y técnico. Filtros: dateFrom, dateTo, marca, modeloEquipo, status, technicianId */
 export const getTicketKpis = async (req: Request, res: Response) => {
   try {
     const user = req.user as { id: string; role: string };
@@ -61,36 +90,7 @@ export const getTicketKpis = async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'No autorizado para ver indicadores KPI' });
     }
 
-    const { dateFrom, dateTo, marca, modeloEquipo, status } = req.query;
-    const where: Record<string, unknown> = {};
-
-    const toStringParam = (p: unknown): string => {
-      if (p === undefined) return '';
-      if (typeof p === 'string') return p;
-      if (Array.isArray(p) && p.length > 0 && typeof p[0] === 'string')
-        return p[0];
-      return '';
-    };
-
-    if (dateFrom && dateTo) {
-      const start = new Date(toStringParam(dateFrom));
-      const end = new Date(toStringParam(dateTo));
-      end.setHours(23, 59, 59, 999);
-      where.createdAt = { [Op.between]: [start, end] };
-    }
-    const marcaStr = toStringParam(marca).trim();
-    if (marcaStr !== '') {
-      where.marca = marcaStr;
-    }
-    const modeloStr = toStringParam(modeloEquipo).trim();
-    if (modeloStr !== '') {
-      where.modeloEquipo = { [Op.iLike]: `%${modeloStr}%` };
-    }
-    const statusStr = toStringParam(status);
-    if (statusStr !== '' && statusStr !== 'all') {
-      where.status = statusStr;
-    }
-
+    const where = buildKpiWhereClause(req.query as Record<string, unknown>);
     const tickets = await Ticket.findAll({
       where,
       attributes: ['id', 'status', 'marca', 'modeloEquipo'],
@@ -105,13 +105,9 @@ export const getTicketKpis = async (req: Request, res: Response) => {
       const s = t.status || 'sin_estado';
       byStatus[s] = (byStatus[s] ?? 0) + 1;
       const m = (t.marca || '').trim();
-      if (m) {
-        byMarca[m] = (byMarca[m] ?? 0) + 1;
-      }
+      if (m) byMarca[m] = (byMarca[m] ?? 0) + 1;
       const mod = (t.modeloEquipo || '').trim();
-      if (mod) {
-        byModelo[mod] = (byModelo[mod] ?? 0) + 1;
-      }
+      if (mod) byModelo[mod] = (byModelo[mod] ?? 0) + 1;
     }
 
     return res.json({
@@ -584,6 +580,7 @@ function buildTicketUpdateData(
     priority?: string;
     technicianId?: string;
     technicalObservations?: string;
+    sistemas?: string[];
   }
 ): Partial<TicketAttributes> {
   const updateData: Partial<TicketAttributes> = {};
@@ -597,6 +594,11 @@ function buildTicketUpdateData(
   updateData.status = (body.status ?? ticket.status) as TicketStatus;
   updateData.priority = (body.priority ?? ticket.priority) as TicketPriority;
   updateData.technicianId = body.technicianId ?? ticket.technicianId ?? undefined;
+  if (Array.isArray(body.sistemas)) {
+    updateData.sistemas = body.sistemas.filter(
+      (s): s is string => typeof s === 'string' && s.trim() !== ''
+    );
+  }
   const newObservations = buildTechnicalObservations(
     ticket,
     body.status,

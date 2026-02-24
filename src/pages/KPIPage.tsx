@@ -6,6 +6,16 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../atoms/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
@@ -13,7 +23,8 @@ import { Input } from '../atoms/Input';
 import { Select } from '../atoms/Select';
 import { Spinner } from '../atoms/Spinner';
 import { useAuth } from '../context/AuthContext';
-import { ticketService, type TicketKpisResponse } from '../services/api';
+import { ticketService, userService, type TicketKpisResponse } from '../services/api';
+import type { User } from '../types';
 
 const MARCAS = ['Case', 'Dynapac', 'Hitachi', 'Liugong', 'Okada', 'Yanmar'];
 
@@ -37,6 +48,18 @@ const STATUS_LABELS: Record<string, string> = {
   sin_estado: 'Sin estado',
 };
 
+/** Paleta alineada al tema (primary, secondary, success, warning y variaciones) */
+const CHART_COLORS = [
+  '#cf1b22', /* primary */
+  '#50504f', /* secondary */
+  '#166534', /* success */
+  '#ea580c', /* warning */
+  '#e63946', /* primary más claro */
+  '#9a0f16', /* primary más oscuro */
+  '#b3b3b3', /* muted */
+  '#64748b', /* slate */
+];
+
 export const KPIPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,6 +68,8 @@ export const KPIPage: React.FC = () => {
   const [marca, setMarca] = useState('');
   const [modeloEquipo, setModeloEquipo] = useState('');
   const [status, setStatus] = useState('all');
+  const [technicianId, setTechnicianId] = useState('all');
+  const [technicians, setTechnicians] = useState<User[]>([]);
   const [kpis, setKpis] = useState<TicketKpisResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +79,23 @@ export const KPIPage: React.FC = () => {
       navigate('/', { replace: true });
     }
   }, [user?.role, navigate]);
+
+  useEffect(() => {
+    if (user?.role === 'customer') return;
+
+    const loadTechnicians = async () => {
+      try {
+        const usersData = await userService.getUsers();
+        const techs = usersData
+          .filter(u => u.role === 'admin' || u.role === 'technician')
+          .sort((a, b) => a.name.localeCompare(b.name));
+        setTechnicians(techs);
+      } catch {
+        setTechnicians([]);
+      }
+    };
+    loadTechnicians();
+  }, [user?.role]);
 
   useEffect(() => {
     if (user?.role === 'customer') return;
@@ -68,6 +110,7 @@ export const KPIPage: React.FC = () => {
         if (marca) params.marca = marca;
         if (modeloEquipo.trim()) params.modeloEquipo = modeloEquipo.trim();
         if (status !== 'all') params.status = status;
+        if (technicianId !== 'all') params.technicianId = technicianId;
         const data = await ticketService.getTicketKpis(params);
         setKpis(data);
       } catch (err) {
@@ -80,7 +123,7 @@ export const KPIPage: React.FC = () => {
     };
 
     fetchKpis();
-  }, [user?.role, dateFrom, dateTo, marca, modeloEquipo, status]);
+  }, [user?.role, dateFrom, dateTo, marca, modeloEquipo, status, technicianId]);
 
   const handleApplyFilters = () => {
     // Re-fetch is triggered by useEffect when state changes
@@ -92,6 +135,7 @@ export const KPIPage: React.FC = () => {
     setMarca('');
     setModeloEquipo('');
     setStatus('all');
+    setTechnicianId('all');
   };
 
   if (user?.role === 'customer') {
@@ -119,7 +163,7 @@ export const KPIPage: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4'>
             <div className='space-y-2'>
               <label htmlFor='kpi-dateFrom' className='text-sm font-medium'>
                 Fecha desde
@@ -187,6 +231,24 @@ export const KPIPage: React.FC = () => {
                 ))}
               </Select>
             </div>
+            <div className='space-y-2'>
+              <label htmlFor='kpi-technician' className='text-sm font-medium'>
+                Técnico
+              </label>
+              <Select
+                id='kpi-technician'
+                value={technicianId}
+                onChange={e => setTechnicianId(e.target.value)}
+              >
+                <option value='all'>Todos</option>
+                <option value='unassigned'>Sin asignar</option>
+                {technicians.map(tech => (
+                  <option key={tech.id} value={tech.id}>
+                    {tech.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
           </div>
           <div className='flex flex-wrap gap-2'>
             <Button type='button' onClick={handleApplyFilters} variant='outline'>
@@ -212,22 +274,39 @@ export const KPIPage: React.FC = () => {
 
       {kpis && (
         <>
-          {/* Total */}
+          {/* Total - gráfico de barras + leyenda con cantidad */}
           <Card>
-            <CardContent className='p-6 flex items-center space-x-4'>
-              <div className='h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center'>
-                <TrendingUp className='h-6 w-6 text-primary' />
-              </div>
-              <div>
-                <p className='text-sm font-medium text-muted-foreground'>
-                  Total de tickets
-                </p>
-                <h3 className='text-3xl font-bold'>{kpis.total}</h3>
+            <CardContent className='p-6'>
+              <div className='flex flex-col sm:flex-row sm:items-center gap-6'>
+                <div className='flex items-center space-x-4 shrink-0'>
+                  <div className='h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center'>
+                    <TrendingUp className='h-6 w-6 text-primary' />
+                  </div>
+                  <div>
+                    <p className='text-sm font-medium text-muted-foreground'>
+                      Total de tickets
+                    </p>
+                    <h3 className='text-3xl font-bold'>{kpis.total}</h3>
+                  </div>
+                </div>
+                <div className='flex-1 min-h-[120px]'>
+                  <ResponsiveContainer width='100%' height={120}>
+                    <BarChart
+                      data={[{ name: 'Total de tickets', total: kpis.total }]}
+                      margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
+                    >
+                      <XAxis dataKey='name' tick={{ fontSize: 12 }} hide />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 12 }} domain={[0, Math.max(kpis.total, 1)]} />
+                      <Tooltip formatter={(value: number | undefined) => [value ?? 0, 'Tickets']} />
+                      <Bar dataKey='total' fill={CHART_COLORS[0]} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Por estado */}
+          {/* Por estado - gráfico de torta + leyendas con cantidades */}
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center'>
@@ -236,22 +315,48 @@ export const KPIPage: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-                {Object.entries(kpis.byStatus)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([key, value]) => (
-                    <div
-                      key={key}
-                      className='flex items-center justify-between p-3 rounded-md bg-muted/50'
-                    >
-                      <span className='text-sm font-medium'>
-                        {STATUS_LABELS[key] ?? key}
-                      </span>
-                      <span className='text-lg font-bold'>{value}</span>
-                    </div>
-                  ))}
-              </div>
-              {Object.keys(kpis.byStatus).length === 0 && (
+              {Object.keys(kpis.byStatus).length > 0 ? (
+                <div className='flex flex-col lg:flex-row gap-6 items-start'>
+                  <div className='w-full lg:max-w-[280px] h-[240px] shrink-0'>
+                    <ResponsiveContainer width='100%' height='100%'>
+                      <PieChart>
+                        <Pie
+                          data={Object.entries(kpis.byStatus)
+                            .sort(([, a], [, b]) => b - a)
+                            .map(([key, value], index) => ({
+                              name: STATUS_LABELS[key] ?? key,
+                              value,
+                              fill: CHART_COLORS[index % CHART_COLORS.length],
+                            }))}
+                          cx='50%'
+                          cy='50%'
+                          innerRadius={50}
+                          outerRadius={90}
+                          paddingAngle={2}
+                          dataKey='value'
+                          label={({ name, value }) => `${name}: ${value}`}
+                        />
+                        <Tooltip formatter={(value: number | undefined) => [value ?? 0, 'Tickets']} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1'>
+                    {Object.entries(kpis.byStatus)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([key, value]) => (
+                        <div
+                          key={key}
+                          className='flex items-center justify-between p-3 rounded-md bg-muted/50'
+                        >
+                          <span className='text-sm font-medium'>
+                            {STATUS_LABELS[key] ?? key}
+                          </span>
+                          <span className='text-lg font-bold'>{value}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ) : (
                 <p className='text-sm text-muted-foreground'>
                   No hay datos por estado con los filtros aplicados.
                 </p>
@@ -259,7 +364,7 @@ export const KPIPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Por marca */}
+          {/* Por marca - gráfico de torta + leyendas con cantidades */}
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center'>
@@ -268,20 +373,46 @@ export const KPIPage: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-                {Object.entries(kpis.byMarca)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([key, value]) => (
-                    <div
-                      key={key}
-                      className='flex items-center justify-between p-3 rounded-md bg-muted/50'
-                    >
-                      <span className='text-sm font-medium'>{key}</span>
-                      <span className='text-lg font-bold'>{value}</span>
-                    </div>
-                  ))}
-              </div>
-              {Object.keys(kpis.byMarca).length === 0 && (
+              {Object.keys(kpis.byMarca).length > 0 ? (
+                <div className='flex flex-col lg:flex-row gap-6 items-start'>
+                  <div className='w-full lg:max-w-[280px] h-[240px] shrink-0'>
+                    <ResponsiveContainer width='100%' height='100%'>
+                      <PieChart>
+                        <Pie
+                          data={Object.entries(kpis.byMarca)
+                            .sort(([, a], [, b]) => b - a)
+                            .map(([key, value], index) => ({
+                              name: key,
+                              value,
+                              fill: CHART_COLORS[index % CHART_COLORS.length],
+                            }))}
+                          cx='50%'
+                          cy='50%'
+                          innerRadius={50}
+                          outerRadius={90}
+                          paddingAngle={2}
+                          dataKey='value'
+                          label={({ name, value }) => `${name}: ${value}`}
+                        />
+                        <Tooltip formatter={(value: number | undefined) => [value ?? 0, 'Tickets']} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1'>
+                    {Object.entries(kpis.byMarca)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([key, value]) => (
+                        <div
+                          key={key}
+                          className='flex items-center justify-between p-3 rounded-md bg-muted/50'
+                        >
+                          <span className='text-sm font-medium'>{key}</span>
+                          <span className='text-lg font-bold'>{value}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ) : (
                 <p className='text-sm text-muted-foreground'>
                   No hay datos por marca con los filtros aplicados.
                 </p>
@@ -289,7 +420,7 @@ export const KPIPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Por modelo */}
+          {/* Por modelo - gráfico de torta + leyendas con cantidades */}
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center'>
@@ -298,32 +429,61 @@ export const KPIPage: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-                {Object.entries(kpis.byModelo)
-                  .sort(([, a], [, b]) => b - a)
-                  .slice(0, 24)
-                  .map(([key, value]) => (
-                    <div
-                      key={key}
-                      className='flex items-center justify-between p-3 rounded-md bg-muted/50'
-                    >
-                      <span className='text-sm font-medium truncate max-w-[180px]'>
-                        {key}
-                      </span>
-                      <span className='text-lg font-bold shrink-0 ml-2'>
-                        {value}
-                      </span>
+              {Object.keys(kpis.byModelo).length > 0 ? (
+                <>
+                  <div className='flex flex-col lg:flex-row gap-6 items-start'>
+                    <div className='w-full lg:max-w-[280px] h-[240px] shrink-0'>
+                      <ResponsiveContainer width='100%' height='100%'>
+                        <PieChart>
+                          <Pie
+                            data={Object.entries(kpis.byModelo)
+                              .sort(([, a], [, b]) => b - a)
+                              .slice(0, 24)
+                              .map(([key, value], index) => ({
+                                name: key,
+                                value,
+                                fill: CHART_COLORS[index % CHART_COLORS.length],
+                              }))}
+                            cx='50%'
+                            cy='50%'
+                            innerRadius={50}
+                            outerRadius={90}
+                            paddingAngle={2}
+                            dataKey='value'
+                            label={({ name, value }) => `${name}: ${value}`}
+                          />
+                          <Tooltip formatter={(value: number | undefined) => [value ?? 0, 'Tickets']} />
+                        </PieChart>
+                      </ResponsiveContainer>
                     </div>
-                  ))}
-              </div>
-              {Object.keys(kpis.byModelo).length === 0 && (
+                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1'>
+                      {Object.entries(kpis.byModelo)
+                        .sort(([, a], [, b]) => b - a)
+                        .slice(0, 24)
+                        .map(([key, value]) => (
+                          <div
+                            key={key}
+                            className='flex items-center justify-between p-3 rounded-md bg-muted/50'
+                          >
+                            <span className='text-sm font-medium truncate max-w-[180px]'>
+                              {key}
+                            </span>
+                            <span className='text-lg font-bold shrink-0 ml-2'>
+                              {value}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                  {Object.keys(kpis.byModelo).length > 24 && (
+                    <p className='text-xs text-muted-foreground mt-2'>
+                      Mostrando los 24 modelos con más tickets.
+                    </p>
+                  )}
+                </>
+              ) : (
                 <p className='text-sm text-muted-foreground'>
                   No hay datos por modelo con los filtros aplicados.
-                </p>
-              )}
-              {Object.keys(kpis.byModelo).length > 24 && (
-                <p className='text-xs text-muted-foreground mt-2'>
-                  Mostrando los 24 modelos con más tickets.
                 </p>
               )}
             </CardContent>

@@ -4,6 +4,7 @@ import {
   Clock,
   ClipboardList,
   Forward,
+  Layers,
   MessageSquare,
   Play,
   RefreshCw,
@@ -12,13 +13,241 @@ import {
   Video,
   XCircle,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Avatar } from '../atoms/Avatar';
 import { Badge } from '../atoms/Badge';
 import { Button } from '../atoms/Button';
 import { Card, CardContent, CardFooter, CardHeader } from '../atoms/Card';
 import { Textarea } from '../atoms/Textarea';
 import { Ticket, User } from '../types';
+
+/** Lista de sistemas que el técnico puede seleccionar como comprometidos en la falla */
+const SISTEMAS_OPTIONS = [
+  'Motor (Pistones, cigüeñal, bielas, culata, árbol de levas, válvulas)',
+  'Turbocargador y Posenfriador',
+  'Inyectores y Bomba de inyección',
+  'Radiador, Bomba de agua y Termostato',
+  'Alternador, Baterías y Motor de arranque',
+  'Convertidor de par',
+  'Transmisión (Planetarios, embragues, ejes)',
+  'Diferenciales y Semiejes',
+  'Mandos finales y Sellos Duo-Cone',
+  'Bombas hidráulicas (Principal y de pilotaje)',
+  'Banco de válvulas de control',
+  'Cilindros hidráulicos (Vástagos, sellos, émbolos)',
+  'Motores de giro y Motores de traslación',
+  'Mangueras y Acoples de alta presión',
+  'Tanques (Combustible, aceite hidráulico, DEF)',
+  'Filtros (Aire, aceite, combustible, hidráulico)',
+  'Cadenas, Eslabones, Bujes y Pasadores',
+  'Zapatas y Pernos de zapata',
+  'Rodillos (Superiores e inferiores)',
+  'Rueda guía (Idler) y Rueda dentada (Sprocket)',
+  'Neumáticos, Rines y Masas',
+  'Bastidor (Chasis) y Contrapesos',
+  'Cojinete de giro (Tornamesa)',
+  'Articulaciones y Osciladores',
+  'Pluma (Boom) y Brazo (Stick)',
+  'Cucharón, Dientes, Adaptadores y Cuchillas',
+  'Cabina (Asiento, mandos, pedales)',
+  'Módulos de Control Electrónico (ECM)',
+  'Sensores y Arneses eléctricos',
+  'Panel de instrumentos y Pantallas de monitoreo',
+  'Estructuras ROPS y FOPS',
+  'Frenos de disco y Acumuladores de freno',
+  'Unidades de dirección (Orbitroles y cilindros)',
+  'Sistema de escape y Silenciadores',
+];
+
+const STATUS_VARIANT_MAP: Record<
+  Ticket['status'],
+  'primary' | 'secondary' | 'success' | 'default'
+> = {
+  open: 'primary',
+  in_progress: 'secondary',
+  resolved: 'success',
+  closed: 'default',
+  redirected: 'secondary',
+};
+
+const PRIORITY_VARIANT_MAP: Record<
+  Ticket['priority'],
+  'primary' | 'secondary' | 'success' | 'default'
+> = {
+  low: 'default',
+  medium: 'secondary',
+  high: 'primary',
+  urgent: 'success',
+};
+
+const STATUS_TRANSLATIONS: Record<Ticket['status'], string> = {
+  open: 'abierto',
+  in_progress: 'en progreso',
+  resolved: 'resuelto',
+  closed: 'cerrado',
+  redirected: 'redireccionado',
+};
+
+const PRIORITY_TRANSLATIONS: Record<Ticket['priority'], string> = {
+  low: 'baja',
+  medium: 'media',
+  high: 'alta',
+  urgent: 'urgente',
+};
+
+const OBSERVATIONS_TEXTAREA_ID = 'ticket-observations-textarea';
+
+/** Normaliza un nombre de sistema para usarlo como id de input. */
+function sistemaToInputId(sistema: string): string {
+  // replaceAll requiere ES2021; replace con regex global es equivalente aquí
+  return sistema.replace(/\s+/g, '-'); // NOSONAR
+}
+
+interface ObservationsModalProps {
+  show: boolean;
+  pendingStatus: Ticket['status'] | null;
+  technicalObservations: string;
+  onObservationsChange: (value: string) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isChangingStatus: boolean;
+}
+
+const ObservationsModal: React.FC<ObservationsModalProps> = ({
+  show,
+  pendingStatus,
+  technicalObservations,
+  onObservationsChange,
+  onConfirm,
+  onCancel,
+  isChangingStatus,
+}) => {
+  if (!show) return null;
+  const statusLabel = pendingStatus
+    ? STATUS_TRANSLATIONS[pendingStatus]
+    : '';
+  return (
+    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+      <div className='bg-background rounded-lg p-6 w-full max-w-md mx-4 shadow-xl'>
+        <h3 className='text-lg font-semibold mb-4'>
+          Cambiar estado a: {statusLabel}
+        </h3>
+        <div className='mb-4'>
+          <label
+            htmlFor={OBSERVATIONS_TEXTAREA_ID}
+            className='block text-sm font-medium mb-2'
+          >
+            Observaciones Técnicas (opcional)
+          </label>
+          <Textarea
+            id={OBSERVATIONS_TEXTAREA_ID}
+            value={technicalObservations}
+            onChange={e => onObservationsChange(e.target.value)}
+            placeholder='Ingrese observaciones técnicas sobre este cambio de estado...'
+            rows={4}
+            className='w-full'
+          />
+        </div>
+        <div className='flex gap-2 justify-end'>
+          <Button variant='outline' onClick={onCancel} disabled={isChangingStatus}>
+            Cancelar
+          </Button>
+          <Button
+            variant='primary'
+            onClick={onConfirm}
+            disabled={isChangingStatus}
+          >
+            {isChangingStatus ? 'Procesando...' : 'Confirmar'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface TicketDetailsFooterProps {
+  status: Ticket['status'];
+  canChangeStatus: boolean;
+  isChangingStatus: boolean;
+  onStartChat: () => void;
+  onStartCall: () => void;
+  onStatusChange: (s: Ticket['status']) => void;
+  onOpenCloseModal: () => void;
+}
+
+const TicketDetailsFooter: React.FC<TicketDetailsFooterProps> = ({
+  status,
+  canChangeStatus,
+  isChangingStatus,
+  onStartChat,
+  onStartCall,
+  onStatusChange,
+  onOpenCloseModal,
+}) => (
+  <CardFooter className='border-t pt-4 flex flex-col sm:flex-row gap-2'>
+    <Button variant='outline' leftIcon={<MessageSquare size={16} />} onClick={onStartChat} className='w-full sm:w-auto'>
+      Chat
+    </Button>
+    <Button leftIcon={<Video size={16} />} onClick={onStartCall} className='w-full sm:w-auto'>
+      Videollamada
+    </Button>
+    {canChangeStatus && status === 'open' && (
+      <Button
+        variant='secondary'
+        leftIcon={<Play size={16} />}
+        onClick={() => onStatusChange('in_progress')}
+        disabled={isChangingStatus}
+        className='w-full sm:w-auto'
+      >
+        {isChangingStatus ? 'Procesando...' : 'En Progreso'}
+      </Button>
+    )}
+    {canChangeStatus && status !== 'resolved' && status !== 'closed' && status !== 'redirected' && (
+      <Button
+        variant='secondary'
+        leftIcon={<Forward size={16} />}
+        onClick={() => onStatusChange('redirected')}
+        disabled={isChangingStatus}
+        className='w-full sm:w-auto'
+      >
+        {isChangingStatus ? 'Procesando...' : 'Redireccionado'}
+      </Button>
+    )}
+    {status !== 'resolved' && status !== 'closed' && (
+      <Button
+        variant='success'
+        leftIcon={<CheckCircle size={16} />}
+        onClick={() => onStatusChange('resolved')}
+        disabled={isChangingStatus}
+        className='w-full sm:w-auto sm:ml-auto'
+      >
+        {isChangingStatus ? 'Procesando...' : 'Marcar como Resuelto'}
+      </Button>
+    )}
+    {status !== 'closed' && status === 'resolved' && canChangeStatus && (
+      <Button
+        variant='outline'
+        leftIcon={<XCircle size={16} />}
+        onClick={onOpenCloseModal}
+        disabled={isChangingStatus}
+        className='w-full sm:w-auto sm:ml-auto'
+      >
+        {isChangingStatus ? 'Procesando...' : 'Cerrar Ticket'}
+      </Button>
+    )}
+    {status !== 'closed' && status === 'resolved' && !canChangeStatus && (
+      <Button
+        variant='outline'
+        leftIcon={<XCircle size={16} />}
+        onClick={() => onStatusChange('closed')}
+        disabled={isChangingStatus}
+        className='w-full sm:w-auto sm:ml-auto'
+      >
+        {isChangingStatus ? 'Procesando...' : 'Cerrar Ticket'}
+      </Button>
+    )}
+  </CardFooter>
+);
 
 interface TicketDetailsProps {
   ticket: Ticket;
@@ -28,8 +257,9 @@ interface TicketDetailsProps {
   availableTechnicians?: User[];
   onStartCall: () => void;
   onStartChat: () => void;
-  onChangeStatus: (status: Ticket['status'], technicalObservations?: string) => void;
+  onChangeStatus: (status: Ticket['status'], technicalObservations?: string) => void | Promise<void>;
   onAssignTechnician?: (technicianId: string) => void;
+  onUpdateSistemas?: (sistemas: string[]) => void | Promise<void>;
 }
 
 export const TicketDetails: React.FC<TicketDetailsProps> = ({
@@ -42,6 +272,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
   onStartChat,
   onChangeStatus,
   onAssignTechnician,
+  onUpdateSistemas,
 }) => {
   const [isAssigningTechnician, setIsAssigningTechnician] = useState(false);
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>('');
@@ -49,6 +280,38 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
   const [pendingStatus, setPendingStatus] = useState<Ticket['status'] | null>(null);
   const [technicalObservations, setTechnicalObservations] = useState('');
   const [isChangingStatus, setIsChangingStatus] = useState(false);
+  const [isEditingSistemas, setIsEditingSistemas] = useState(false);
+  const [pendingSistemas, setPendingSistemas] = useState<string[]>(
+    ticket.sistemas ?? []
+  );
+  const [isSavingSistemas, setIsSavingSistemas] = useState(false);
+
+  useEffect(() => {
+    if (!isEditingSistemas) {
+      setPendingSistemas(ticket.sistemas ?? []);
+    }
+  }, [ticket.sistemas, isEditingSistemas]);
+
+  const canEditSistemas =
+    currentUser &&
+    (currentUser.role === 'admin' || currentUser.role === 'technician') &&
+    onUpdateSistemas;
+
+  const handleToggleSistema = (sistema: string) => {
+    setPendingSistemas(prev =>
+      prev.includes(sistema)
+        ? prev.filter(s => s !== sistema)
+        : [...prev, sistema]
+    );
+  };
+
+  const handleSaveSistemas = () => {
+    if (!onUpdateSistemas || isSavingSistemas) return;
+    setIsSavingSistemas(true);
+    Promise.resolve(onUpdateSistemas(pendingSistemas))
+      .then(() => setIsEditingSistemas(false))
+      .finally(() => setIsSavingSistemas(false));
+  };
 
   const {
     id,
@@ -61,56 +324,11 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
     tags,
   } = ticket;
 
-  // Formatear fechas
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('es-ES');
-  };
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleString('es-ES');
 
-  // Formatear ID del ticket para mostrar solo los primeros caracteres
-  const formatTicketId = (ticketId: string) => {
-    // Tomar los primeros 8 caracteres del UUID
-    return ticketId.substring(0, 8).toUpperCase();
-  };
-
-  // Mapear estado a variante de badge
-  const statusVariantMap: Record<
-    Ticket['status'],
-    'primary' | 'secondary' | 'success' | 'default'
-  > = {
-    open: 'primary',
-    in_progress: 'secondary',
-    resolved: 'success',
-    closed: 'default',
-    redirected: 'secondary',
-  };
-
-  // Mapear prioridad a variante de badge
-  const priorityVariantMap: Record<
-    Ticket['priority'],
-    'primary' | 'secondary' | 'success' | 'default'
-  > = {
-    low: 'default',
-    medium: 'secondary',
-    high: 'primary',
-    urgent: 'success',
-  };
-
-  // Traducir estados
-  const statusTranslations: Record<Ticket['status'], string> = {
-    open: 'abierto',
-    in_progress: 'en progreso',
-    resolved: 'resuelto',
-    closed: 'cerrado',
-    redirected: 'redireccionado',
-  };
-
-  // Traducir prioridades
-  const priorityTranslations: Record<Ticket['priority'], string> = {
-    low: 'baja',
-    medium: 'media',
-    high: 'alta',
-    urgent: 'urgente',
-  };
+  const formatTicketId = (ticketId: string) =>
+    ticketId.substring(0, 8).toUpperCase();
 
   // Función para manejar la asignación de técnico
   const handleAssignTechnician = () => {
@@ -163,16 +381,20 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
     }
   };
 
-  // Función para confirmar cambio de estado con observaciones
-  const handleConfirmStatusChange = async () => {
-    if (pendingStatus && !isChangingStatus) {
-      setIsChangingStatus(true);
-      await onChangeStatus(pendingStatus, technicalObservations || undefined);
+  const handleConfirmStatusChange = () => {
+    if (!pendingStatus || isChangingStatus) return;
+    setIsChangingStatus(true);
+    const result = onChangeStatus(
+      pendingStatus,
+      technicalObservations || undefined
+    );
+    const closeModal = () => {
       setShowObservationsModal(false);
       setPendingStatus(null);
       setTechnicalObservations('');
       setTimeout(() => setIsChangingStatus(false), 2000);
-    }
+    };
+    Promise.resolve(result).then(closeModal).catch(() => setIsChangingStatus(false));
   };
 
   // Función para cancelar cambio de estado
@@ -187,14 +409,14 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
       <CardHeader>
         <div className='flex flex-col space-y-3'>
           <div className='flex flex-wrap gap-2 mb-1'>
-            <Badge variant={statusVariantMap[status]} className='capitalize'>
-              {statusTranslations[status]}
+            <Badge variant={STATUS_VARIANT_MAP[status]} className='capitalize'>
+              {STATUS_TRANSLATIONS[status]}
             </Badge>
             <Badge
-              variant={priorityVariantMap[priority]}
+              variant={PRIORITY_VARIANT_MAP[priority]}
               className='capitalize'
             >
-              {priorityTranslations[priority]}
+              {PRIORITY_TRANSLATIONS[priority]}
             </Badge>
             <Badge>#{formatTicketId(id)}</Badge>
           </div>
@@ -251,6 +473,95 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
               </div>
             </div>
           )}
+
+          {/* Sistema(s) comprometido(s) - falla del equipo */}
+          <div>
+            <h3 className='text-base font-medium mb-2 flex items-center gap-2'>
+              <Layers size={16} className='text-primary' />
+              Sistema(s) comprometido(s)
+            </h3>
+            {isEditingSistemas ? (
+              <div className='space-y-3'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                  {SISTEMAS_OPTIONS.map(sistema => {
+                    const inputId = `sistema-${sistemaToInputId(sistema)}`;
+                    return (
+                      <label
+                        key={sistema}
+                        htmlFor={inputId}
+                        className='flex items-center gap-2 p-2 rounded-md border border-border hover:bg-muted/50 cursor-pointer'
+                      >
+                        <input
+                          id={inputId}
+                          type='checkbox'
+                          checked={pendingSistemas.includes(sistema)}
+                          onChange={() => handleToggleSistema(sistema)}
+                          className='rounded border-border'
+                          aria-label={`Sistema ${sistema}`}
+                        />
+                        <span className='text-sm'>{sistema}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <div className='flex gap-2'>
+                  <Button
+                    variant='primary'
+                    size='sm'
+                    onClick={handleSaveSistemas}
+                    disabled={isSavingSistemas}
+                  >
+                    {isSavingSistemas ? 'Guardando...' : 'Guardar'}
+                  </Button>
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={() => {
+                      setIsEditingSistemas(false);
+                      setPendingSistemas(ticket.sistemas ?? []);
+                    }}
+                    disabled={isSavingSistemas}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className='bg-muted/50 p-3 rounded-md'>
+                {(ticket.sistemas?.length ?? 0) > 0 ? (
+                  <div className='flex flex-wrap gap-2'>
+                    {(ticket.sistemas ?? []).map(sistema => (
+                      <Badge
+                        key={sistema}
+                        variant='secondary'
+                        className='flex items-center gap-1'
+                      >
+                        <Layers size={12} />
+                        {sistema}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className='text-sm text-muted-foreground'>
+                    No definido. El técnico puede seleccionar uno o varios
+                    sistemas.
+                  </p>
+                )}
+                {canEditSistemas && (
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className='mt-2'
+                    onClick={() => setIsEditingSistemas(true)}
+                  >
+                    {(ticket.sistemas?.length ?? 0) > 0
+                      ? 'Editar sistemas'
+                      : 'Seleccionar sistemas'}
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className='space-y-3'>
             <h3 className='text-base font-medium'>Personas</h3>
@@ -328,15 +639,11 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                       <option
                         key={tech.id}
                         value={tech.id}
-                        disabled={
-                          currentTechnician && tech.id === currentTechnician.id
-                        }
+                        disabled={tech.id === currentTechnician?.id}
                       >
                         {tech.name} (
                         {tech.role === 'admin' ? 'Administrador' : 'Técnico'})
-                        {currentTechnician && tech.id === currentTechnician.id
-                          ? ' (Actual)'
-                          : ''}
+                        {tech.id === currentTechnician?.id ? ' (Actual)' : ''}
                       </option>
                     ))}
                   </select>
@@ -347,8 +654,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                       onClick={handleAssignTechnician}
                       disabled={
                         !selectedTechnicianId ||
-                        (currentTechnician &&
-                          selectedTechnicianId === currentTechnician.id)
+                        selectedTechnicianId === currentTechnician?.id
                       }
                       className='flex-1'
                     >
@@ -370,129 +676,28 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
         </div>
       </CardContent>
 
-      <CardFooter className='border-t pt-4 flex flex-col sm:flex-row gap-2'>
-        <Button
-          variant='outline'
-          leftIcon={<MessageSquare size={16} />}
-          onClick={onStartChat}
-          className='w-full sm:w-auto'
-        >
-          Chat
-        </Button>
+      <TicketDetailsFooter
+        status={status}
+        canChangeStatus={!!canChangeStatus}
+        isChangingStatus={isChangingStatus}
+        onStartChat={onStartChat}
+        onStartCall={onStartCall}
+        onStatusChange={handleStatusChange}
+        onOpenCloseModal={() => {
+          setPendingStatus('closed');
+          setShowObservationsModal(true);
+        }}
+      />
 
-        <Button
-          leftIcon={<Video size={16} />}
-          onClick={onStartCall}
-          className='w-full sm:w-auto'
-        >
-          Videollamada
-        </Button>
-
-        {/* Botón para cambiar a En Progreso - Solo para admin y técnicos */}
-        {canChangeStatus && status === 'open' && (
-          <Button
-            variant='secondary'
-            leftIcon={<Play size={16} />}
-            onClick={() => handleStatusChange('in_progress')}
-            disabled={isChangingStatus}
-            className='w-full sm:w-auto'
-          >
-            {isChangingStatus ? 'Procesando...' : 'En Progreso'}
-          </Button>
-        )}
-
-        {/* Botón Redireccionado - Solo para admin y técnicos */}
-        {canChangeStatus && status !== 'resolved' && status !== 'closed' && status !== 'redirected' && (
-          <Button
-            variant='secondary'
-            leftIcon={<Forward size={16} />}
-            onClick={() => handleStatusChange('redirected')}
-            disabled={isChangingStatus}
-            className='w-full sm:w-auto'
-          >
-            {isChangingStatus ? 'Procesando...' : 'Redireccionado'}
-          </Button>
-        )}
-
-        {status !== 'resolved' && status !== 'closed' && (
-          <Button
-            variant='success'
-            leftIcon={<CheckCircle size={16} />}
-            onClick={() => handleStatusChange('resolved')}
-            disabled={isChangingStatus}
-            className='w-full sm:w-auto sm:ml-auto'
-          >
-            {isChangingStatus ? 'Procesando...' : 'Marcar como Resuelto'}
-          </Button>
-        )}
-
-        {status !== 'closed' && status === 'resolved' && canChangeStatus && (
-          <Button
-            variant='outline'
-            leftIcon={<XCircle size={16} />}
-            onClick={() => {
-              setPendingStatus('closed');
-              setShowObservationsModal(true);
-            }}
-            disabled={isChangingStatus}
-            className='w-full sm:w-auto sm:ml-auto'
-          >
-            {isChangingStatus ? 'Procesando...' : 'Cerrar Ticket'}
-          </Button>
-        )}
-        
-        {/* Cerrar ticket para clientes (sin observaciones) */}
-        {status !== 'closed' && status === 'resolved' && !canChangeStatus && (
-          <Button
-            variant='outline'
-            leftIcon={<XCircle size={16} />}
-            onClick={() => handleStatusChange('closed')}
-            disabled={isChangingStatus}
-            className='w-full sm:w-auto sm:ml-auto'
-          >
-            {isChangingStatus ? 'Procesando...' : 'Cerrar Ticket'}
-          </Button>
-        )}
-      </CardFooter>
-
-      {/* Modal de Observaciones Técnicas */}
-      {showObservationsModal && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-          <div className='bg-background rounded-lg p-6 w-full max-w-md mx-4 shadow-xl'>
-            <h3 className='text-lg font-semibold mb-4'>
-              Cambiar estado a: {pendingStatus && statusTranslations[pendingStatus]}
-            </h3>
-            <div className='mb-4'>
-              <label className='block text-sm font-medium mb-2'>
-                Observaciones Técnicas (opcional)
-              </label>
-              <Textarea
-                value={technicalObservations}
-                onChange={(e) => setTechnicalObservations(e.target.value)}
-                placeholder='Ingrese observaciones técnicas sobre este cambio de estado...'
-                rows={4}
-                className='w-full'
-              />
-            </div>
-            <div className='flex gap-2 justify-end'>
-              <Button
-                variant='outline'
-                onClick={handleCancelStatusChange}
-                disabled={isChangingStatus}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant='primary'
-                onClick={handleConfirmStatusChange}
-                disabled={isChangingStatus}
-              >
-                {isChangingStatus ? 'Procesando...' : 'Confirmar'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ObservationsModal
+        show={showObservationsModal}
+        pendingStatus={pendingStatus}
+        technicalObservations={technicalObservations}
+        onObservationsChange={setTechnicalObservations}
+        onConfirm={handleConfirmStatusChange}
+        onCancel={handleCancelStatusChange}
+        isChangingStatus={isChangingStatus}
+      />
     </Card>
   );
 };

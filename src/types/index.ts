@@ -45,6 +45,8 @@ export interface Ticket {
   technicalObservations?: string;
   marca?: string | null;
   modeloEquipo?: string | null;
+  /** Sistemas del equipo que comprometen la falla (selección múltiple por técnico) */
+  sistemas?: string[];
 }
 
 export interface Message {

@@ -402,6 +402,7 @@ export type GetTicketKpisParams = {
   marca?: string;
   modeloEquipo?: string;
   status?: string;
+  technicianId?: string;
 };
 
 export const ticketService = {
@@ -416,6 +417,8 @@ export const ticketService = {
     if (params.marca) search.set('marca', params.marca);
     if (params.modeloEquipo) search.set('modeloEquipo', params.modeloEquipo);
     if (params.status) search.set('status', params.status);
+    if (params.technicianId && params.technicianId !== 'all')
+      search.set('technicianId', params.technicianId);
     const query = search.toString();
     const url = query ? `/api/tickets/kpis?${query}` : '/api/tickets/kpis';
     const data = await apiCall(url);
