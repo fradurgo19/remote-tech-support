@@ -386,6 +386,7 @@ export interface TicketKpisResponse {
   byStatus: Record<string, number>;
   byMarca: Record<string, number>;
   byModelo: Record<string, number>;
+  bySistemas: Record<string, number>;
 }
 
 export type CreateTicketData = Omit<

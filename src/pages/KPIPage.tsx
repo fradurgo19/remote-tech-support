@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Filter,
+  Layers,
   Package,
   Tag,
   TrendingUp,
@@ -526,6 +527,73 @@ export const KPIPage: React.FC = () => {
               ) : (
                 <p className='text-sm text-muted-foreground'>
                   No hay datos por modelo con los filtros aplicados.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Sistemas más comprometidos - gráfico de barras + leyendas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='flex items-center'>
+                <Layers size={18} className='mr-2' />
+                Sistemas más comprometidos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(kpis.bySistemas && Object.keys(kpis.bySistemas).length > 0) ? (
+                <div className='flex flex-col lg:flex-row gap-6 items-start'>
+                  <div className='w-full lg:max-w-[400px] min-h-[280px]'>
+                    <ResponsiveContainer width='100%' height={320}>
+                      <BarChart
+                        layout='vertical'
+                        data={Object.entries(kpis.bySistemas)
+                          .sort(([, a], [, b]) => b - a)
+                          .slice(0, 20)
+                          .map(([name, count], index) => ({
+                            name,
+                            count,
+                            fill: CHART_COLORS[index % CHART_COLORS.length],
+                          }))}
+                        margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+                      >
+                        <XAxis type='number' allowDecimals={false} tick={{ fontSize: 11 }} />
+                        <YAxis
+                          type='category'
+                          dataKey='name'
+                          width={180}
+                          tick={{ fontSize: 10 }}
+                          tickFormatter={v => (v.length > 22 ? `${v.slice(0, 20)}…` : v)}
+                        />
+                        <Tooltip
+                          formatter={(value: number | undefined) => [value ?? 0, 'Tickets']}
+                          labelFormatter={label => label}
+                        />
+                        <Bar dataKey='count' radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1'>
+                    {Object.entries(kpis.bySistemas)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([key, value]) => (
+                        <div
+                          key={key}
+                          className='flex items-center justify-between p-3 rounded-md bg-muted/50'
+                        >
+                          <span className='text-sm font-medium truncate max-w-[200px]'>
+                            {key}
+                          </span>
+                          <span className='text-lg font-bold shrink-0 ml-2'>
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ) : (
+                <p className='text-sm text-muted-foreground'>
+                  No hay datos de sistemas comprometidos con los filtros aplicados.
                 </p>
               )}
             </CardContent>

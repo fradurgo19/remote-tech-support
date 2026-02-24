@@ -93,13 +93,14 @@ export const getTicketKpis = async (req: Request, res: Response) => {
     const where = buildKpiWhereClause(req.query as Record<string, unknown>);
     const tickets = await Ticket.findAll({
       where,
-      attributes: ['id', 'status', 'marca', 'modeloEquipo'],
+      attributes: ['id', 'status', 'marca', 'modeloEquipo', 'sistemas'],
     });
 
     const total = tickets.length;
     const byStatus: Record<string, number> = {};
     const byMarca: Record<string, number> = {};
     const byModelo: Record<string, number> = {};
+    const bySistemas: Record<string, number> = {};
 
     for (const t of tickets) {
       const s = t.status || 'sin_estado';
@@ -108,6 +109,11 @@ export const getTicketKpis = async (req: Request, res: Response) => {
       if (m) byMarca[m] = (byMarca[m] ?? 0) + 1;
       const mod = (t.modeloEquipo || '').trim();
       if (mod) byModelo[mod] = (byModelo[mod] ?? 0) + 1;
+      const sistemas = t.sistemas ?? [];
+      for (const sist of sistemas) {
+        const key = (sist || '').trim();
+        if (key) bySistemas[key] = (bySistemas[key] ?? 0) + 1;
+      }
     }
 
     return res.json({
@@ -115,6 +121,7 @@ export const getTicketKpis = async (req: Request, res: Response) => {
       byStatus,
       byMarca,
       byModelo,
+      bySistemas,
     });
   } catch (error) {
     logger.error('Error al obtener KPIs de tickets:', error);
