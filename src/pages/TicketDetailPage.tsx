@@ -134,6 +134,21 @@ export const TicketDetailPage: React.FC = () => {
   const handleUpdateSistemas = async (sistemas: string[]) => {
     if (!ticket) return;
 
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/3654064d-257d-4acd-abac-52d07be95a03', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1192ae' },
+      body: JSON.stringify({
+        sessionId: '1192ae',
+        hypothesisId: 'H1',
+        location: 'TicketDetailPage.tsx:handleUpdateSistemas',
+        message: 'Frontend sending sistemas update',
+        data: { ticketId: ticket.id, sistemas, count: sistemas?.length },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+
     try {
       const updatedTicket = await ticketService.updateTicket(ticket.id, {
         sistemas,
