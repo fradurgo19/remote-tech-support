@@ -19,3 +19,4 @@ ALTER TABLE "Tickets"
 -- (Ajustar según necesidad; si ya es TEXT, no ejecutar lo anterior.)
 
 COMMENT ON COLUMN "Tickets"."sistemas" IS 'Sistemas del equipo que comprometen la falla (JSON array de strings)';
+
