@@ -15,6 +15,12 @@ type TicketWithRelations = Ticket & {
   technician?: User;
 };
 
+/** Convierte un ticket a objeto plano asegurando que sistemas sea array (getter), no el string JSON crudo */
+function ticketToPlain(ticket: Ticket, plain: Record<string, unknown>): Record<string, unknown> {
+  plain.sistemas = ticket.sistemas ?? [];
+  return plain;
+}
+
 export const getTickets = async (req: Request, res: Response) => {
   try {
     const user = req.user as { id: string; role: string };
@@ -46,7 +52,10 @@ export const getTickets = async (req: Request, res: Response) => {
         ],
       },
     });
-    res.json(tickets);
+    const plainTickets = tickets.map(t =>
+      ticketToPlain(t, t.get({ plain: true }) as unknown as Record<string, unknown>)
+    );
+    res.json(plainTickets);
   } catch (error) {
     logger.error('Error al obtener tickets:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -158,8 +167,8 @@ export const getTicketById = async (req: Request, res: Response) => {
         .json({ message: 'No tienes permisos para ver este ticket' });
     }
     // Los administradores y técnicos pueden ver todos los tickets
-
-    res.json(ticket);
+    const plain = ticket.get({ plain: true }) as unknown as Record<string, unknown>;
+    res.json(ticketToPlain(ticket, plain));
   } catch (error) {
     logger.error('Error al obtener ticket:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -263,9 +272,10 @@ export const createTicketPublic = async (req: Request, res: Response) => {
       }
     }
 
+    const plainPublic = ticketWithCustomer.get({ plain: true }) as unknown as Record<string, unknown>;
     res.status(201).json({
       message: 'Ticket creado exitosamente',
-      ticket: ticketWithCustomer,
+      ticket: ticketToPlain(ticketWithCustomer, plainPublic),
     });
   } catch (error) {
     logger.error('Error al crear ticket público:', error);
@@ -402,9 +412,10 @@ export const createTicket = async (req: Request, res: Response) => {
       }
     }
 
+    const plainCreated = ticketWithCustomer.get({ plain: true }) as unknown as Record<string, unknown>;
     res.status(201).json({
       message: 'Ticket creado exitosamente',
-      ticket: ticketWithCustomer,
+      ticket: ticketToPlain(ticketWithCustomer, plainCreated),
     });
   } catch (error) {
     logger.error('Error al crear ticket:', error);
@@ -658,14 +669,10 @@ export const updateTicket = async (req: Request, res: Response) => {
       }
     }
 
-    const plainTicket = ticket.get({ plain: true }) as TicketAttributes & {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-    };
+    const plainTicket = ticket.get({ plain: true }) as unknown as Record<string, unknown>;
     res.json({
       message: 'Ticket actualizado exitosamente',
-      ticket: plainTicket,
+      ticket: ticketToPlain(ticket, plainTicket),
     });
   } catch (error) {
     logger.error('Error al actualizar ticket:', error);
