@@ -2,6 +2,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Filter,
+  PackageSearch,
   PlusCircle,
   Search,
   Users,
@@ -12,7 +13,13 @@ import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
 import { Spinner } from '../atoms/Spinner';
 import { TicketCard } from '../molecules/TicketCard';
-import { ticketService, userService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import {
+  purchasesService,
+  PurchasesSearchResponse,
+  ticketService,
+  userService,
+} from '../services/api';
 import { Ticket, User } from '../types';
 
 export const TicketsListPage: React.FC = () => {
@@ -31,7 +38,16 @@ export const TicketsListPage: React.FC = () => {
   const [customerFilter, setCustomerFilter] = useState<string>('all');
   const [technicianFilter, setTechnicianFilter] = useState<string>('all');
 
+  const [purchasesQuery, setPurchasesQuery] = useState('');
+  const [purchasesLoading, setPurchasesLoading] = useState(false);
+  const [purchasesResult, setPurchasesResult] =
+    useState<PurchasesSearchResponse | null>(null);
+  const [purchasesError, setPurchasesError] = useState<string | null>(null);
+
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isTechnicianOrAdmin =
+    user?.role === 'admin' || user?.role === 'technician';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,6 +117,27 @@ export const TicketsListPage: React.FC = () => {
   });
 
   const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
+
+  const handleSearchPurchases = async () => {
+    const q = purchasesQuery.trim();
+    if (!q) return;
+    setPurchasesLoading(true);
+    setPurchasesError(null);
+    setPurchasesResult(null);
+    try {
+      const data = await purchasesService.searchByNitOrName({
+        nit: q,
+        name: q,
+      });
+      setPurchasesResult(data);
+    } catch (err) {
+      setPurchasesError(
+        err instanceof Error ? err.message : 'Error al buscar compras'
+      );
+    } finally {
+      setPurchasesLoading(false);
+    }
+  };
 
   // Ordenar tickets por prioridad y luego por fecha de creación
   const sortedTickets = [...filteredTickets].sort((a, b) => {
@@ -235,6 +272,120 @@ export const TicketsListPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {isTechnicianOrAdmin && (
+        <div className='flex flex-col gap-3 rounded-lg border border-border bg-muted/20 p-4'>
+          <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
+            <label
+              htmlFor='purchases-search'
+              className='text-sm font-medium flex items-center gap-2'
+            >
+              <PackageSearch size={18} className='text-muted-foreground' />
+              Compras por NIT o Nombre
+            </label>
+            <div className='flex flex-1 flex-col sm:flex-row gap-2 max-w-md'>
+              <Input
+                id='purchases-search'
+                placeholder='NIT o nombre del cliente...'
+                value={purchasesQuery}
+                onChange={e => {
+                  setPurchasesQuery(e.target.value);
+                  setPurchasesError(null);
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleSearchPurchases();
+                }}
+              />
+              <Button
+                variant='outline'
+                onClick={handleSearchPurchases}
+                disabled={purchasesLoading || !purchasesQuery.trim()}
+              >
+                {purchasesLoading ? (
+                  <Spinner size='sm' />
+                ) : (
+                  'Buscar compras'
+                )}
+              </Button>
+            </div>
+          </div>
+          {purchasesError && (
+            <p className='text-sm text-destructive'>{purchasesError}</p>
+          )}
+          {purchasesResult && !purchasesError && (
+            <div className='mt-2 rounded-md border border-border bg-background p-3 text-sm'>
+              {purchasesResult.client ? (
+                <>
+                  <p className='font-medium mb-2'>
+                    {purchasesResult.client.cardName}
+                    {purchasesResult.client.federalTaxId && (
+                      <span className='text-muted-foreground font-normal ml-2'>
+                        NIT: {purchasesResult.client.federalTaxId}
+                      </span>
+                    )}
+                  </p>
+                  {purchasesResult.purchases.length > 0 ? (
+                    <div className='overflow-x-auto'>
+                      <table className='w-full text-left border-collapse'>
+                        <thead>
+                          <tr className='border-b border-border'>
+                            <th className='py-1.5 pr-2'>Doc</th>
+                            <th className='py-1.5 pr-2'>Fecha</th>
+                            <th className='py-1.5 pr-2'>Venc.</th>
+                            <th className='py-1.5 pr-2 text-right'>Total</th>
+                            <th className='py-1.5'>Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {purchasesResult.purchases.map((p, i) => (
+                            <tr
+                              key={p.docEntry ?? i}
+                              className='border-b border-border/50'
+                            >
+                              <td className='py-1.5 pr-2'>
+                                {p.docNum ?? p.docEntry ?? '-'}
+                              </td>
+                              <td className='py-1.5 pr-2'>
+                                {p.docDate
+                                  ? new Date(p.docDate).toLocaleDateString()
+                                  : '-'}
+                              </td>
+                              <td className='py-1.5 pr-2'>
+                                {p.docDueDate
+                                  ? new Date(
+                                      p.docDueDate
+                                    ).toLocaleDateString()
+                                  : '-'}
+                              </td>
+                              <td className='py-1.5 pr-2 text-right'>
+                                {p.docTotal == null
+                                  ? '-'
+                                  : Number(p.docTotal).toLocaleString()}
+                              </td>
+                              <td className='py-1.5'>
+                                {p.docStatus ?? '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className='text-muted-foreground'>
+                      No hay compras recientes para este cliente.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className='text-muted-foreground'>
+                  {purchasesResult.message ??
+                    'No se encontraron clientes con ese NIT o nombre.'}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {sortedTickets.length > 0 ? (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>

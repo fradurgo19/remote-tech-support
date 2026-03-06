@@ -406,6 +406,49 @@ export type GetTicketKpisParams = {
   technicianId?: string;
 };
 
+export interface PurchasesSearchClient {
+  cardCode: string;
+  cardName: string;
+  federalTaxId: string | null;
+}
+
+export interface PurchasesSearchItem {
+  docEntry?: number;
+  docNum?: number;
+  docDate: string | null;
+  docDueDate: string | null;
+  cardCode?: string;
+  cardName?: string;
+  docTotal: number | null;
+  docStatus: string | null;
+}
+
+export interface PurchasesSearchResponse {
+  client: PurchasesSearchClient | null;
+  purchases: PurchasesSearchItem[];
+  message?: string;
+}
+
+export const purchasesService = {
+  searchByNitOrName: async (
+    params: { nit?: string; name?: string }
+  ): Promise<PurchasesSearchResponse> => {
+    const search = new URLSearchParams();
+    if (params.nit?.trim()) search.set('nit', params.nit.trim());
+    if (params.name?.trim()) search.set('name', params.name.trim());
+    const query = search.toString();
+    if (!query) {
+      return {
+        client: null,
+        purchases: [],
+        message: 'Indique NIT o nombre del cliente.',
+      };
+    }
+    const data = await apiCall(`/api/purchases/search?${query}`);
+    return data;
+  },
+};
+
 export const ticketService = {
   getTickets: async (): Promise<Ticket[]> => {
     const data = await apiCall('/api/tickets');

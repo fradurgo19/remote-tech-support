@@ -13,6 +13,7 @@ import messageRoutes from './routes/message.routes';
 import reportRoutes from './routes/report.routes';
 import ticketRoutes from './routes/ticket.routes';
 import userRoutes from './routes/user.routes';
+import purchasesRoutes from './routes/purchases.routes';
 import { setupSocketHandlers } from './socket';
 import { logger } from './utils/logger';
 
@@ -60,6 +61,7 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/purchases', purchasesRoutes);
 
 // Manejador de errores
 app.use(errorHandler);
