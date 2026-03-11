@@ -57,6 +57,7 @@ const SISTEMAS_OPTIONS = [
   'Frenos de disco y Acumuladores de freno',
   'Unidades de dirección (Orbitroles y cilindros)',
   'Sistema de escape y Silenciadores',
+  'Sistema post-tratamiento de gases',
 ];
 
 const STATUS_VARIANT_MAP: Record<
