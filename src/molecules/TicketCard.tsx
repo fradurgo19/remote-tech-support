@@ -1,10 +1,12 @@
 import { ArrowRight, Box, Clock, Hash, MessageSquare } from 'lucide-react';
 import React from 'react';
 import { Avatar } from '../atoms/Avatar';
-import { Badge } from '../atoms/Badge';
+import { Badge, type BadgeProps } from '../atoms/Badge';
 import { Button } from '../atoms/Button';
 import { Card, CardContent, CardFooter, CardHeader } from '../atoms/Card';
 import { Ticket, User } from '../types';
+
+type BadgeVariant = NonNullable<BadgeProps['variant']>;
 
 interface TicketCardProps {
   ticket: Ticket;
@@ -33,7 +35,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
   };
 
   // Mapear estado a variante de badge
-  const statusVariantMap: Record<Ticket['status'], string> = {
+  const statusVariantMap: Record<Ticket['status'], BadgeVariant> = {
     open: 'primary',
     in_progress: 'warning',
     resolved: 'success',
@@ -42,7 +44,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
   };
 
   // Mapear prioridad a variante de badge
-  const priorityVariantMap: Record<Ticket['priority'], string> = {
+  const priorityVariantMap: Record<Ticket['priority'], BadgeVariant> = {
     low: 'default',
     medium: 'secondary',
     high: 'warning',
@@ -92,7 +94,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
             </h3>
             {ticket.modeloEquipo?.trim() ? (
               <div
-                className='mt-1.5 flex items-start gap-1.5 rounded-md bg-green-600 px-2 py-1.5 text-sm font-medium text-white shadow-sm dark:bg-green-700'
+                className='mt-1.5 inline-flex max-w-full items-start gap-1.5 rounded-md bg-green-600 px-2 py-1.5 text-sm font-medium text-white shadow-sm dark:bg-green-700'
                 title={ticket.modeloEquipo.trim()}
               >
                 <Box size={14} className='shrink-0 mt-0.5 text-white' aria-hidden />
