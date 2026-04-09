@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, Hash, MessageSquare } from 'lucide-react';
+import { ArrowRight, Box, Clock, Hash, MessageSquare } from 'lucide-react';
 import React from 'react';
 import { Avatar } from '../atoms/Avatar';
 import { Badge } from '../atoms/Badge';
@@ -90,6 +90,15 @@ export const TicketCard: React.FC<TicketCardProps> = ({
             <h3 className='font-semibold text-base leading-tight'>
               {ticket.title}
             </h3>
+            {ticket.modeloEquipo?.trim() ? (
+              <p
+                className='text-sm text-muted-foreground flex items-start gap-1.5 mt-0.5'
+                title={ticket.modeloEquipo.trim()}
+              >
+                <Box size={14} className='shrink-0 mt-0.5' aria-hidden />
+                <span className='line-clamp-2'>{ticket.modeloEquipo.trim()}</span>
+              </p>
+            ) : null}
             <div className='flex flex-wrap gap-2'>
               <Badge
                 variant={statusVariantMap[ticket.status]}
@@ -122,7 +131,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
               <MessageSquare size={14} className='mr-1' />
               <span>
                 {ticket.messageCount} mensaje
-                {ticket.messageCount !== 1 ? 's' : ''}
+                {ticket.messageCount === 1 ? '' : 's'}
               </span>
             </>
           )}

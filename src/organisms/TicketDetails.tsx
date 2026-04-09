@@ -98,6 +98,25 @@ const PRIORITY_TRANSLATIONS: Record<Ticket['priority'], string> = {
 
 const OBSERVATIONS_TEXTAREA_ID = 'ticket-observations-textarea';
 
+const TicketNumberAndModelBadges: React.FC<{
+  ticketId: string;
+  modeloEquipo?: string | null;
+  formatTicketId: (id: string) => string;
+}> = ({ ticketId, modeloEquipo, formatTicketId }) => (
+  <>
+    <Badge>#{formatTicketId(ticketId)}</Badge>
+    {modeloEquipo?.trim() ? (
+      <Badge
+        variant='secondary'
+        className='max-w-[min(100%,280px)] truncate font-normal'
+        title={modeloEquipo.trim()}
+      >
+        {modeloEquipo.trim()}
+      </Badge>
+    ) : null}
+  </>
+);
+
 /** Normaliza un nombre de sistema para usarlo como id de input. */
 function sistemaToInputId(sistema: string): string {
   // replaceAll requiere ES2021; replace con regex global es equivalente aquí
@@ -419,7 +438,11 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
             >
               {PRIORITY_TRANSLATIONS[priority]}
             </Badge>
-            <Badge>#{formatTicketId(id)}</Badge>
+            <TicketNumberAndModelBadges
+              ticketId={id}
+              modeloEquipo={ticket.modeloEquipo}
+              formatTicketId={formatTicketId}
+            />
           </div>
 
           <h2 className='text-xl font-bold'>{title}</h2>

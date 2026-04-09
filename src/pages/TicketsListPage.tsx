@@ -1,13 +1,14 @@
 import {
   AlertCircle,
   AlertTriangle,
+  Box,
   Filter,
   PackageSearch,
   PlusCircle,
   Search,
   Users,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
@@ -37,6 +38,7 @@ export const TicketsListPage: React.FC = () => {
   >('all');
   const [customerFilter, setCustomerFilter] = useState<string>('all');
   const [technicianFilter, setTechnicianFilter] = useState<string>('all');
+  const [modeloFilter, setModeloFilter] = useState<string>('all');
 
   const [purchasesQuery, setPurchasesQuery] = useState('');
   const [purchasesLoading, setPurchasesLoading] = useState(false);
@@ -91,6 +93,15 @@ export const TicketsListPage: React.FC = () => {
     .filter(Boolean)
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  const distinctModelos = useMemo(() => {
+    const seen = new Set<string>();
+    for (const t of tickets) {
+      const m = t.modeloEquipo?.trim();
+      if (m) seen.add(m);
+    }
+    return Array.from(seen).sort((a, b) => a.localeCompare(b, 'es'));
+  }, [tickets]);
+
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch =
       ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -113,7 +124,18 @@ export const TicketsListPage: React.FC = () => {
       matchesTechnician = ticket.technicianId === technicianFilter;
     }
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesCustomer && matchesTechnician;
+    const matchesModelo =
+      modeloFilter === 'all' ||
+      (ticket.modeloEquipo?.trim() ?? '') === modeloFilter;
+
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesPriority &&
+      matchesCustomer &&
+      matchesTechnician &&
+      matchesModelo
+    );
   });
 
   const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
@@ -270,6 +292,26 @@ export const TicketsListPage: React.FC = () => {
               ))}
             </select>
           </div>
+
+          {distinctModelos.length > 0 && (
+            <div className='inline-flex items-center rounded-md border border-input bg-background px-3 h-10 text-sm'>
+              <Box size={16} className='mr-2 text-muted-foreground shrink-0' />
+              <span className='text-muted-foreground mr-2 shrink-0'>Modelo:</span>
+              <select
+                className='bg-transparent border-none outline-none max-w-[220px]'
+                value={modeloFilter}
+                onChange={e => setModeloFilter(e.target.value)}
+                aria-label='Filtrar por modelo de equipo'
+              >
+                <option value='all'>Todos</option>
+                {distinctModelos.map(m => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -410,7 +452,12 @@ export const TicketsListPage: React.FC = () => {
             No se encontraron tickets
           </h3>
           <p className='text-muted-foreground text-sm mb-4'>
-            {searchTerm || statusFilter !== 'all' || priorityFilter !== 'all' || customerFilter !== 'all'
+            {searchTerm ||
+            statusFilter !== 'all' ||
+            priorityFilter !== 'all' ||
+            customerFilter !== 'all' ||
+            technicianFilter !== 'all' ||
+            modeloFilter !== 'all'
               ? 'Intenta ajustar tus filtros'
               : 'Crea tu primer ticket de soporte para comenzar'}
           </p>
