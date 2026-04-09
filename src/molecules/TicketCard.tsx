@@ -91,13 +91,13 @@ export const TicketCard: React.FC<TicketCardProps> = ({
               {ticket.title}
             </h3>
             {ticket.modeloEquipo?.trim() ? (
-              <p
-                className='text-sm text-muted-foreground flex items-start gap-1.5 mt-0.5'
+              <div
+                className='mt-1.5 flex items-start gap-1.5 rounded-md bg-green-600 px-2 py-1.5 text-sm font-medium text-white shadow-sm dark:bg-green-700'
                 title={ticket.modeloEquipo.trim()}
               >
-                <Box size={14} className='shrink-0 mt-0.5' aria-hidden />
+                <Box size={14} className='shrink-0 mt-0.5 text-white' aria-hidden />
                 <span className='line-clamp-2'>{ticket.modeloEquipo.trim()}</span>
-              </p>
+              </div>
             ) : null}
             <div className='flex flex-wrap gap-2'>
               <Badge
