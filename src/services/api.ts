@@ -491,6 +491,7 @@ export const ticketService = {
     tipoMaquina?: string;
     marca?: string;
     modeloEquipo?: string;
+    serial?: string;
     title: string;
     description: string;
     category?: string;

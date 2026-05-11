@@ -35,6 +35,7 @@ type FormState = {
   tipoMaquina: string;
   marca: string;
   modeloEquipo: string;
+  serial: string;
   title: string;
   description: string;
   category: string;
@@ -50,6 +51,7 @@ const FIELD_ORDER: (keyof FormState)[] = [
   'tipoMaquina',
   'marca',
   'modeloEquipo',
+  'serial',
   'title',
   'description',
 ];
@@ -68,6 +70,7 @@ export const PublicCreateTicketPage: React.FC = () => {
     tipoMaquina: '',
     marca: '',
     modeloEquipo: '',
+    serial: '',
     title: '',
     description: '',
     category: 'Soporte Remoto',
@@ -109,6 +112,7 @@ export const PublicCreateTicketPage: React.FC = () => {
         tipoMaquina: formData.tipoMaquina,
         marca: formData.marca,
         modeloEquipo: formData.modeloEquipo.trim(),
+        serial: formData.serial.trim(),
         title: formData.title.trim(),
         description: formData.description.trim(),
         category: formData.category,
@@ -125,6 +129,7 @@ export const PublicCreateTicketPage: React.FC = () => {
         tipoMaquina: '',
         marca: '',
         modeloEquipo: '',
+        serial: '',
         title: '',
         description: '',
         category: 'Soporte Remoto',
@@ -378,6 +383,28 @@ export const PublicCreateTicketPage: React.FC = () => {
                 )}
 
                 {canShowField(8) && (
+                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <label htmlFor="serial" className="text-sm font-medium">
+                      Serial <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      id="serial"
+                      value={formData.serial}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setFormData(prev => ({
+                          ...prev,
+                          serial: e.target.value,
+                        }))
+                      }
+                      placeholder="Número de serie del equipo"
+                      maxLength={120}
+                      required
+                      autoComplete="off"
+                    />
+                  </div>
+                )}
+
+                {canShowField(9) && (
                   <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border pt-4">
                     <h3 className="text-lg font-medium text-foreground">
                       Detalles del ticket
@@ -397,7 +424,7 @@ export const PublicCreateTicketPage: React.FC = () => {
                   </div>
                 )}
 
-                {canShowField(9) && (
+                {canShowField(10) && (
                   <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                     <label htmlFor="description" className="text-sm font-medium">
                       Descripción <span className="text-destructive">*</span>

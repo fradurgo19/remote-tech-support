@@ -101,8 +101,9 @@ const OBSERVATIONS_TEXTAREA_ID = 'ticket-observations-textarea';
 const TicketNumberAndModelBadges: React.FC<{
   ticketId: string;
   modeloEquipo?: string | null;
+  serial?: string | null;
   formatTicketId: (id: string) => string;
-}> = ({ ticketId, modeloEquipo, formatTicketId }) => (
+}> = ({ ticketId, modeloEquipo, serial, formatTicketId }) => (
   <>
     <Badge>#{formatTicketId(ticketId)}</Badge>
     {modeloEquipo?.trim() ? (
@@ -112,6 +113,15 @@ const TicketNumberAndModelBadges: React.FC<{
         title={modeloEquipo.trim()}
       >
         {modeloEquipo.trim()}
+      </Badge>
+    ) : null}
+    {serial?.trim() ? (
+      <Badge
+        variant='default'
+        className='max-w-[min(100%,220px)] truncate font-mono text-xs font-normal'
+        title={serial.trim()}
+      >
+        S/N: {serial.trim()}
       </Badge>
     ) : null}
   </>
@@ -441,6 +451,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
             <TicketNumberAndModelBadges
               ticketId={id}
               modeloEquipo={ticket.modeloEquipo}
+              serial={ticket.serial}
               formatTicketId={formatTicketId}
             />
           </div>

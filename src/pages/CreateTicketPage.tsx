@@ -44,6 +44,7 @@ export const CreateTicketPage: React.FC = () => {
     tags: [] as string[],
     marca: '',
     modeloEquipo: '',
+    serial: '',
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -160,6 +161,7 @@ export const CreateTicketPage: React.FC = () => {
         tags: formData.tags,
         marca: formData.marca || undefined,
         modeloEquipo: formData.modeloEquipo.trim() || undefined,
+        serial: formData.serial.trim() || undefined,
       };
 
       if (user.role === 'customer') {
@@ -217,42 +219,66 @@ export const CreateTicketPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className='space-y-4'>
-            <div className='space-y-2'>
-              <label htmlFor='marca' className='text-sm font-medium'>
-                Marca
-              </label>
-              <Select
-                id='marca'
-                value={formData.marca}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  setFormData(prev => ({ ...prev, marca: e.target.value }))
-                }
-              >
-                <option value=''>Seleccione...</option>
-                {MARCAS.map(m => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </Select>
-            </div>
+            <fieldset className='space-y-4 rounded-lg border border-border bg-muted/15 p-4'>
+              <legend className='text-sm font-semibold px-1 text-foreground'>
+                Equipo (marca, modelo y serial)
+              </legend>
+              <div className='space-y-2'>
+                <label htmlFor='marca' className='text-sm font-medium'>
+                  Marca
+                </label>
+                <Select
+                  id='marca'
+                  value={formData.marca}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setFormData(prev => ({ ...prev, marca: e.target.value }))
+                  }
+                >
+                  <option value=''>Seleccione...</option>
+                  {MARCAS.map(m => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </Select>
+              </div>
 
-            <div className='space-y-2'>
-              <label htmlFor='modeloEquipo' className='text-sm font-medium'>
-                Modelo
-              </label>
-              <Input
-                id='modeloEquipo'
-                value={formData.modeloEquipo}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setFormData(prev => ({
-                    ...prev,
-                    modeloEquipo: e.target.value,
-                  }))
-                }
-                placeholder='Modelo del equipo'
-              />
-            </div>
+              <div className='space-y-2'>
+                <label htmlFor='modeloEquipo' className='text-sm font-medium'>
+                  Modelo
+                </label>
+                <Input
+                  id='modeloEquipo'
+                  value={formData.modeloEquipo}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setFormData(prev => ({
+                      ...prev,
+                      modeloEquipo: e.target.value,
+                    }))
+                  }
+                  placeholder='Modelo del equipo'
+                />
+              </div>
+
+              <div className='space-y-2'>
+                <label htmlFor='serial' className='text-sm font-medium'>
+                  Serial
+                </label>
+                <Input
+                  id='serial'
+                  value={formData.serial}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setFormData(prev => ({
+                      ...prev,
+                      serial: e.target.value,
+                    }))
+                  }
+                  placeholder='Número de serie (S/N), si aplica'
+                  maxLength={120}
+                  autoComplete='off'
+                />
+              </div>
+            </fieldset>
 
             <div className='space-y-2'>
               <label htmlFor='title' className='text-sm font-medium'>

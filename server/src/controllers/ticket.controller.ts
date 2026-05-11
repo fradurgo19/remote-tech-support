@@ -16,7 +16,10 @@ type TicketWithRelations = Ticket & {
 };
 
 /** Convierte un ticket a objeto plano asegurando que sistemas sea array (getter), no el string JSON crudo */
-function ticketToPlain(ticket: Ticket, plain: Record<string, unknown>): Record<string, unknown> {
+function ticketToPlain(
+  ticket: Ticket | TicketWithRelations,
+  plain: Record<string, unknown>
+): Record<string, unknown> {
   plain.sistemas = ticket.sistemas ?? [];
   return plain;
 }
@@ -191,6 +194,7 @@ export const createTicketPublic = async (req: Request, res: Response) => {
       tipoMaquina,
       marca,
       modeloEquipo,
+      serial,
     } = req.body;
 
     if (!customerEmail || !customerName || !title || !description) {
@@ -246,6 +250,10 @@ export const createTicketPublic = async (req: Request, res: Response) => {
       tipoMaquina: tipoMaquina || null,
       marca: marca || null,
       modeloEquipo: modeloEquipo || null,
+      serial:
+        typeof serial === 'string' && serial.trim() !== ''
+          ? serial.trim().slice(0, 120)
+          : null,
     });
 
     const ticketWithCustomer = (await Ticket.findByPk(ticket.id, {
@@ -272,10 +280,13 @@ export const createTicketPublic = async (req: Request, res: Response) => {
       }
     }
 
-    const plainPublic = ticketWithCustomer.get({ plain: true }) as unknown as Record<string, unknown>;
+    const plainSource = ticketWithCustomer ?? ticket;
+    const plainPublic = plainSource.get({
+      plain: true,
+    }) as unknown as Record<string, unknown>;
     res.status(201).json({
       message: 'Ticket creado exitosamente',
-      ticket: ticketToPlain(ticketWithCustomer, plainPublic),
+      ticket: ticketToPlain(plainSource, plainPublic),
     });
   } catch (error) {
     logger.error('Error al crear ticket público:', error);
@@ -338,6 +349,7 @@ export const createTicket = async (req: Request, res: Response) => {
       customerId: providedCustomerId,
       marca,
       modeloEquipo,
+      serial,
     } = req.body;
     const user = req.user as { id: string; role: string; email: string };
 
@@ -379,6 +391,10 @@ export const createTicket = async (req: Request, res: Response) => {
       status: 'open',
       marca: marca || null,
       modeloEquipo: modeloEquipo || null,
+      serial:
+        typeof serial === 'string' && serial.trim() !== ''
+          ? serial.trim().slice(0, 120)
+          : null,
     });
 
     // Obtener el ticket con la información del cliente
@@ -634,27 +650,6 @@ export const updateTicket = async (req: Request, res: Response) => {
     const body = req.body;
     const user = req.user as { id: string; role: string };
 
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/3654064d-257d-4acd-abac-52d07be95a03', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1192ae' },
-      body: JSON.stringify({
-        sessionId: '1192ae',
-        hypothesisId: 'H2',
-        location: 'ticket.controller.ts:updateTicket',
-        message: 'Backend received body',
-        data: {
-          hasSistemas: 'sistemas' in body,
-          sistemasType: typeof body.sistemas,
-          isArray: Array.isArray(body.sistemas),
-          sistemasLength: Array.isArray(body.sistemas) ? body.sistemas.length : null,
-          bodyKeys: Object.keys(body),
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
     const ticket = await Ticket.findByPk(id);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket no encontrado' });
@@ -669,44 +664,7 @@ export const updateTicket = async (req: Request, res: Response) => {
     const oldTechnicianId = ticket.technicianId;
     const updateData = buildTicketUpdateData(user, ticket, body);
 
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/3654064d-257d-4acd-abac-52d07be95a03', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1192ae' },
-      body: JSON.stringify({
-        sessionId: '1192ae',
-        hypothesisId: 'H3',
-        location: 'ticket.controller.ts:updateTicket',
-        message: 'updateData before ticket.update',
-        data: {
-          hasSistemasInUpdate: 'sistemas' in updateData,
-          updateDataSistemas: (updateData as { sistemas?: string[] }).sistemas,
-          updateKeys: Object.keys(updateData),
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
     await ticket.update(updateData);
-
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/3654064d-257d-4acd-abac-52d07be95a03', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1192ae' },
-      body: JSON.stringify({
-        sessionId: '1192ae',
-        hypothesisId: 'H4',
-        location: 'ticket.controller.ts:updateTicket',
-        message: 'After ticket.update - raw and getter',
-        data: {
-          dataValueSistemas: ticket.getDataValue('sistemas'),
-          getterSistemas: ticket.sistemas,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
 
     if (body.technicianId && body.technicianId !== oldTechnicianId) {
       try {

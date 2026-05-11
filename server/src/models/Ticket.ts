@@ -25,6 +25,8 @@ export interface TicketAttributes {
   tipoMaquina?: string;
   marca?: string;
   modeloEquipo?: string;
+  /** Número de serie del equipo (S/N) */
+  serial?: string;
   /** Sistemas del equipo que comprometen la falla (selección múltiple) */
   sistemas?: string[];
   createdAt?: Date;
@@ -53,6 +55,7 @@ export class Ticket extends Model<TicketAttributes> implements TicketAttributes 
   public tipoMaquina!: string;
   public marca!: string;
   public modeloEquipo!: string;
+  public serial!: string;
   public sistemas!: string[];
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -156,6 +159,10 @@ Ticket.init(
     },
     modeloEquipo: {
       type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    serial: {
+      type: DataTypes.STRING(120),
       allowNull: true,
     },
     sistemas: {
