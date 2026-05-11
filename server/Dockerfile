@@ -25,4 +25,3 @@ EXPOSE 8080
 
 # Comando de inicio usando ts-node
 CMD ["npx", "ts-node", "--transpile-only", "src/index.ts"]
-

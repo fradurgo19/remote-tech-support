@@ -1,4 +1,4 @@
-import { ArrowRight, Box, Clock, Hash, MessageSquare } from 'lucide-react';
+import { ArrowRight, Box, Clock, Fingerprint, Hash, MessageSquare } from 'lucide-react';
 import React from 'react';
 import { Avatar } from '../atoms/Avatar';
 import { Badge, type BadgeProps } from '../atoms/Badge';
@@ -68,6 +68,12 @@ export const TicketCard: React.FC<TicketCardProps> = ({
     urgent: 'urgente',
   };
 
+  const modeloLabel = ticket.modeloEquipo?.trim() ?? '';
+  const serialLabel = ticket.serial?.trim() ?? '';
+  const hasModelo = modeloLabel.length > 0;
+  const hasSerial = serialLabel.length > 0;
+  const showEquipoRow = hasModelo || hasSerial;
+
   return (
     <Card
       variant='outline'
@@ -92,13 +98,26 @@ export const TicketCard: React.FC<TicketCardProps> = ({
             <h3 className='font-semibold text-base leading-tight'>
               {ticket.title}
             </h3>
-            {ticket.modeloEquipo?.trim() ? (
-              <div
-                className='mt-1.5 inline-flex max-w-full items-start gap-1.5 rounded-md bg-green-600 px-2 py-1.5 text-sm font-medium text-white shadow-sm dark:bg-green-700'
-                title={ticket.modeloEquipo.trim()}
-              >
-                <Box size={14} className='shrink-0 mt-0.5 text-white' aria-hidden />
-                <span className='line-clamp-2'>{ticket.modeloEquipo.trim()}</span>
+            {showEquipoRow ? (
+              <div className='mt-1.5 flex flex-wrap items-start gap-2'>
+                {hasModelo ? (
+                  <div
+                    className='inline-flex max-w-full min-w-0 items-start gap-1.5 rounded-md bg-green-600 px-2 py-1.5 text-sm font-medium text-white shadow-sm dark:bg-green-700'
+                    title={modeloLabel}
+                  >
+                    <Box size={14} className='shrink-0 mt-0.5 text-white' aria-hidden />
+                    <span className='line-clamp-2'>{modeloLabel}</span>
+                  </div>
+                ) : null}
+                {hasSerial ? (
+                  <div
+                    className='inline-flex max-w-full min-w-0 items-start gap-1.5 rounded-md bg-teal-700 px-2 py-1.5 text-xs font-mono font-medium text-white shadow-sm dark:bg-teal-800'
+                    title={serialLabel}
+                  >
+                    <Fingerprint size={14} className='shrink-0 mt-0.5 text-white' aria-hidden />
+                    <span className='line-clamp-2'>S/N: {serialLabel}</span>
+                  </div>
+                ) : null}
               </div>
             ) : null}
             <div className='flex flex-wrap gap-2'>
