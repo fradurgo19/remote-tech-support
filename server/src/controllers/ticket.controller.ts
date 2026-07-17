@@ -604,6 +604,13 @@ async function sendStatusChangeEmail(
 type TicketStatus = TicketAttributes['status'];
 type TicketPriority = TicketAttributes['priority'];
 
+function normalizeOptionalText(value: unknown, maxLen: number): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (trimmed === '') return null;
+  return trimmed.slice(0, maxLen);
+}
+
 function buildTicketUpdateData(
   user: { role: string },
   ticket: Ticket,
@@ -615,6 +622,9 @@ function buildTicketUpdateData(
     technicianId?: string;
     technicalObservations?: string;
     sistemas?: string[];
+    marca?: string | null;
+    modeloEquipo?: string | null;
+    serial?: string | null;
   }
 ): Partial<TicketAttributes> {
   const updateData: Partial<TicketAttributes> = {};
@@ -632,6 +642,19 @@ function buildTicketUpdateData(
     updateData.sistemas = body.sistemas.filter(
       (s): s is string => typeof s === 'string' && s.trim() !== ''
     );
+  }
+  if (body.marca !== undefined) {
+    Object.assign(updateData, { marca: normalizeOptionalText(body.marca, 100) });
+  }
+  if (body.modeloEquipo !== undefined) {
+    Object.assign(updateData, {
+      modeloEquipo: normalizeOptionalText(body.modeloEquipo, 255),
+    });
+  }
+  if (body.serial !== undefined) {
+    Object.assign(updateData, {
+      serial: normalizeOptionalText(body.serial, 120),
+    });
   }
   const newObservations = buildTechnicalObservations(
     ticket,

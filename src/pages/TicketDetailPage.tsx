@@ -10,7 +10,7 @@ import { ChatPanel } from '../organisms/ChatPanel';
 import { TicketDetails } from '../organisms/TicketDetails';
 import { VideoCallPanel } from '../organisms/VideoCallPanel';
 import { ticketService, userService } from '../services/api';
-import { Ticket, User } from '../types';
+import { Ticket, TicketEditPayload, User } from '../types';
 
 function buildRemoteUsersForCall(
   customerId: string,
@@ -147,6 +147,35 @@ export const TicketDetailPage: React.FC = () => {
     }
   };
 
+  const handleUpdateTicket = async (payload: TicketEditPayload) => {
+    if (!ticket) return;
+
+    try {
+      const updatedTicket = await ticketService.updateTicket(ticket.id, payload);
+      setTicket({
+        ...updatedTicket,
+        title: updatedTicket.title ?? payload.title,
+        description: updatedTicket.description ?? payload.description,
+        priority: updatedTicket.priority ?? payload.priority ?? ticket.priority,
+        marca:
+          updatedTicket.marca !== undefined
+            ? updatedTicket.marca
+            : payload.marca ?? ticket.marca,
+        modeloEquipo:
+          updatedTicket.modeloEquipo !== undefined
+            ? updatedTicket.modeloEquipo
+            : payload.modeloEquipo ?? ticket.modeloEquipo,
+        serial:
+          updatedTicket.serial !== undefined
+            ? updatedTicket.serial
+            : payload.serial ?? ticket.serial,
+      });
+    } catch (err) {
+      console.error('Error al editar el ticket:', err);
+      throw err;
+    }
+  };
+
   if (loading) {
     return (
       <div className='flex items-center justify-center h-full'>
@@ -244,6 +273,7 @@ export const TicketDetailPage: React.FC = () => {
             onChangeStatus={handleChangeStatus}
             onAssignTechnician={handleAssignTechnician}
             onUpdateSistemas={handleUpdateSistemas}
+            onUpdateTicket={handleUpdateTicket}
           />
         )}
 

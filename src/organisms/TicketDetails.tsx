@@ -6,6 +6,7 @@ import {
   Forward,
   Layers,
   MessageSquare,
+  Pencil,
   Play,
   RefreshCw,
   Tag,
@@ -18,8 +19,84 @@ import { Avatar } from '../atoms/Avatar';
 import { Badge } from '../atoms/Badge';
 import { Button } from '../atoms/Button';
 import { Card, CardContent, CardFooter, CardHeader } from '../atoms/Card';
+import { Input } from '../atoms/Input';
+import { Select } from '../atoms/Select';
 import { Textarea } from '../atoms/Textarea';
-import { Ticket, User } from '../types';
+import { Ticket, TicketEditPayload, User } from '../types';
+
+const MARCAS = ['Case', 'Dynapac', 'Hitachi', 'Liugong', 'Okada', 'Yanmar'];
+
+const PRIORITY_OPTIONS: { value: Ticket['priority']; label: string }[] = [
+  { value: 'low', label: 'Baja' },
+  { value: 'medium', label: 'Media' },
+  { value: 'high', label: 'Alta' },
+  { value: 'urgent', label: 'Urgente' },
+];
+
+function buildEditFormFromTicket(ticket: Ticket): TicketEditPayload {
+  return {
+    title: ticket.title,
+    description: ticket.description,
+    priority: ticket.priority,
+    marca: ticket.marca ?? '',
+    modeloEquipo: ticket.modeloEquipo ?? '',
+    serial: ticket.serial ?? '',
+  };
+}
+
+function resolveTicketEditAccess(
+  currentUser: User | undefined,
+  ticket: Ticket,
+  onUpdateTicket?: (payload: TicketEditPayload) => void | Promise<void>
+): { canEditTicket: boolean; canEditPriorityAndEquipo: boolean } {
+  const isStaff =
+    currentUser?.role === 'admin' || currentUser?.role === 'technician';
+  const isCustomerOwner =
+    currentUser?.role === 'customer' && currentUser.id === ticket.customerId;
+  const canEditTicket =
+    Boolean(onUpdateTicket) &&
+    ticket.status !== 'closed' &&
+    (isStaff || isCustomerOwner);
+  return { canEditTicket, canEditPriorityAndEquipo: Boolean(isStaff) };
+}
+
+function EquipoInfoSummary({
+  marca,
+  modeloEquipo,
+  serial,
+}: {
+  marca?: string | null;
+  modeloEquipo?: string | null;
+  serial?: string | null;
+}) {
+  const marcaLabel = marca?.trim() ?? '';
+  const modeloLabel = modeloEquipo?.trim() ?? '';
+  const serialLabel = serial?.trim() ?? '';
+  if (!marcaLabel && !modeloLabel && !serialLabel) return null;
+
+  return (
+    <div className='mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm'>
+      {marcaLabel ? (
+        <div className='rounded-md border border-border bg-muted/30 px-3 py-2'>
+          <p className='text-xs text-muted-foreground'>Marca</p>
+          <p className='font-medium'>{marcaLabel}</p>
+        </div>
+      ) : null}
+      {modeloLabel ? (
+        <div className='rounded-md border border-border bg-muted/30 px-3 py-2'>
+          <p className='text-xs text-muted-foreground'>Modelo</p>
+          <p className='font-medium'>{modeloLabel}</p>
+        </div>
+      ) : null}
+      {serialLabel ? (
+        <div className='rounded-md border border-border bg-muted/30 px-3 py-2'>
+          <p className='text-xs text-muted-foreground'>Serial</p>
+          <p className='font-medium font-mono'>{serialLabel}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 /** Lista de sistemas que el técnico puede seleccionar como comprometidos en la falla */
 const SISTEMAS_OPTIONS = [
@@ -279,6 +356,157 @@ const TicketDetailsFooter: React.FC<TicketDetailsFooterProps> = ({
   </CardFooter>
 );
 
+interface TicketEditFormProps {
+  form: TicketEditPayload;
+  canEditPriorityAndEquipo: boolean;
+  isSaving: boolean;
+  onChange: (next: TicketEditPayload) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}
+
+const TicketEditForm: React.FC<TicketEditFormProps> = ({
+  form,
+  canEditPriorityAndEquipo,
+  isSaving,
+  onChange,
+  onSave,
+  onCancel,
+}) => {
+  const titleOk = form.title.trim().length > 0;
+  const descriptionOk = form.description.trim().length > 0;
+  const canSave = titleOk && descriptionOk && !isSaving;
+
+  return (
+    <div className='space-y-4 rounded-md border border-border bg-muted/20 p-4'>
+      <h3 className='text-base font-medium flex items-center gap-2'>
+        <Pencil size={16} className='text-primary' />
+        Editar ticket
+      </h3>
+
+      <div className='space-y-2'>
+        <label htmlFor='edit-ticket-title' className='text-sm font-medium'>
+          Título
+        </label>
+        <Input
+          id='edit-ticket-title'
+          value={form.title}
+          onChange={e => onChange({ ...form, title: e.target.value })}
+          placeholder='Título del ticket'
+          required
+          maxLength={255}
+        />
+      </div>
+
+      <div className='space-y-2'>
+        <label htmlFor='edit-ticket-description' className='text-sm font-medium'>
+          Descripción
+        </label>
+        <Textarea
+          id='edit-ticket-description'
+          value={form.description}
+          onChange={e => onChange({ ...form, description: e.target.value })}
+          placeholder='Describe el problema o solicitud'
+          rows={4}
+          required
+        />
+      </div>
+
+      {canEditPriorityAndEquipo ? (
+        <>
+          <div className='space-y-2'>
+            <label htmlFor='edit-ticket-priority' className='text-sm font-medium'>
+              Prioridad
+            </label>
+            <Select
+              id='edit-ticket-priority'
+              value={form.priority ?? 'medium'}
+              onChange={e =>
+                onChange({
+                  ...form,
+                  priority: e.target.value as Ticket['priority'],
+                })
+              }
+            >
+              {PRIORITY_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+            <div className='space-y-2'>
+              <label htmlFor='edit-ticket-marca' className='text-sm font-medium'>
+                Marca
+              </label>
+              <Select
+                id='edit-ticket-marca'
+                value={form.marca ?? ''}
+                onChange={e => onChange({ ...form, marca: e.target.value })}
+              >
+                <option value=''>Seleccione...</option>
+                {MARCAS.map(m => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className='space-y-2'>
+              <label htmlFor='edit-ticket-modelo' className='text-sm font-medium'>
+                Modelo
+              </label>
+              <Input
+                id='edit-ticket-modelo'
+                value={form.modeloEquipo ?? ''}
+                onChange={e =>
+                  onChange({ ...form, modeloEquipo: e.target.value })
+                }
+                placeholder='Modelo del equipo'
+                maxLength={255}
+              />
+            </div>
+            <div className='space-y-2'>
+              <label htmlFor='edit-ticket-serial' className='text-sm font-medium'>
+                Serial
+              </label>
+              <Input
+                id='edit-ticket-serial'
+                value={form.serial ?? ''}
+                onChange={e => onChange({ ...form, serial: e.target.value })}
+                placeholder='S/N'
+                maxLength={120}
+                autoComplete='off'
+              />
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      <div className='flex flex-wrap gap-2'>
+        <Button
+          variant='primary'
+          size='sm'
+          onClick={onSave}
+          disabled={!canSave}
+        >
+          {isSaving ? 'Guardando...' : 'Guardar cambios'}
+        </Button>
+        <Button
+          variant='ghost'
+          size='sm'
+          onClick={onCancel}
+          disabled={isSaving}
+        >
+          Cancelar
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 interface TicketDetailsProps {
   ticket: Ticket;
   customer?: User;
@@ -290,6 +518,7 @@ interface TicketDetailsProps {
   onChangeStatus: (status: Ticket['status'], technicalObservations?: string) => void | Promise<void>;
   onAssignTechnician?: (technicianId: string) => void;
   onUpdateSistemas?: (sistemas: string[]) => void | Promise<void>;
+  onUpdateTicket?: (payload: TicketEditPayload) => void | Promise<void>;
 }
 
 export const TicketDetails: React.FC<TicketDetailsProps> = ({
@@ -303,6 +532,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
   onChangeStatus,
   onAssignTechnician,
   onUpdateSistemas,
+  onUpdateTicket,
 }) => {
   const [isAssigningTechnician, setIsAssigningTechnician] = useState(false);
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>('');
@@ -315,6 +545,11 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
     ticket.sistemas ?? []
   );
   const [isSavingSistemas, setIsSavingSistemas] = useState(false);
+  const [isEditingTicket, setIsEditingTicket] = useState(false);
+  const [editForm, setEditForm] = useState<TicketEditPayload>(() =>
+    buildEditFormFromTicket(ticket)
+  );
+  const [isSavingTicket, setIsSavingTicket] = useState(false);
 
   useEffect(() => {
     if (!isEditingSistemas) {
@@ -322,10 +557,22 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
     }
   }, [ticket.sistemas, isEditingSistemas]);
 
+  useEffect(() => {
+    if (!isEditingTicket) {
+      setEditForm(buildEditFormFromTicket(ticket));
+    }
+  }, [ticket, isEditingTicket]);
+
   const canEditSistemas =
     currentUser &&
     (currentUser.role === 'admin' || currentUser.role === 'technician') &&
     onUpdateSistemas;
+
+  const { canEditTicket, canEditPriorityAndEquipo } = resolveTicketEditAccess(
+    currentUser,
+    ticket,
+    onUpdateTicket
+  );
 
   const handleToggleSistema = (sistema: string) => {
     setPendingSistemas(prev =>
@@ -341,6 +588,37 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
     Promise.resolve(onUpdateSistemas(pendingSistemas))
       .then(() => setIsEditingSistemas(false))
       .finally(() => setIsSavingSistemas(false));
+  };
+
+  const handleStartEditTicket = () => {
+    setEditForm(buildEditFormFromTicket(ticket));
+    setIsEditingTicket(true);
+  };
+
+  const handleCancelEditTicket = () => {
+    setIsEditingTicket(false);
+    setEditForm(buildEditFormFromTicket(ticket));
+  };
+
+  const handleSaveTicket = () => {
+    if (!onUpdateTicket || isSavingTicket) return;
+    const title = editForm.title.trim();
+    const description = editForm.description.trim();
+    if (!title || !description) return;
+
+    const payload: TicketEditPayload = { title, description };
+    if (canEditPriorityAndEquipo) {
+      payload.priority = editForm.priority;
+      payload.marca = (editForm.marca ?? '').toString().trim() || null;
+      payload.modeloEquipo =
+        (editForm.modeloEquipo ?? '').toString().trim() || null;
+      payload.serial = (editForm.serial ?? '').toString().trim() || null;
+    }
+
+    setIsSavingTicket(true);
+    Promise.resolve(onUpdateTicket(payload))
+      .then(() => setIsEditingTicket(false))
+      .finally(() => setIsSavingTicket(false));
   };
 
   const {
@@ -438,28 +716,42 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
     <Card className='h-full flex flex-col'>
       <CardHeader>
         <div className='flex flex-col space-y-3'>
-          <div className='flex flex-wrap gap-2 mb-1'>
-            <Badge variant={STATUS_VARIANT_MAP[status]} className='capitalize'>
-              {STATUS_TRANSLATIONS[status]}
-            </Badge>
-            <Badge
-              variant={PRIORITY_VARIANT_MAP[priority]}
-              className='capitalize'
-            >
-              {PRIORITY_TRANSLATIONS[priority]}
-            </Badge>
-            <TicketNumberAndModelBadges
-              ticketId={id}
-              modeloEquipo={ticket.modeloEquipo}
-              serial={ticket.serial}
-              formatTicketId={formatTicketId}
-            />
+          <div className='flex flex-wrap items-start justify-between gap-2'>
+            <div className='flex flex-wrap gap-2 mb-1'>
+              <Badge variant={STATUS_VARIANT_MAP[status]} className='capitalize'>
+                {STATUS_TRANSLATIONS[status]}
+              </Badge>
+              <Badge
+                variant={PRIORITY_VARIANT_MAP[priority]}
+                className='capitalize'
+              >
+                {PRIORITY_TRANSLATIONS[priority]}
+              </Badge>
+              <TicketNumberAndModelBadges
+                ticketId={id}
+                modeloEquipo={ticket.modeloEquipo}
+                serial={ticket.serial}
+                formatTicketId={formatTicketId}
+              />
+            </div>
+            {canEditTicket && !isEditingTicket ? (
+              <Button
+                variant='outline'
+                size='sm'
+                leftIcon={<Pencil size={14} />}
+                onClick={handleStartEditTicket}
+              >
+                Editar
+              </Button>
+            ) : null}
           </div>
 
-          <h2 className='text-xl font-bold'>{title}</h2>
+          {!isEditingTicket ? (
+            <h2 className='text-xl font-bold'>{title}</h2>
+          ) : null}
 
           <div className='flex flex-wrap gap-2'>
-            {tags.map(tag => (
+            {(tags ?? []).map(tag => (
               <Badge
                 key={tag}
                 variant='secondary'
@@ -487,12 +779,28 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
 
       <CardContent className='flex-1 overflow-auto'>
         <div className='space-y-6'>
-          <div>
-            <h3 className='text-base font-medium mb-2'>Descripción</h3>
-            <div className='bg-muted/50 p-3 rounded-md text-sm'>
-              {description}
+          {isEditingTicket ? (
+            <TicketEditForm
+              form={editForm}
+              canEditPriorityAndEquipo={canEditPriorityAndEquipo}
+              isSaving={isSavingTicket}
+              onChange={setEditForm}
+              onSave={handleSaveTicket}
+              onCancel={handleCancelEditTicket}
+            />
+          ) : (
+            <div>
+              <h3 className='text-base font-medium mb-2'>Descripción</h3>
+              <div className='bg-muted/50 p-3 rounded-md text-sm'>
+                {description}
+              </div>
+              <EquipoInfoSummary
+                marca={ticket.marca}
+                modeloEquipo={ticket.modeloEquipo}
+                serial={ticket.serial}
+              />
             </div>
-          </div>
+          )}
 
           {/* Observaciones Técnicas */}
           {ticket.technicalObservations && (

@@ -51,6 +51,16 @@ export interface Ticket {
   sistemas?: string[];
 }
 
+/** Campos que el usuario puede editar en un ticket ya creado */
+export type TicketEditPayload = {
+  title: string;
+  description: string;
+  priority?: Ticket['priority'];
+  marca?: string | null;
+  modeloEquipo?: string | null;
+  serial?: string | null;
+};
+
 export interface Message {
   id: string;
   content: string;
