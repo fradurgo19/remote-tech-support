@@ -57,10 +57,16 @@ class EmailService {
 
   private initializeTransporter() {
     try {
-      const emailConfig: EmailConfig = {
-        host: process.env.SMTP_HOST || 'smtp-mail.outlook.com',
-        port: Number.parseInt(process.env.SMTP_PORT || '587', 10),
-        secure: process.env.SMTP_SECURE === 'true',
+      const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+      const port = Number.parseInt(process.env.SMTP_PORT || '587', 10);
+      const secure = process.env.SMTP_SECURE === 'true';
+
+      const emailConfig: EmailConfig & { requireTLS?: boolean } = {
+        host,
+        port,
+        secure,
+        // Gmail (y la mayoría en 587/STARTTLS) requieren TLS; no afecta si secure=true (465)
+        requireTLS: !secure,
         auth: {
           user: process.env.SMTP_USER || '',
           pass: process.env.SMTP_PASS || '',
@@ -70,6 +76,7 @@ class EmailService {
       logger.info('Initializing email service with config:', {
         host: emailConfig.host,
         port: emailConfig.port,
+        secure,
         user: emailConfig.auth.user,
         hasPassword: !!emailConfig.auth.pass,
       });
@@ -122,6 +129,21 @@ class EmailService {
   private formatTicketId(ticketId: string): string {
     // Mostrar solo los primeros 8 caracteres del UUID
     return ticketId.substring(0, 8).toUpperCase();
+  }
+
+  /** Fechas de correo siempre en hora de Colombia (America/Bogota). */
+  private formatColombiaDateTime(value: Date | string): string {
+    const date = value instanceof Date ? value : new Date(value);
+    return date.toLocaleString('es-CO', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
   }
 
   private getPriorityTranslation(priority: string): string {
@@ -221,7 +243,7 @@ class EmailService {
     const extraDataHtml = this.buildExtraDataRowsHtml(t);
     const technicianTextLine = this.buildTechnicianTextLine(technician);
     const extraDataText = this.buildExtraDataTextLines(t);
-    const createdAtFormatted = new Date(ticket.createdAt).toLocaleString('es-CO');
+    const createdAtFormatted = this.formatColombiaDateTime(ticket.createdAt);
 
     const subject = `SE CREO TICKET DE SOPORTE REMOTO PARTEQUIPOS CON ID No.${ticketId}, Estado: ${status}, Prioridad: ${priority}`;
 
@@ -534,9 +556,7 @@ Este correo fue enviado automáticamente por el sistema de tickets.
             }
             <div class="info-row">
               <span class="label">Fecha de Actualización:</span>
-              <span class="value">${new Date(ticket.updatedAt).toLocaleString(
-                'es-CO'
-              )}</span>
+              <span class="value">${this.formatColombiaDateTime(ticket.updatedAt)}</span>
             </div>
           </div>
 
@@ -567,7 +587,7 @@ Estado: ${oldStatusTranslated} → ${newStatusTranslated}
 Prioridad: ${priority}
 Cliente: ${customer.name} (${customer.email})
 ${technician ? `Técnico Asignado: ${technician.name}` : ''}
-Fecha de Actualización: ${new Date(ticket.updatedAt).toLocaleString('es-CO')}
+Fecha de Actualización: ${this.formatColombiaDateTime(ticket.updatedAt)}
 
 TÍTULO: ${ticket.title}
 
@@ -736,7 +756,7 @@ Este correo fue enviado automáticamente por el sistema de tickets.
             </div>
             <div class="info-row">
               <span class="label">Fecha de Creación:</span>
-              <span class="value">${new Date(ticket.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}</span>
+              <span class="value">${this.formatColombiaDateTime(ticket.createdAt)}</span>
             </div>
           </div>
 
@@ -771,7 +791,7 @@ ID del Ticket: ${ticketId}
 Estado: ${status}
 Prioridad: ${priority}
 Cliente: ${customer.name} (${customer.email})
-Fecha de Creación: ${new Date(ticket.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
+Fecha de Creación: ${this.formatColombiaDateTime(ticket.createdAt)}
 
 TÍTULO: ${ticket.title}
 
