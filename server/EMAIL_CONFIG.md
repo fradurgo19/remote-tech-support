@@ -7,22 +7,27 @@ Para habilitar las notificaciones por correo electrónico, agregue las siguiente
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=soportemq@partequipos.com
+SMTP_USER=fradurgo19@gmail.com
 SMTP_PASS=tu_contraseña_de_aplicacion_gmail_aqui
 
-# Support Email
+# Support Email (destinatarios de CC / notificaciones internas)
 SUPPORT_EMAIL=soportemq@partequipos.com
 ```
 
 ## Configuración para Gmail
 
-1. **Habilitar autenticación de 2 factores** en la cuenta de Gmail
+1. **Habilitar autenticación de 2 factores** en la cuenta de Gmail (`fradurgo19@gmail.com`)
 2. **Generar una contraseña de aplicación**:
    - Ir a Configuración de Google Account
    - Seguridad → Verificación en 2 pasos
    - Contraseñas de aplicaciones
    - Generar nueva contraseña para "Mail"
-3. **Usar la contraseña de aplicación** en `SMTP_PASS`
+3. **Usar la contraseña de aplicación** en `SMTP_PASS` (en **Fly.io**, no en Vercel: el backend envía los correos)
+
+```powershell
+cd server
+flyctl secrets set SMTP_HOST=smtp.gmail.com SMTP_PORT=587 SMTP_SECURE=false SMTP_USER=fradurgo19@gmail.com SMTP_PASS="tu-app-password"
+```
 
 ## Configuración para otros proveedores
 

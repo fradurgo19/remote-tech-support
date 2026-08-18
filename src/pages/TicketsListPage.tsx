@@ -14,6 +14,7 @@ import { Button } from '../atoms/Button';
 import { Input } from '../atoms/Input';
 import { Spinner } from '../atoms/Spinner';
 import { TicketCard } from '../molecules/TicketCard';
+import { PurchasesPowerBiPanel } from '../molecules/PurchasesPowerBiPanel';
 import { useAuth } from '../context/AuthContext';
 import {
   purchasesService,
@@ -323,7 +324,7 @@ export const TicketsListPage: React.FC = () => {
               className='text-sm font-medium flex items-center gap-2'
             >
               <PackageSearch size={18} className='text-muted-foreground' />
-              Compras por NIT o Nombre
+              Verificar compras (NIT / nombre y Power BI)
             </label>
             <div className='flex flex-1 flex-col sm:flex-row gap-2 max-w-md'>
               <Input
@@ -426,6 +427,7 @@ export const TicketsListPage: React.FC = () => {
               )}
             </div>
           )}
+          <PurchasesPowerBiPanel />
         </div>
       )}
 
