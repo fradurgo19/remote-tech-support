@@ -24,6 +24,25 @@ import {
 } from '../services/api';
 import { Ticket, User } from '../types';
 
+/** Búsqueda unificada: título, descripción, #ticket, serial, equipo (marca) y modelo. */
+function ticketMatchesSearch(ticket: Ticket, rawQuery: string): boolean {
+  const q = rawQuery.trim().toLowerCase();
+  if (!q) return true;
+
+  const shortId = ticket.id.substring(0, 8).toLowerCase();
+  const fields = [
+    ticket.title,
+    ticket.description,
+    ticket.id,
+    shortId,
+    ticket.serial,
+    ticket.marca,
+    ticket.modeloEquipo,
+  ];
+
+  return fields.some(value => (value ?? '').toLowerCase().includes(q));
+}
+
 export const TicketsListPage: React.FC = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [users, setUsers] = useState<Record<string, User>>({});
@@ -104,10 +123,7 @@ export const TicketsListPage: React.FC = () => {
   }, [tickets]);
 
   const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch =
-      ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.id.includes(searchTerm);
+    const matchesSearch = ticketMatchesSearch(ticket, searchTerm);
 
     const matchesStatus =
       statusFilter === 'all' || ticket.status === statusFilter;
@@ -212,10 +228,11 @@ export const TicketsListPage: React.FC = () => {
       <div className='flex flex-col md:flex-row gap-4'>
         <div className='w-full md:max-w-md'>
           <Input
-            placeholder='Buscar tickets...'
+            placeholder='Buscar por #ticket, serial, equipo, modelo...'
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             leftIcon={<Search size={18} />}
+            aria-label='Buscar tickets por número, serial, equipo o modelo'
           />
         </div>
 
